@@ -11,6 +11,12 @@ if [ -z "$DATABASE_URL" ]; then
     exit 1
 fi
 
+# Fallback DIRECT_URL to DATABASE_URL if not set (needed for Prisma schema validation)
+if [ -z "$DIRECT_URL" ]; then
+    echo "DIRECT_URL is not set. Using DATABASE_URL as fallback."
+    export DIRECT_URL="$DATABASE_URL"
+fi
+
 # 1. Run Prisma Migration
 echo "Applying Prisma migrations to the Neon.tech database..."
 cd /app/backend
