@@ -657,10 +657,10 @@ export default function MatchingClient({
 
                                                         <div className="flex h-[50px] w-[66px] flex-col items-center justify-center rounded-2xl border border-[#D9C7A5] bg-[#F7EAD4] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_18px_rgba(79,55,30,0.08)] select-none">
                                                             <span className="text-[9px] font-bold tracking-wide text-[#6E7979] uppercase">
-                                                                レベル
+                                                                {nativeLang === "日本" ? "母語" : "レベル"}
                                                             </span>
                                                             <span className="text-[12px] font-black text-[#005B5B]">
-                                                                {getJlptLevel(user)}
+                                                                {nativeLang === "日本" ? "日本語" : getJlptLevel(user)}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -690,30 +690,8 @@ export default function MatchingClient({
                                                         </div>
                                                     </div>
 
-                                                    <div className="mb-3 flex items-center justify-between rounded-2xl border border-[#E4D1B2]/80 bg-[#F8EEDB] px-3.5 py-2.5 text-[12px] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] select-none">
-                                                        <div className="flex min-w-0 items-center gap-1.5">
-                                                            <span className="shrink-0 text-[9px] font-black tracking-wider text-[#A99B87] uppercase">
-                                                                母国語
-                                                            </span>
-                                                            <span className="truncate text-[11px] font-bold text-[#181D1B]">
-                                                                {formatLanguageName(nativeLang)}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="mx-1.5 h-3.5 w-px shrink-0 bg-[#D9C7A5]/70" />
-
-                                                        <div className="flex min-w-0 items-center gap-1.5">
-                                                            <span className="shrink-0 text-[9px] font-black tracking-wider text-[#A99B87] uppercase">
-                                                                学習中
-                                                            </span>
-                                                            <span className="truncate text-[11px] font-bold text-[#181D1B]">
-                                                                {formatLanguageName(learningLang)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="mb-3.5 flex min-h-[52px] flex-wrap content-start gap-1.5 select-none">
-                                                        {hobbies.slice(0, 2).map((hobby) => (
+                                                    <div className="mb-3.5 flex min-h-[64px] flex-wrap content-start gap-1.5 select-none">
+                                                        {hobbies.slice(0, 3).map((hobby) => (
                                                             <span
                                                                 key={hobby}
                                                                 className="rounded-full border border-[#B86B4B]/25 bg-[#F8E0D5] px-2.5 py-1 text-[9px] font-bold tracking-wide text-[#923118] shadow-sm transition-transform duration-200 hover:scale-105"
@@ -722,7 +700,7 @@ export default function MatchingClient({
                                                             </span>
                                                         ))}
 
-                                                        {purposes.slice(0, 2).map((purpose) => (
+                                                        {purposes.slice(0, 3).map((purpose) => (
                                                             <span
                                                                 key={purpose}
                                                                 className="rounded-full border border-[#005B5B]/20 bg-[#DDEDEA] px-2.5 py-1 text-[9px] font-bold text-[#005B5B] shadow-sm transition-transform duration-200 hover:scale-105"

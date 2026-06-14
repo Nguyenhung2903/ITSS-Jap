@@ -17,16 +17,18 @@ exports.register = async (req, res) => {
             password,
             language,
             purpose,
+            username,
         } = req.body;
 
         if (
             !email ||
             !password ||
             !language ||
-            !purpose
+            !purpose ||
+            !username
         ) {
             return res.status(400).json({
-                error: "Email, password, language, purpose required",
+                error: "Email, password, language, purpose, username required",
             });
         }
 
@@ -45,33 +47,56 @@ exports.register = async (req, res) => {
         let avatarUrl = DEFAULT_AVATAR_URL;
         let documentImageUrl = DEFAULT_AVATAR_URL;
 
-        if (req.file && hasCloudinaryConfig()) {
-            try {
-                const uploadResult = await new Promise((resolve, reject) => {
-                    const stream = cloudinary.uploader.upload_stream(
-                        {
-                            folder: "avatars",
-                        },
-                        (error, result) => {
-                            if (error) {
-                                return reject(error);
+        if (req.file) {
+            if (hasCloudinaryConfig()) {
+                try {
+                    const uploadResult = await new Promise((resolve, reject) => {
+                        const stream = cloudinary.uploader.upload_stream(
+                            {
+                                folder: "avatars",
+                            },
+                            (error, result) => {
+                                if (error) {
+                                    return reject(error);
+                                }
+
+                                resolve(result);
                             }
+                        );
 
-                            resolve(result);
-                        }
-                    );
+                        stream.end(req.file.buffer);
+                    });
 
-                    stream.end(req.file.buffer);
-                });
-
-                if (uploadResult?.secure_url) {
-                    avatarUrl = uploadResult.secure_url;
-                    documentImageUrl = uploadResult.secure_url;
+                    if (uploadResult?.secure_url) {
+                        avatarUrl = uploadResult.secure_url;
+                        documentImageUrl = uploadResult.secure_url;
+                    }
+                } catch (uploadError) {
+                    console.error("REGISTER AVATAR UPLOAD ERROR:", uploadError);
                 }
-            } catch (uploadError) {
-                console.error("REGISTER AVATAR UPLOAD ERROR:", uploadError);
+            } else {
+                try {
+                    const path = require("path");
+                    const fs = require("fs");
+                    const targetDir = path.join(__dirname, "../../../frontend/public/assets/images/avatars");
+                    if (!fs.existsSync(targetDir)) {
+                        fs.mkdirSync(targetDir, { recursive: true });
+                    }
+                    const ext = path.extname(req.file.originalname) || ".jpg";
+                    const filename = `avatar_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+                    const filePath = path.join(targetDir, filename);
+                    fs.writeFileSync(filePath, req.file.buffer);
+                    avatarUrl = `/assets/images/avatars/${filename}`;
+                    documentImageUrl = `/assets/images/avatars/${filename}`;
+                } catch (localSaveError) {
+                    console.error("REGISTER LOCAL AVATAR SAVE ERROR:", localSaveError);
+                }
             }
         }
+
+        const parts = username.trim().split(/\s+/).filter(Boolean);
+        const firstName = parts[0] ?? "";
+        const lastName = parts.slice(1).join(" ") || null;
 
         const hashed = await bcrypt.hash(password.trim(), 10);
         /** @type {any} */
@@ -79,6 +104,8 @@ exports.register = async (req, res) => {
             data: {
                 email: email.trim().toLowerCase(),
                 password: hashed,
+                firstName,
+                lastName,
                 avatarUrl,
                 status: UserStatus.VERIFIED,
             },

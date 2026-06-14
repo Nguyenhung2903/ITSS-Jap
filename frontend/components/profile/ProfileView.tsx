@@ -1031,7 +1031,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                             className={`flex w-full flex-col items-start gap-8 transition-all duration-[400ms] ease-in-out will-change-transform lg:flex-row ${!isOwn ? cardSwipeClass : ""
                                 }`}
                         >
-                            <aside className="relative flex w-full shrink-0 flex-col gap-5 rounded-[32px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-5 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 lg:sticky lg:top-[104px] lg:w-[340px]">
+                            <aside className="relative overflow-hidden flex w-full shrink-0 flex-col gap-5 rounded-[32px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-5 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 lg:sticky lg:top-[104px] lg:w-[340px]">
                                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-[32px] bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
 
                                 <div className="relative overflow-hidden rounded-[28px] border border-[#F1E5CF] bg-[#F5EBD8] p-4 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">

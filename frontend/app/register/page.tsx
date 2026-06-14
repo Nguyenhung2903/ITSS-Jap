@@ -13,6 +13,7 @@ type Nationality = "日本" | "ベトナム";
 export default function RegisterPage() {
     const router = useRouter();
 
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [nationality, setNationality] = useState<Nationality | null>(null);
@@ -77,7 +78,7 @@ export default function RegisterPage() {
         event.preventDefault();
         setError(null);
 
-        if (!email.trim() || !password.trim() || !nationality || purposes.length === 0) {
+        if (!username.trim() || !email.trim() || !password.trim() || !nationality || purposes.length === 0) {
             setError("すべての項目を入力・選択してください。");
             return;
         }
@@ -86,6 +87,7 @@ export default function RegisterPage() {
 
         try {
             const formData = new FormData();
+            formData.append("username", username.trim());
             formData.append("email", email.trim());
             formData.append("password", password);
             formData.append("language", nationality);
@@ -110,7 +112,7 @@ export default function RegisterPage() {
 
             setTimeout(() => {
                 router.push("/login");
-            }, 1800);
+            }, 3000);
         } catch (err) {
             setError(
                 err instanceof Error
@@ -189,6 +191,21 @@ export default function RegisterPage() {
                                 </div>
                             )}
 
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
+                                    ユーザー名
+                                </label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(event) => setUsername(event.target.value)}
+                                    required
+                                    placeholder="山田 太郎"
+                                    className="h-[52px] w-full rounded-xl border border-[#DFE3E1]/60 bg-[#F0F5F2]/80 px-5 text-[15px] font-medium text-[#181D1B] transition-all placeholder:text-[#6E7979]/40 focus:border-[#005B5B]/30 focus:bg-white focus:ring-2 focus:ring-[#005B5B]/30 focus:outline-none"
+                                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                />
+                            </div>
+
                             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="flex w-full flex-col gap-2">
                                     <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
@@ -223,7 +240,7 @@ export default function RegisterPage() {
 
                             <div className="flex flex-col gap-2">
                                 <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
-                                    出身地
+                                    国籍
                                 </label>
                                 <div className="flex flex-wrap gap-2.5">
                                     {(["日本", "ベトナム"] as Nationality[]).map((item) => {
@@ -443,7 +460,7 @@ export default function RegisterPage() {
             </div>
 
             {showSuccessToast && (
-                <div className="fixed right-6 bottom-6 z-50 flex items-center gap-3 rounded-2xl border border-white/20 border-l-4 border-l-[#005B5B] bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.18)]">
+                <div className="fixed right-6 bottom-6 z-50 flex items-center gap-3 rounded-2xl border border-white/20 border-l-4 border-l-[#005B5B] bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.18)] max-w-sm">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#005B5B]/10">
                         <svg
                             width="16"
@@ -462,12 +479,15 @@ export default function RegisterPage() {
                             />
                         </svg>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-0.5">
                         <span className="text-[15px] font-bold text-[#181D1B]">
                             登録が完了しました
                         </span>
-                        <span className="text-[13px] text-[#6E7979]">
-                            すぐにログインできます。ログインページへ移動しています...
+                        <span className="text-[12.5px] font-medium text-[#005B5B]">
+                            ログイン後、プロフィールを必ず更新してください。
+                        </span>
+                        <span className="text-[11.5px] text-[#6E7979]">
+                            ログインページへ移動しています...
                         </span>
                     </div>
                 </div>
