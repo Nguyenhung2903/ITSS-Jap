@@ -2,279 +2,474 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const PURPOSE_OPTIONS = ["学習", "友達作り", "ビジネス", "文化交流"];
+const OTHER_PURPOSE = "その他";
+
+type Nationality = "日本" | "ベトナム";
 
 export default function RegisterPage() {
     const router = useRouter();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
-    const [nationality, setNationality] = useState<"日本" | "ベトナム" | null>(null);
+    const [nationality, setNationality] = useState<Nationality | null>(null);
     const [purposes, setPurposes] = useState<string[]>([]);
-
+    const [showCustomPurpose, setShowCustomPurpose] = useState(false);
+    const [customPurpose, setCustomPurpose] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [showSuccessToast, setShowSuccessToast] = useState(false)
+    const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+    const addPurpose = (purpose: string) => {
+        const value = purpose.trim();
+        if (!value) return;
+
+        setPurposes((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    };
+
+    const removePurpose = (purpose: string) => {
+        setPurposes((prev) => prev.filter((item) => item !== purpose));
+    };
 
     const togglePurpose = (purpose: string) => {
-        if (purposes.includes(purpose)) {
-            setPurposes(purposes.filter(p => p !== purpose));
-        } else {
-            setPurposes([...purposes, purpose]);
-        }
+        setPurposes((prev) =>
+            prev.includes(purpose)
+                ? prev.filter((item) => item !== purpose)
+                : [...prev, purpose]
+        );
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const selectedFile = e.target.files[0];
-            
-            if (selectedFile.size > 5 * 1024 * 1024) {
-                setError("ファイルサイズは5MB以下にしてください。");
-                return;
-            }
-            
-            setFile(selectedFile);
-            setFileName(selectedFile.name);
-            setError(null);
+    const applyCustomPurpose = () => {
+        const value = customPurpose.trim();
+        if (!value) {
+            setError("利用目的を入力してください。");
+            return;
         }
+
+        addPurpose(value);
+        setCustomPurpose("");
+        setShowCustomPurpose(false);
+        setError(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = event.target.files?.[0];
+        if (!selectedFile) return;
+
+        if (selectedFile.size > 5 * 1024 * 1024) {
+            setError("ファイルサイズは5MB以下にしてください。");
+            event.target.value = "";
+            return;
+        }
+
+        setFile(selectedFile);
+        setFileName(selectedFile.name);
+        setError(null);
+    };
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
         setError(null);
 
-        if (!email || !password || !nationality || purposes.length === 0 || !file) {
+        if (!email.trim() || !password.trim() || !nationality || purposes.length === 0 || !file) {
             setError("すべての項目を入力・選択してください。");
             return;
         }
 
         setIsLoading(true);
 
-        const formData = new FormData();
-        formData.append("email", email);
-        formData.append("password", password);
-        formData.append("language", nationality); 
-        formData.append("purpose", purposes.join(", ")); 
-        formData.append("cccd", file);
+        try {
+            const formData = new FormData();
+            formData.append("email", email.trim());
+            formData.append("password", password);
+            formData.append("language", nationality);
+            formData.append("purpose", purposes.join(", "));
+            formData.append("cccd", file);
 
-        const res = await fetch("/api/auth/register", {
-            method: "POST",
-            body: formData,
-        });
-        const result = await res.json();
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                body: formData,
+            });
 
-        if (result.success) {
+            const result = await response.json();
+
+            if (!result.success) {
+                setError(result.message || "登録に失敗しました。入力内容を確認してください。");
+                return;
+            }
+
             setShowSuccessToast(true);
+
             setTimeout(() => {
                 router.push("/login");
-            }, 2000);
-        } else {
-            setError(result.message);
+            }, 1800);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "登録に失敗しました。しばらくしてからもう一度お試しください。"
+            );
+        } finally {
             setIsLoading(false);
         }
-
-        setIsLoading(false);
     };
 
     return (
-        <div className="flex flex-col w-full h-screen bg-surface" style={{ fontFamily: "'Manrope', 'Plus Jakarta Sans', sans-serif" }}>
-            <div className="w-full h-16 px-8 flex items-center justify-between bg-white/70 backdrop-blur-[6px] border-b border-[#F1F5F9]/15 fixed top-0 z-50">
-                <div className="flex items-center gap-4">
-                    <Link href="/" className="flex flex-col justify-center items-center p-2 w-8 h-8 rounded-full hover:bg-black/5 transition-colors">
-                        <div className="w-4 h-4 flex justify-center items-start">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3.825 9L9.425 14.6L8 16L0 8L8 0L9.425 1.4L3.825 7H16V9H3.825Z" fill="#005B5B" />
-                            </svg>
-                        </div>
-                    </Link>
-                </div>
-                <div></div>
+        <main className="relative h-screen w-full overflow-hidden">
+            <div className="fixed inset-0 z-0">
+                <Image
+                    src="/assets/images/home/hero-bg.png?v=5"
+                    alt="背景"
+                    fill
+                    className="object-cover object-center"
+                    priority
+                />
+                <div className="absolute inset-0 bg-[#002424]/75 backdrop-blur-[2px]" />
             </div>
 
-            {/* Main Canvas */}
-            <main className="flex flex-row justify-center items-start w-full min-h-screen bg-surface pt-28 pb-12 px-6">
-                
-                {/* Container (max-width: 672px) */}
-                <div className="flex flex-col items-start w-full max-w-2xl gap-8">
-                    
-                    {/* Header Section */}
-                    <div className="flex flex-col items-start gap-2 w-full">
-                        <div className="flex flex-col items-center w-full">
-                            <h2 className="text-[36px] font-medium text-[#005B5B] tracking-[-0.9px] leading-10 text-center">
-                                アカウント作成
-                            </h2>
-                        </div>
-                        <div className="flex flex-col items-center w-full">
-                            <p className="text-[16px] font-medium text-text-muted leading-6 text-center">
-                                文化の架け橋となるコミュニティへようこそ
-                            </p>
-                        </div>
+            <div className="fixed top-5 left-6 z-20 md:top-8 md:left-8">
+                <Link
+                    href="/"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/15 shadow-md backdrop-blur-md transition-all hover:bg-white/25"
+                    aria-label="トップページへ戻る"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden
+                    >
+                        <path
+                            d="M3.825 9L9.425 14.6L8 16L0 8L8 0L9.425 1.4L3.825 7H16V9H3.825Z"
+                            fill="white"
+                        />
+                    </svg>
+                </Link>
+            </div>
+
+            <div className="relative z-10 flex h-screen w-full justify-center overflow-y-auto px-4 py-10">
+                <div className="my-auto flex w-full max-w-[560px] flex-col items-center">
+                    <div className="mb-8 flex flex-col items-center">
+                        <span
+                            className="text-[38px] leading-10 font-black tracking-[-1.8px] text-white drop-shadow-lg"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                            Tomoio
+                        </span>
+                        <div className="mt-2 h-1.5 w-16 rounded-full bg-[#E76F51]" />
+                        <span className="mt-3 text-[10.4px] leading-4 font-medium tracking-[3.12px] text-white/70">
+                            文化交流の架け橋
+                        </span>
                     </div>
 
-                    {/* Form Section */}
-                    <form onSubmit={handleSubmit} className="flex flex-col items-start gap-6 w-full">
-                        
-                        {/* Email & Password Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-                            <div className="flex flex-col gap-1.5 w-full">
-                                <label className="text-[11.2px] font-medium text-[#6E7979] uppercase tracking-[0.56px]">
-                                    メールアドレス
+                    <div className="flex w-full flex-col gap-7 rounded-3xl border border-white/20 bg-white/95 p-7 shadow-[0_25px_60px_rgba(0,0,0,0.3)] backdrop-blur-md sm:p-9">
+                        <div className="flex flex-col items-center gap-2 text-center">
+                            <h1 className="text-[26px] leading-9 font-medium tracking-[-0.75px] text-[#181D1B] sm:text-[30px]">
+                                アカウント作成
+                            </h1>
+                            <p className="text-[14px] leading-5 font-medium text-[#526160]">
+                                Tomoioで言語と文化の交流を始めましょう
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
+                            {error && (
+                                <div className="w-full rounded-xl border border-red-100 bg-red-50 p-3 text-center text-[14px] font-medium text-red-600">
+                                    {error}
+                                </div>
+                            )}
+
+                            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="flex w-full flex-col gap-2">
+                                    <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
+                                        メールアドレス
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(event) => setEmail(event.target.value)}
+                                        required
+                                        placeholder="example@tomoio.com"
+                                        className="h-[52px] w-full rounded-xl border border-[#DFE3E1]/60 bg-[#F0F5F2]/80 px-5 text-[15px] font-medium text-[#181D1B] transition-all placeholder:text-[#6E7979]/40 focus:border-[#005B5B]/30 focus:bg-white focus:ring-2 focus:ring-[#005B5B]/30 focus:outline-none"
+                                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    />
+                                </div>
+
+                                <div className="flex w-full flex-col gap-2">
+                                    <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
+                                        パスワード
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(event) => setPassword(event.target.value)}
+                                        required
+                                        placeholder="••••••••"
+                                        className="h-[52px] w-full rounded-xl border border-[#DFE3E1]/60 bg-[#F0F5F2]/80 px-5 text-[15px] font-medium tracking-[4px] text-[#181D1B] transition-all placeholder:text-[#6E7979]/40 focus:border-[#005B5B]/30 focus:bg-white focus:ring-2 focus:ring-[#005B5B]/30 focus:outline-none"
+                                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
+                                    出身地
                                 </label>
-                                <input 
-                                    type="email" 
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="example@tomoio.com"
-                                    className="w-full h-12 bg-[#DFE3E1] rounded-xl px-4 text-[16px] text-text-main placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#005B5B]/20 transition-all"
-                                />
+                                <div className="flex flex-wrap gap-2.5">
+                                    {(["日本", "ベトナム"] as Nationality[]).map((item) => {
+                                        const isActive = nationality === item;
+
+                                        return (
+                                            <button
+                                                key={item}
+                                                type="button"
+                                                onClick={() => setNationality(item)}
+                                                className={`h-11 rounded-xl px-5 text-[14px] font-semibold transition-all active:scale-[0.98] ${isActive
+                                                        ? "bg-[#005B5B] text-white shadow-[0_8px_18px_-6px_rgba(0,91,91,0.45)]"
+                                                        : "border border-[#DFE3E1]/70 bg-[#F0F5F2]/80 text-[#526160] hover:border-[#005B5B]/25 hover:bg-white"
+                                                    }`}
+                                            >
+                                                {item}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                            <div className="flex flex-col gap-1.5 w-full">
-                                <label className="text-[11.2px] font-medium text-[#6E7979] uppercase tracking-[0.56px]">
-                                    パスワード
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
+                                    利用目的
                                 </label>
-                                <input 
-                                    type="password" 
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full h-12 bg-[#DFE3E1] rounded-xl px-4 text-[16px] text-text-main placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#005B5B]/20 transition-all"
-                                />
-                            </div>
-                        </div>
 
-                        {/* Nationality Chips */}
-                        <div className="flex flex-col gap-2 w-full">
-                            <label className="text-[11.2px] font-medium text-[#6E7979] uppercase tracking-[0.56px]">
-                                出身地
-                            </label>
-                            <div className="flex gap-3">
-                                {["日本", "ベトナム"].map((nat) => {
-                                    const isActive = nationality === nat;
-                                    return (
-                                        <button
-                                            key={nat}
-                                            type="button"
-                                            onClick={() => setNationality(nat as "日本" | "ベトナム")}
-                                            className={`h-10.5 px-6 rounded-full text-[14px] font-medium transition-all flex items-center justify-center ${
-                                                isActive 
-                                                    ? "bg-[#A0F0F0] text-[#004F50] border border-[#005B5B]/10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]" 
-                                                    : "bg-[#BACAC8] text-[#101E1D] hover:bg-[#a9bcba]"
+                                <div className="flex flex-wrap gap-2.5">
+                                    {PURPOSE_OPTIONS.map((purpose) => {
+                                        const isActive = purposes.includes(purpose);
+
+                                        return (
+                                            <button
+                                                key={purpose}
+                                                type="button"
+                                                onClick={() => togglePurpose(purpose)}
+                                                className={`h-11 rounded-xl px-4 text-[14px] font-semibold transition-all active:scale-[0.98] ${isActive
+                                                        ? "bg-[#005B5B] text-white shadow-[0_8px_18px_-6px_rgba(0,91,91,0.45)]"
+                                                        : "border border-[#DFE3E1]/70 bg-[#F0F5F2]/80 text-[#526160] hover:border-[#005B5B]/25 hover:bg-white"
+                                                    }`}
+                                            >
+                                                {purpose}
+                                            </button>
+                                        );
+                                    })}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCustomPurpose((prev) => !prev)}
+                                        className={`h-11 rounded-xl px-4 text-[14px] font-semibold transition-all active:scale-[0.98] ${showCustomPurpose
+                                                ? "bg-[#E76F51] text-white shadow-[0_8px_18px_-6px_rgba(231,111,81,0.45)]"
+                                                : "border border-[#DFE3E1]/70 bg-[#F0F5F2]/80 text-[#526160] hover:border-[#E76F51]/35 hover:bg-white"
                                             }`}
-                                        >
-                                            {nat}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                                    >
+                                        {OTHER_PURPOSE}
+                                    </button>
+                                </div>
 
-                        {/* Purpose Chips */}
-                        <div className="flex flex-col gap-2 w-full">
-                            <label className="text-[11.2px] font-medium text-[#6E7979] uppercase tracking-[0.56px]">
-                                利用目的
-                            </label>
-                            <div className="flex gap-3 flex-wrap">
-                                {["学習", "友達", "ビジネス"].map((purp) => {
-                                    const isActive = purposes.includes(purp);
-                                    return (
+                                {showCustomPurpose && (
+                                    <div className="mt-2 flex flex-col gap-2 rounded-2xl border border-[#DFE3E1]/70 bg-[#F0F5F2]/70 p-3 sm:flex-row">
+                                        <input
+                                            type="text"
+                                            value={customPurpose}
+                                            onChange={(event) => setCustomPurpose(event.target.value)}
+                                            onKeyDown={(event) => {
+                                                if (event.key === "Enter") {
+                                                    event.preventDefault();
+                                                    applyCustomPurpose();
+                                                }
+                                            }}
+                                            placeholder="利用目的を入力してください"
+                                            className="h-11 flex-1 rounded-xl border border-[#DFE3E1]/70 bg-white px-4 text-[14px] font-medium text-[#181D1B] outline-none transition-all placeholder:text-[#6E7979]/40 focus:border-[#005B5B]/40 focus:ring-2 focus:ring-[#005B5B]/20"
+                                        />
                                         <button
-                                            key={purp}
                                             type="button"
-                                            onClick={() => togglePurpose(purp)}
-                                            className={`h-10.5 px-5 rounded-full text-[14px] font-medium transition-all flex items-center justify-center ${
-                                                isActive 
-                                                    ? "bg-[#A0F0F0] text-[#004F50] border border-[#005B5B]/10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]" 
-                                                    : "bg-[#BACAC8] text-[#101E1D] hover:bg-[#a9bcba]"
-                                            }`}
+                                            onClick={applyCustomPurpose}
+                                            className="h-11 rounded-xl bg-[#005B5B] px-5 text-[14px] font-semibold text-white transition-all hover:bg-[#004A4A] active:scale-[0.98]"
                                         >
-                                            {purp}
+                                            追加
                                         </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* KYC Upload Section */}
-                        <div className="flex flex-col gap-3 w-full py-4">
-                            <label className="text-[11.2px] font-medium text-[#6E7979] uppercase tracking-[0.56px] px-1">
-                                本人確認 (ID/パスポート)
-                            </label>
-                            <div className="relative w-full h-40 bg-footer border-2 border-dashed border-[#BEC9C8] rounded-2xl flex flex-col justify-center items-center gap-3 hover:bg-[#dfe4e1] transition-colors cursor-pointer group">
-                                <input 
-                                    type="file" 
-                                    onChange={handleFileChange}
-                                    accept="image/jpeg, image/png, application/pdf"
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                />
-                                
-                                {fileName ? (
-                                    <div className="flex flex-col items-center gap-2">
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M22 11.08V12C21.9988 14.1564 21.3001 16.2547 20.0093 17.9818C18.7185 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98233 16.07 2.85999" stroke="#005B5B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M22 4L12 14.01L9 11.01" stroke="#005B5B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                        <span className="text-[14px] font-medium text-[#005B5B] text-center px-4 line-clamp-1">{fileName}</span>
                                     </div>
-                                ) : (
-                                    <>
-                                        <svg width="33" height="24" viewBox="0 0 33 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="group-hover:scale-110 transition-transform">
-                                            <path d="M22.5 15V19C22.5 19.5304 22.2893 20.0391 21.9142 20.4142C21.5391 20.7893 21.0304 21 20.5 21H6.5C5.96957 21 5.46086 20.7893 5.08579 20.4142C4.71071 20.0391 4.5 19.5304 4.5 19V15" stroke="#005B5B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M18.5 8L13.5 3L8.5 8" stroke="#005B5B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M13.5 3V15" stroke="#005B5B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                        <div className="flex flex-col items-center gap-1">
-                                            <span className="text-[14px] font-medium text-text-main">ファイルをアップロード</span>
-                                            <span className="text-[12px] text-text-muted">JPEG, PNG (最大 5MB)</span>
-                                        </div>
-                                    </>
+                                )}
+
+                                {purposes.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {purposes.map((purpose) => (
+                                            <span
+                                                key={purpose}
+                                                className="inline-flex items-center gap-1.5 rounded-full border border-[#005B5B]/15 bg-[#005B5B]/8 px-3 py-1 text-[12px] font-semibold text-[#005B5B]"
+                                            >
+                                                {purpose}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePurpose(purpose)}
+                                                    className="text-[#005B5B]/70 hover:text-[#005B5B]"
+                                                    aria-label={`${purpose}を削除`}
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
+                                    本人確認書類
+                                </label>
+
+                                <div className="group relative flex min-h-[132px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#BEC9C8]/80 bg-[#F0F5F2]/80 px-4 py-5 transition-all hover:border-[#005B5B]/40 hover:bg-white">
+                                    <input
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        accept="image/jpeg,image/png,application/pdf"
+                                        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                                        aria-label="本人確認書類をアップロード"
+                                    />
+
+                                    {fileName ? (
+                                        <>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#005B5B]/10">
+                                                <svg
+                                                    width="18"
+                                                    height="18"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    aria-hidden
+                                                >
+                                                    <path
+                                                        d="M20 6L9 17L4 12"
+                                                        stroke="#005B5B"
+                                                        strokeWidth="2.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <div className="flex w-full flex-col items-center gap-1">
+                                                <span className="max-w-full truncate px-4 text-center text-[14px] font-semibold text-[#005B5B]">
+                                                    {fileName}
+                                                </span>
+                                                <span className="text-[12px] text-[#6E7979]">
+                                                    ファイルを変更する場合はもう一度選択してください
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-105">
+                                                <svg
+                                                    width="22"
+                                                    height="22"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    aria-hidden
+                                                >
+                                                    <path
+                                                        d="M12 16V4M12 4L7 9M12 4L17 9"
+                                                        stroke="#005B5B"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                    <path
+                                                        d="M5 16V18C5 19.1046 5.89543 20 7 20H17C18.1046 20 19 19.1046 19 18V16"
+                                                        stroke="#005B5B"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <div className="flex flex-col items-center gap-1 text-center">
+                                                <span className="text-[14px] font-semibold text-[#181D1B]">
+                                                    本人確認書類をアップロード
+                                                </span>
+                                                <span className="text-[12px] font-medium text-[#6E7979]">
+                                                    JPEG, PNG, PDF / 最大5MB
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="mt-1 flex h-[52px] w-full items-center justify-center gap-2.5 rounded-xl bg-[#005B5B] text-[16px] font-semibold text-white shadow-[0_10px_25px_-4px_rgba(0,91,91,0.35)] transition-all hover:-translate-y-0.5 hover:bg-[#004A4A] active:scale-[0.98] disabled:cursor-wait disabled:opacity-75 disabled:hover:translate-y-0"
+                            >
+                                {isLoading ? "登録中..." : "アカウントを作成"}
+                            </button>
+                        </form>
+
+                        <div className="relative flex w-full items-center justify-center">
+                            <div className="absolute w-full border-t border-[#BEC9C8]/30" />
+                            <div className="relative bg-white px-4 text-[12px] font-medium tracking-[1.2px] text-[#6E7979]/60">
+                                または
+                            </div>
                         </div>
 
-                        {error && (
-                            <div className="w-full text-center text-[#923118] text-[14px] font-medium bg-[#FFDAD6]/50 py-2 rounded-lg">
-                                {error}
-                            </div>
-                        )}
-
-                        {/* Submit Button */}
-                        <button 
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full h-14 bg-linear-to-r from-[#005B5B] to-[#1B7575] text-white text-[18px] font-medium rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)] hover:opacity-90 transition-opacity flex justify-center items-center"
-                        >
-                            {isLoading ? "登録中…" : "登録完了"}
-                        </button>
-                    </form>
-
-                    {/* <div className="flex flex-col items-center gap-[16px] pt-[16px] w-full">
-                        <p className="text-[14px] text-[#6E7979]">
-                            すでにアカウントをお持ちですか？{" "}
-                            <Link href="/login" className="text-[#005B5B] font-bold hover:underline">
+                        <div className="-mt-2 flex w-full items-center justify-center gap-1.5">
+                            <span className="text-[14px] font-medium text-[#526160]">
+                                すでにアカウントをお持ちですか？
+                            </span>
+                            <Link
+                                href="/login"
+                                className="text-[14px] font-semibold text-[#005B5B] hover:underline"
+                            >
                                 ログイン
                             </Link>
-                        </p>
-                    </div> */}
-
+                        </div>
+                    </div>
                 </div>
-            </main>
+            </div>
+
             {showSuccessToast && (
-                <div className="fixed bottom-8 right-8 bg-white border-l-4 border-[#005B5B] shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-lg p-4 flex items-center gap-3 z-50 animate-bounce">
-                    <div className="w-8 h-8 rounded-full bg-[#005B5B]/10 flex items-center justify-center shrink-0">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 6L9 17L4 12" stroke="#005B5B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <div className="fixed right-6 bottom-6 z-50 flex items-center gap-3 rounded-2xl border border-white/20 border-l-4 border-l-[#005B5B] bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.18)]">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#005B5B]/10">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden
+                        >
+                            <path
+                                d="M20 6L9 17L4 12"
+                                stroke="#005B5B"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
                         </svg>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[15px] font-bold text-text-main">成功しました！</span>
-                        <span className="text-[13px] text-[#6E7979]">ログインページへ移動しています…</span>
+                        <span className="text-[15px] font-bold text-[#181D1B]">
+                            登録申請を受け付けました
+                        </span>
+                        <span className="text-[13px] text-[#6E7979]">
+                            ログインページへ移動しています...
+                        </span>
                     </div>
                 </div>
             )}
-        </div>
+        </main>
     );
 }
