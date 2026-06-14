@@ -21,8 +21,12 @@ export type EventCardData = {
 };
 
 function formatEventTime(iso: string) {
-    const d = new Date(iso);
-    return d.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const date = new Date(iso);
+    return date.toLocaleTimeString("ja-JP", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
 }
 
 type EventCardProps = {
@@ -36,34 +40,47 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
     const imageSrc = resolveImageUrl(event.imageUrl, "/assets/images/events/event-1.png");
 
     return (
-        <article className="flex w-full min-h-[400px] flex-col overflow-hidden rounded-[28px] border border-[#DFE3E1]/40 bg-white shadow-[0_4px_25px_rgba(0,0,0,0.01)] hover:shadow-[0_20px_50px_rgba(0,91,91,0.05)] hover:-translate-y-1.5 transition-all duration-300 ease-out lg:flex-row group">
-            <div className="relative isolate flex w-full shrink-0 flex-col justify-center lg:w-[40%] lg:min-w-[280px] lg:max-w-[383px] overflow-hidden">
-                <div className="relative h-[240px] w-full lg:h-full lg:min-h-[280px] lg:flex-1 overflow-hidden">
-                    <Image src={imageSrc} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" sizes="383px" />
+        <article className="group relative flex min-h-[400px] w-full flex-col overflow-hidden rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#005B5B]/45 hover:bg-white hover:shadow-[0_24px_54px_rgba(0,91,91,0.16)] lg:flex-row">
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-1.5 bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
+
+            <div className="relative isolate flex w-full shrink-0 flex-col justify-center overflow-hidden bg-[#EFE3D0] lg:w-[40%] lg:min-w-[280px] lg:max-w-[420px]">
+                <div className="relative h-[240px] w-full overflow-hidden lg:h-full lg:min-h-[280px] lg:flex-1">
+                    <Image
+                        src={imageSrc}
+                        alt={event.title}
+                        fill
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        sizes="420px"
+                    />
                 </div>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-[#181D1B]/58 via-[#181D1B]/12 to-transparent" />
+
                 {event.isNew && (
-                    <span className="absolute left-5 top-5 z-10 rounded-xl bg-[#A43E24] px-4 py-1.5 text-[11px] font-black tracking-widest text-[#FFF7F6] shadow-[0_4px_10px_rgba(164,62,36,0.3)] uppercase">
+                    <span className="absolute left-5 top-5 z-10 rounded-xl bg-[#923118] px-4 py-1.5 text-[11px] font-black tracking-widest text-[#FFF7F6] uppercase shadow-[0_4px_10px_rgba(146,49,24,0.3)]">
                         NEW
                     </span>
                 )}
+
+                <span
+                    className={`absolute bottom-5 left-5 z-10 rounded-full border px-4 py-1.5 text-[11px] font-black shadow-sm backdrop-blur-md ${isOnline
+                            ? "border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
+                            : "border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118]"
+                        }`}
+                >
+                    {isOnline ? "オンライン" : "対面"}
+                </span>
             </div>
 
             <div className="flex flex-1 flex-col justify-between p-7 lg:p-9">
                 <div className="flex flex-col gap-5 pb-6 lg:pb-8">
                     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
-                        <h3 className="text-[24px] font-extrabold leading-[32px] text-[#181D1B] group-hover:text-[#005B5B] transition-colors duration-300 lg:text-[28px] lg:leading-[36px]">
+                        <h3 className="text-[24px] leading-[32px] font-extrabold text-[#181D1B] transition-colors duration-300 group-hover:text-[#005B5B] lg:text-[28px] lg:leading-[36px]">
                             {event.title}
                         </h3>
-                        <span className={`shrink-0 px-3 py-1 rounded-xl text-[12px] font-bold shadow-xs select-none border ${
-                            isOnline 
-                                ? "bg-[#005B5B]/5 border-[#005B5B]/15 text-[#005B5B]" 
-                                : "bg-[#923118]/6 border-[#923118]/12 text-[#923118]"
-                        }`}>
-                            {isOnline ? "オンライン" : "対面"}
-                        </span>
                     </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-8 text-[#6E7979]">
+                    <div className="grid gap-3 rounded-2xl border border-[#E4D1B2]/80 bg-[#F8EEDB] px-4 py-3 text-[#6E7979] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] sm:grid-cols-2">
                         <div className="flex items-center gap-2">
                             <svg width="14" height="15" viewBox="0 0 14 15" fill="none" aria-hidden>
                                 <path
@@ -74,10 +91,14 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                                     strokeLinejoin="round"
                                 />
                             </svg>
-                            <span className="text-[14px] font-semibold" style={{ fontFamily: "Manrope, sans-serif" }}>
+                            <span
+                                className="text-[14px] font-semibold"
+                                style={{ fontFamily: "Manrope, sans-serif" }}
+                            >
                                 {formatEventDate(event.eventTime)}
                             </span>
                         </div>
+
                         <div className="flex items-center gap-2">
                             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
                                 <path
@@ -88,11 +109,15 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                                     strokeLinejoin="round"
                                 />
                             </svg>
-                            <span className="text-[14px] font-semibold" style={{ fontFamily: "Manrope, sans-serif" }}>
+                            <span
+                                className="text-[14px] font-semibold"
+                                style={{ fontFamily: "Manrope, sans-serif" }}
+                            >
                                 {formatEventTime(event.eventTime)}
                             </span>
                         </div>
-                        <div className="flex w-full items-center gap-2 sm:w-auto">
+
+                        <div className="flex min-w-0 items-center gap-2 sm:col-span-2">
                             <svg width="12" height="15" viewBox="0 0 12 15" fill="none" aria-hidden>
                                 <path
                                     d="M6 7.5C6.82843 7.5 7.5 6.82843 7.5 6C7.5 5.17157 6.82843 4.5 6 4.5C5.17157 4.5 4.5 5.17157 4.5 6C4.5 6.82843 5.17157 7.5 6 7.5Z"
@@ -105,6 +130,7 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                                     strokeWidth="1.5"
                                 />
                             </svg>
+
                             {isOnline && event.urlLink ? (
                                 <a
                                     href={event.urlLink}
@@ -115,19 +141,26 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                                     {event.urlLink}
                                 </a>
                             ) : (
-                                <span className="text-[14px] font-semibold">{event.address || "会場未定"}</span>
+                                <span className="truncate text-[14px] font-semibold">
+                                    {event.address || "会場未定"}
+                                </span>
                             )}
                         </div>
                     </div>
 
-                    <p className="text-[15px] leading-[26px] text-[#3E4948] font-medium">{event.description}</p>
+                    <p className="text-[15px] leading-[26px] font-medium text-[#3E4948]">
+                        {event.description}
+                    </p>
 
                     {event.tags && event.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                            {event.tags.map((tag) => (
+                            {event.tags.map((tag, index) => (
                                 <span
                                     key={tag}
-                                    className="rounded-xl bg-white border border-[#DFE3E1]/70 px-3 py-1.5 text-[12px] font-bold text-[#3E4948] shadow-xs"
+                                    className={`rounded-full border px-3 py-1.5 text-[12px] font-bold shadow-sm ${index % 2 === 0
+                                            ? "border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
+                                            : "border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118]"
+                                        }`}
                                 >
                                     {tag}
                                 </span>
@@ -136,18 +169,24 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                     )}
                 </div>
 
-                <div className="flex flex-col gap-4 border-t border-[rgba(169,180,177,0.15)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 border-t border-[#D9C7A5]/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center">
-                        {event.memberAvatars.slice(0, 3).map((avatar, i) => (
+                        {event.memberAvatars.slice(0, 3).map((avatar, index) => (
                             <div
-                                key={`${avatar}-${i}`}
-                                className="relative -ml-2.5 h-8.5 w-8.5 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm first:ml-0"
+                                key={`${avatar}-${index}`}
+                                className="relative -ml-2.5 h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 border-[#FFFDF7] bg-[#EFE3D0] shadow-[0_4px_10px_rgba(79,55,30,0.14)] first:ml-0"
                             >
-                                <Image src={avatar} alt="" fill className="object-cover" />
+                                <Image
+                                    src={resolveImageUrl(avatar, "/assets/images/avatars/avatar-1.jpg")}
+                                    alt=""
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                         ))}
+
                         {event.extraMemberCount > 0 && (
-                            <div className="relative -ml-2.5 flex h-8.5 w-8.5 items-center justify-center rounded-full bg-[#A0F0F0] text-[11px] font-black text-[#005C5C] border-2 border-white shadow-sm">
+                            <div className="relative -ml-2.5 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#FFFDF7] bg-[#DDEDEA] text-[11px] font-black text-[#005B5B] shadow-[0_4px_10px_rgba(79,55,30,0.12)]">
                                 +{event.extraMemberCount}
                             </div>
                         )}
@@ -157,11 +196,10 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                         type="button"
                         onClick={() => onJoin?.(event.id)}
                         disabled={isJoining || event.isJoined}
-                        className={`rounded-xl px-8 py-3 text-[15px] font-bold transition-all duration-300 ease-out active:scale-95 ${
-                            event.isJoined
-                                ? "bg-[#005B5B]/8 text-[#005B5B] border border-[#005B5B]/20 cursor-default"
-                                : "bg-gradient-to-r from-[#005B5B] to-[#1B7575] hover:from-[#004a4a] hover:to-[#134e4a] text-white shadow-[0_4px_12px_rgba(0,91,91,0.15)] hover:shadow-[0_8px_20px_rgba(0,91,91,0.25)] hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                        }`}
+                        className={`rounded-2xl px-8 py-3 text-[15px] font-bold transition-all duration-300 ease-out active:scale-95 ${event.isJoined
+                                ? "cursor-default border border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
+                                : "cursor-pointer bg-gradient-to-r from-[#004F4F] via-[#006A6A] to-[#8B5E34] text-white shadow-[0_12px_24px_rgba(0,91,91,0.18)] hover:-translate-y-0.5 hover:from-[#003F3F] hover:via-[#005B5B] hover:to-[#764C29] hover:shadow-[0_18px_34px_rgba(0,91,91,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
+                            }`}
                     >
                         {event.isJoined ? "参加済み" : isJoining ? "処理中…" : "参加する"}
                     </button>
