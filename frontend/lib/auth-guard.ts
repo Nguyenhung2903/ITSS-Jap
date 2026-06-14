@@ -34,10 +34,6 @@ export function runAuthGuard(request: NextRequest) {
     }
 
     const isAuthPath = AUTH_PATHS.some((path) => pathname.startsWith(path));
-    if (isAuthPath && isAuthenticated) {
-        return NextResponse.redirect(new URL("/community", request.url));
-    }
-
     if (isAuthPath && !isAuthenticated) {
         const hasOrphanCookies =
             request.cookies.has("tomoio_token") || request.cookies.has("tomoio_user");
