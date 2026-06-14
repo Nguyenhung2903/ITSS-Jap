@@ -149,11 +149,12 @@ function resolveBlockStatusFromPayload(
     payload: { blockedByUserId: number; blockedTargetUserId: number },
     viewerId: number
 ): ChatBlockStatus {
-    if (payload.blockedByUserId === viewerId) {
+    const viewerIdNum = Number(viewerId);
+    if (Number(payload.blockedByUserId) === viewerIdNum) {
         return { blockedByMe: true, blockedByThem: false };
     }
 
-    if (payload.blockedTargetUserId === viewerId) {
+    if (Number(payload.blockedTargetUserId) === viewerIdNum) {
         return { blockedByMe: false, blockedByThem: true };
     }
 
@@ -495,11 +496,11 @@ export default function ChatClient({
 
         const myId = currentUserIdRef.current;
 
-        if (!myId || payload.userId === myId) return;
+        if (!myId || Number(payload.userId) === Number(myId)) return;
 
         setMessages((prev) =>
             prev.map((message) =>
-                message.senderId === myId ? { ...message, isSeen: true } : message
+                Number(message.senderId) === Number(myId) ? { ...message, isSeen: true } : message
             )
         );
     }, []);
@@ -1015,7 +1016,7 @@ export default function ChatClient({
                             )}
 
                             {messages.map((message, index) => {
-                                const isMine = currentUser?.id === message.senderId;
+                                const isMine = currentUser?.id != null && Number(currentUser.id) === Number(message.senderId);
                                 const translatedPreview = resolveTranslatedText(message.translatedText);
                                 const showDateMarker =
                                     index === 0 || !isSameDay(message.sendAt, messages[index - 1].sendAt);

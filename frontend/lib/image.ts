@@ -18,6 +18,11 @@ export function resolveImageUrl(url?: string | null, fallback = "/assets/images/
     }
 
     if (resolvedUrl.startsWith("/assets/images/avatars/")) {
+        const parts = resolvedUrl.split("/");
+        const filename = parts[parts.length - 1];
+        if (filename.startsWith("avatar_")) {
+            return `/api/avatars/${filename}` + version;
+        }
         return resolvedUrl + version;
     }
 
