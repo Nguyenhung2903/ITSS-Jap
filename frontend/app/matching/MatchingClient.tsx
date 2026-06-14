@@ -43,6 +43,14 @@ type MatchingClientProps = {
     initialError?: string | null;
 };
 
+type FilterDropdownProps = {
+    value: string;
+    options: string[];
+    placeholder?: string;
+    customPlaceholder: string;
+    onChange: (value: string) => void;
+};
+
 function getDisplayName(user: MatchingUser) {
     const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
     return name || "ユーザー";
@@ -90,6 +98,137 @@ function getNationalityFlagEmoji(language: string) {
     return "🇯🇵";
 }
 
+function FilterDropdown({
+    value,
+    options,
+    placeholder = "全て",
+    customPlaceholder,
+    onChange,
+}: FilterDropdownProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [customValue, setCustomValue] = useState("");
+
+    const selectedLabel = value || placeholder;
+
+    const handleSelect = (nextValue: string) => {
+        onChange(nextValue);
+        setIsOpen(false);
+        setCustomValue("");
+    };
+
+    const handleApplyCustom = () => {
+        const trimmed = customValue.trim();
+        if (!trimmed) return;
+
+        onChange(trimmed);
+        setIsOpen(false);
+        setCustomValue("");
+    };
+
+    return (
+        <div className="relative w-[150px] shrink-0 2xl:w-[190px]">
+            <button
+                type="button"
+                onClick={() => setIsOpen((prev) => !prev)}
+                className={`flex h-11 w-full items-center justify-between rounded-xl border px-3.5 text-[13px] font-bold transition-all active:scale-[0.98] ${value
+                        ? "border-[#005B5B]/30 bg-[#E8F4F2] text-[#005B5B] shadow-[0_6px_18px_-10px_rgba(0,91,91,0.5)]"
+                        : "border-[#D9C7A5]/70 bg-[#FFFDF7] text-[#3E4948] hover:border-[#005B5B]/30 hover:bg-white"
+                    }`}
+                aria-expanded={isOpen}
+            >
+                <span className="truncate">{selectedLabel}</span>
+                <svg
+                    className={`ml-2 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                        }`}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden
+                >
+                    <path
+                        d="M3 5.25L7 9.25L11 5.25"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                </svg>
+            </button>
+
+            {isOpen && (
+                <div className="absolute left-0 top-[calc(100%+8px)] z-[100] w-[280px] overflow-hidden rounded-2xl border border-[#D9C7A5]/80 bg-[#FFFDF7] shadow-[0_24px_60px_rgba(79,55,30,0.22)]">
+                    <div className="max-h-[236px] overflow-y-auto p-2">
+                        <button
+                            type="button"
+                            onClick={() => handleSelect("")}
+                            className={`flex h-11 w-full items-center gap-2 rounded-xl px-3 text-left text-[14px] font-bold transition-all ${!value
+                                    ? "bg-[#005B5B] text-white"
+                                    : "text-[#3E4948] hover:bg-[#F3E7D2]"
+                                }`}
+                        >
+                            <span className="flex h-5 w-5 items-center justify-center">
+                                {!value && "✓"}
+                            </span>
+                            <span>{placeholder}</span>
+                        </button>
+
+                        {options.map((option) => {
+                            const active = value === option;
+
+                            return (
+                                <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => handleSelect(option)}
+                                    className={`mt-1 flex h-11 w-full items-center gap-2 rounded-xl px-3 text-left text-[14px] font-bold transition-all ${active
+                                            ? "bg-[#005B5B] text-white"
+                                            : "text-[#3E4948] hover:bg-[#F3E7D2]"
+                                        }`}
+                                >
+                                    <span className="flex h-5 w-5 items-center justify-center">
+                                        {active && "✓"}
+                                    </span>
+                                    <span className="truncate">{option}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="border-t border-[#D9C7A5]/70 bg-white p-3">
+                        <p className="mb-2 text-[11px] font-bold tracking-[1px] text-[#8B5E34] uppercase">
+                            その他
+                        </p>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={customValue}
+                                onChange={(event) => setCustomValue(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        event.preventDefault();
+                                        handleApplyCustom();
+                                    }
+                                }}
+                                placeholder={customPlaceholder}
+                                className="h-10 min-w-0 flex-1 rounded-xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-3 text-[13px] font-medium text-[#181D1B] outline-none placeholder:text-[#6E7979]/45 focus:border-[#005B5B]/40 focus:bg-white focus:ring-2 focus:ring-[#005B5B]/15"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleApplyCustom}
+                                className="h-10 shrink-0 rounded-xl bg-[#005B5B] px-4 text-[13px] font-bold text-white transition-all hover:bg-[#004A4A] active:scale-[0.98]"
+                            >
+                                適用
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function MatchingClient({
     initialPurposeOptions = [],
     initialHobbyOptions = [],
@@ -111,10 +250,6 @@ export default function MatchingClient({
     const [selectedPurpose, setSelectedPurpose] = useState("");
     const [selectedNationality, setSelectedNationality] = useState("");
     const [selectedHobby, setSelectedHobby] = useState("");
-    const [showCustomPurpose, setShowCustomPurpose] = useState(false);
-    const [showCustomHobby, setShowCustomHobby] = useState(false);
-    const [customPurposeInput, setCustomPurposeInput] = useState("");
-    const [customHobbyInput, setCustomHobbyInput] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearchQuery = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
 
@@ -140,9 +275,6 @@ export default function MatchingClient({
     const fetchRequestIdRef = useRef(0);
 
     hasCandidatesRef.current = candidates.length > 0;
-
-    const isCustomPurpose = Boolean(selectedPurpose) && !purposeOptions.includes(selectedPurpose);
-    const isCustomHobby = Boolean(selectedHobby) && !hobbyOptions.includes(selectedHobby);
 
     const buildParams = useCallback(
         (targetPage: number) => ({
@@ -276,37 +408,17 @@ export default function MatchingClient({
         void fetchCandidates(page + 1, true);
     };
 
-    const applyCustomPurpose = () => {
-        const value = customPurposeInput.trim();
-        if (!value) return;
-
-        setSelectedPurpose(value);
-        setShowCustomPurpose(false);
-    };
-
-    const applyCustomHobby = () => {
-        const value = customHobbyInput.trim();
-        if (!value) return;
-
-        setSelectedHobby(value);
-        setShowCustomHobby(false);
-    };
-
     const clearFilters = () => {
         setSelectedLevels([]);
         setSelectedPurpose("");
         setSelectedNationality("");
         setSelectedHobby("");
         setSearchQuery("");
-        setShowCustomPurpose(false);
-        setShowCustomHobby(false);
-        setCustomPurposeInput("");
-        setCustomHobbyInput("");
     };
 
     return (
         <div
-            className="flex h-screen w-full overflow-hidden bg-[#F6FAF8]"
+            className="flex h-screen w-full overflow-hidden bg-[#F3EFE4]"
             style={{ fontFamily: "'Plus Jakarta Sans', 'Manrope', 'Noto Sans JP', sans-serif" }}
         >
             <Sidebar />
@@ -321,7 +433,7 @@ export default function MatchingClient({
                 />
 
                 <div className="flex flex-1 overflow-hidden">
-                    <main className="hide-scrollbar flex-1 overflow-y-auto p-8 lg:p-12">
+                    <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] p-8 lg:p-12">
                         <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                                 <div className="flex flex-col gap-1.5">
@@ -333,7 +445,7 @@ export default function MatchingClient({
                                     </p>
                                 </div>
 
-                                <span className="self-start rounded-full border border-[#DFE3E1]/40 bg-[#F0F5F2] px-4 py-1.5 pb-1 text-[13px] font-bold text-[#6E7979] shadow-xs select-none sm:self-auto">
+                                <span className="self-start rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7]/90 px-4 py-1.5 pb-1 text-[13px] font-bold text-[#6E7979] shadow-[0_8px_18px_rgba(79,55,30,0.08)] select-none sm:self-auto">
                                     {hasPendingSearch
                                         ? `${MIN_SEARCH_LENGTH}文字以上で検索`
                                         : isLoading || isRefreshing
@@ -342,8 +454,8 @@ export default function MatchingClient({
                                 </span>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-5 rounded-[20px] border border-[#DFE3E1]/40 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-                                <div className="flex flex-wrap items-center gap-1.5">
+                            <div className="relative z-50 flex w-full flex-nowrap items-center gap-3 overflow-visible rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 px-5 py-4 shadow-[0_18px_45px_rgba(79,55,30,0.10)] backdrop-blur-sm">
+                                <div className="flex shrink-0 items-center gap-1.5">
                                     <span className="mr-1 text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
                                         レベル:
                                     </span>
@@ -356,9 +468,9 @@ export default function MatchingClient({
                                                 key={value}
                                                 type="button"
                                                 onClick={() => toggleLevel(value)}
-                                                className={`cursor-pointer rounded-lg px-3 py-1.5 text-[12px] font-bold transition-all active:scale-95 ${active
+                                                className={`cursor-pointer rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${active
                                                         ? "bg-[#005B5B] text-white shadow-xs"
-                                                        : "border border-[#DFE3E1] bg-white text-[#3E4948] hover:bg-[#F0F5F2]"
+                                                        : "border border-[#D9C7A5]/70 bg-[#FFFDF7] text-[#3E4948] hover:border-[#005B5B]/30 hover:bg-white"
                                                     }`}
                                             >
                                                 {value}
@@ -367,9 +479,9 @@ export default function MatchingClient({
                                     })}
                                 </div>
 
-                                <div className="hidden h-5 w-px bg-[#DFE3E1]/60 xl:block" />
+                                <div className="h-8 w-px shrink-0 bg-[#D9C7A5]/80" />
 
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex shrink-0 items-center gap-1.5">
                                     <span className="mr-1 text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
                                         国籍:
                                     </span>
@@ -386,9 +498,9 @@ export default function MatchingClient({
                                                         prev === nationality ? "" : nationality
                                                     )
                                                 }
-                                                className={`cursor-pointer rounded-lg px-3 py-1.5 text-[12px] font-bold transition-all active:scale-95 ${active
+                                                className={`cursor-pointer rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${active
                                                         ? "bg-[#005B5B] text-white shadow-xs"
-                                                        : "border border-[#DFE3E1] bg-white text-[#3E4948] hover:bg-[#F0F5F2]"
+                                                        : "border border-[#D9C7A5]/70 bg-[#FFFDF7] text-[#3E4948] hover:border-[#005B5B]/30 hover:bg-white"
                                                     }`}
                                             >
                                                 {nationality}
@@ -397,169 +509,39 @@ export default function MatchingClient({
                                     })}
                                 </div>
 
-                                <div className="hidden h-5 w-px bg-[#DFE3E1]/60 xl:block" />
+                                <div className="h-8 w-px shrink-0 bg-[#D9C7A5]/80" />
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-2">
                                     <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
                                         目的:
                                     </span>
-
-                                    {isCustomPurpose ? (
-                                        <div className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#005B5B] to-[#0D7A7A] px-3 py-1.5 text-[12px] font-bold text-white shadow-xs">
-                                            <span>{selectedPurpose}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedPurpose("");
-                                                    setCustomPurposeInput("");
-                                                }}
-                                                className="ml-1 cursor-pointer text-[14px] leading-none font-extrabold text-white/80 hover:text-white"
-                                                aria-label="目的フィルターを削除"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : showCustomPurpose ? (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={customPurposeInput}
-                                                onChange={(event) =>
-                                                    setCustomPurposeInput(event.target.value)
-                                                }
-                                                onKeyDown={(event) => {
-                                                    if (event.key === "Enter") applyCustomPurpose();
-                                                }}
-                                                placeholder="目的を入力"
-                                                className="w-28 rounded-xl border border-[#BEC9C8] bg-white px-3 py-1 text-[12px] text-[#3E4948] shadow-xs outline-none focus:border-[#005B5B]"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={applyCustomPurpose}
-                                                className="cursor-pointer rounded-xl bg-[#005B5B] px-2.5 py-1 text-[12px] font-bold text-white transition-all hover:bg-[#004A4A] active:scale-95"
-                                            >
-                                                適用
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setShowCustomPurpose(false);
-                                                    setCustomPurposeInput("");
-                                                }}
-                                                className="cursor-pointer text-[12px] font-medium text-[#6E7979] hover:text-[#3E4948]"
-                                                aria-label="目的入力を閉じる"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <select
-                                            value={selectedPurpose}
-                                            onChange={(event) => {
-                                                if (event.target.value === "__custom__") {
-                                                    setShowCustomPurpose(true);
-                                                    return;
-                                                }
-
-                                                setSelectedPurpose(event.target.value);
-                                            }}
-                                            className="cursor-pointer rounded-xl border border-[#DFE3E1] bg-white px-3 py-1.5 text-[12px] font-bold text-[#3E4948] outline-none transition-colors hover:bg-[#F0F5F2] focus:border-[#005B5B]"
-                                        >
-                                            <option value="">全て</option>
-                                            {purposeOptions.map((purpose) => (
-                                                <option key={purpose} value={purpose}>
-                                                    {purpose}
-                                                </option>
-                                            ))}
-                                            <option value="__custom__">その他...</option>
-                                        </select>
-                                    )}
+                                    <FilterDropdown
+                                        value={selectedPurpose}
+                                        options={purposeOptions}
+                                        customPlaceholder="目的を入力"
+                                        onChange={setSelectedPurpose}
+                                    />
                                 </div>
 
-                                <div className="hidden h-5 w-px bg-[#DFE3E1]/60 xl:block" />
+                                <div className="h-8 w-px shrink-0 bg-[#D9C7A5]/80" />
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-2">
                                     <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
                                         興味:
                                     </span>
-
-                                    {isCustomHobby ? (
-                                        <div className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#005B5B] to-[#0D7A7A] px-3 py-1.5 text-[12px] font-bold text-white shadow-xs">
-                                            <span>{selectedHobby}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedHobby("");
-                                                    setCustomHobbyInput("");
-                                                }}
-                                                className="ml-1 cursor-pointer text-[14px] leading-none font-extrabold text-white/80 hover:text-white"
-                                                aria-label="興味フィルターを削除"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : showCustomHobby ? (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={customHobbyInput}
-                                                onChange={(event) =>
-                                                    setCustomHobbyInput(event.target.value)
-                                                }
-                                                onKeyDown={(event) => {
-                                                    if (event.key === "Enter") applyCustomHobby();
-                                                }}
-                                                placeholder="興味を入力"
-                                                className="w-28 rounded-xl border border-[#BEC9C8] bg-white px-3 py-1 text-[12px] text-[#3E4948] shadow-xs outline-none focus:border-[#005B5B]"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={applyCustomHobby}
-                                                className="cursor-pointer rounded-xl bg-[#005B5B] px-2.5 py-1 text-[12px] font-bold text-white transition-all hover:bg-[#004A4A] active:scale-95"
-                                            >
-                                                適用
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setShowCustomHobby(false);
-                                                    setCustomHobbyInput("");
-                                                }}
-                                                className="cursor-pointer text-[12px] font-medium text-[#6E7979] hover:text-[#3E4948]"
-                                                aria-label="興味入力を閉じる"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <select
-                                            value={selectedHobby}
-                                            onChange={(event) => {
-                                                if (event.target.value === "__custom__") {
-                                                    setShowCustomHobby(true);
-                                                    return;
-                                                }
-
-                                                setSelectedHobby(event.target.value);
-                                            }}
-                                            className="cursor-pointer rounded-xl border border-[#DFE3E1] bg-white px-3 py-1.5 text-[12px] font-bold text-[#3E4948] outline-none transition-colors hover:bg-[#F0F5F2] focus:border-[#005B5B]"
-                                        >
-                                            <option value="">全て</option>
-                                            {hobbyOptions.map((hobby) => (
-                                                <option key={hobby} value={hobby}>
-                                                    {hobby}
-                                                </option>
-                                            ))}
-                                            <option value="__custom__">その他...</option>
-                                        </select>
-                                    )}
+                                    <FilterDropdown
+                                        value={selectedHobby}
+                                        options={hobbyOptions}
+                                        customPlaceholder="興味を入力"
+                                        onChange={setSelectedHobby}
+                                    />
                                 </div>
 
                                 {hasActiveFilters && (
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="ml-auto cursor-pointer rounded-xl border border-red-200/40 bg-red-50 px-4 py-1.5 text-[12px] font-bold text-red-600 transition-all duration-200 hover:bg-red-100 hover:text-red-700 active:scale-95"
+                                        className="ml-auto shrink-0 cursor-pointer rounded-xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-4 py-2.5 text-[12px] font-bold text-[#923118] transition-all duration-200 hover:bg-[#F3D0C0] active:scale-95"
                                     >
                                         クリア
                                     </button>
@@ -577,12 +559,12 @@ export default function MatchingClient({
                                     {Array.from({ length: 8 }).map((_, index) => (
                                         <div
                                             key={index}
-                                            className="h-[380px] rounded-[24px] border border-[#DFE3E1]/50 bg-white p-6 animate-pulse"
+                                            className="h-[380px] rounded-[28px] border border-[#D9C7A5]/60 bg-[#FFFDF7] p-6 shadow-[0_14px_32px_rgba(79,55,30,0.08)] animate-pulse"
                                         />
                                     ))}
                                 </div>
                             ) : candidates.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center gap-4 rounded-[24px] border border-[#DFE3E1]/40 bg-white py-24 shadow-xs">
+                                <div className="flex flex-col items-center justify-center gap-4 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] py-24 shadow-[0_16px_40px_rgba(79,55,30,0.08)]">
                                     <p className="text-[16px] font-semibold text-[#6E7979]">
                                         条件に一致するパートナーが見つかりませんでした。
                                     </p>
@@ -600,7 +582,7 @@ export default function MatchingClient({
                             ) : (
                                 <>
                                     <div
-                                        className={`relative grid grid-cols-1 gap-5 pb-8 transition-opacity duration-300 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 ${isRefreshing ? "pointer-events-none opacity-60" : ""
+                                        className={`relative z-0 grid grid-cols-1 gap-5 pb-8 transition-opacity duration-300 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 ${isRefreshing ? "pointer-events-none opacity-60" : ""
                                             }`}
                                     >
                                         {candidates.map((user) => {
@@ -614,30 +596,32 @@ export default function MatchingClient({
                                             return (
                                                 <div
                                                     key={user.id}
-                                                    className="group/card relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-[#DFE3E1]/40 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.005)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,91,91,0.06)]"
+                                                    className="group/card relative flex flex-col justify-between overflow-hidden rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-4 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#005B5B]/45 hover:bg-white hover:shadow-[0_24px_54px_rgba(0,91,91,0.16)]"
                                                 >
-                                                    <div className="mb-3.5 flex items-start justify-between">
+                                                    <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
+
+                                                    <div className="mb-3.5 flex items-start justify-between pt-2">
                                                         <div className="relative">
-                                                            <div className="relative h-[80px] w-[80px] overflow-hidden rounded-2xl border-2 border-white bg-gray-100 shadow-[0_8px_16px_rgba(0,0,0,0.06)] ring-2 ring-[#005B5B]/5 transition-all duration-300 group-hover/card:scale-105 group-hover/card:ring-[#005B5B]/15">
+                                                            <div className="relative h-[82px] w-[82px] overflow-hidden rounded-2xl border-[3px] border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_10px_22px_rgba(79,55,30,0.16)] ring-2 ring-[#8B5E34]/10 transition-all duration-300 group-hover/card:scale-105 group-hover/card:border-[#005B5B]/25 group-hover/card:ring-[#005B5B]/20">
                                                                 <Image
                                                                     src={resolveImageUrl(
                                                                         user.avatarUrl
                                                                     )}
                                                                     alt={getDisplayName(user)}
                                                                     fill
-                                                                    sizes="80px"
+                                                                    sizes="82px"
                                                                     className="object-cover"
                                                                 />
                                                             </div>
 
-                                                            <div className="absolute -right-1 -bottom-1 z-10 flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[#DFE3E1]/60 bg-white text-[14px] leading-none shadow-[0_2px_4px_rgba(0,0,0,0.05)] select-none">
+                                                            <div className="absolute -right-1 -bottom-1 z-10 flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7] text-[14px] leading-none shadow-[0_4px_10px_rgba(79,55,30,0.16)] select-none">
                                                                 {getNationalityFlagEmoji(
                                                                     nativeLang
                                                                 )}
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex h-[46px] w-[60px] flex-col items-center justify-center rounded-xl border border-[#005B5B]/12 bg-[#005B5B]/5 shadow-2xs select-none">
+                                                        <div className="flex h-[50px] w-[66px] flex-col items-center justify-center rounded-2xl border border-[#D9C7A5] bg-[#F7EAD4] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_18px_rgba(79,55,30,0.08)] select-none">
                                                             <span className="text-[9px] font-bold tracking-wide text-[#6E7979] uppercase">
                                                                 レベル
                                                             </span>
@@ -672,9 +656,9 @@ export default function MatchingClient({
                                                         </div>
                                                     </div>
 
-                                                    <div className="mb-3 flex items-center justify-between rounded-xl border border-[#DFE3E1]/20 bg-[#F6FAF8]/50 px-3.5 py-2.5 text-[12px] select-none">
+                                                    <div className="mb-3 flex items-center justify-between rounded-2xl border border-[#E4D1B2]/80 bg-[#F8EEDB] px-3.5 py-2.5 text-[12px] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] select-none">
                                                         <div className="flex min-w-0 items-center gap-1.5">
-                                                            <span className="shrink-0 text-[9px] font-black tracking-wider text-[#BEC9C8] uppercase">
+                                                            <span className="shrink-0 text-[9px] font-black tracking-wider text-[#A99B87] uppercase">
                                                                 母国語
                                                             </span>
                                                             <span className="truncate text-[11px] font-bold text-[#181D1B]">
@@ -682,10 +666,10 @@ export default function MatchingClient({
                                                             </span>
                                                         </div>
 
-                                                        <div className="mx-1.5 h-3.5 w-px shrink-0 bg-[#DFE3E1]/60" />
+                                                        <div className="mx-1.5 h-3.5 w-px shrink-0 bg-[#D9C7A5]/70" />
 
                                                         <div className="flex min-w-0 items-center gap-1.5">
-                                                            <span className="shrink-0 text-[9px] font-black tracking-wider text-[#BEC9C8] uppercase">
+                                                            <span className="shrink-0 text-[9px] font-black tracking-wider text-[#A99B87] uppercase">
                                                                 学習中
                                                             </span>
                                                             <span className="truncate text-[11px] font-bold text-[#181D1B]">
@@ -698,7 +682,7 @@ export default function MatchingClient({
                                                         {hobbies.slice(0, 2).map((hobby) => (
                                                             <span
                                                                 key={hobby}
-                                                                className="rounded-lg border border-[#923118]/15 bg-[#923118]/8 px-2 py-0.5 text-[9px] font-bold tracking-wide text-[#923118] transition-transform duration-200 hover:scale-105"
+                                                                className="rounded-full border border-[#B86B4B]/25 bg-[#F8E0D5] px-2.5 py-1 text-[9px] font-bold tracking-wide text-[#923118] shadow-sm transition-transform duration-200 hover:scale-105"
                                                             >
                                                                 {hobby}
                                                             </span>
@@ -707,7 +691,7 @@ export default function MatchingClient({
                                                         {purposes.slice(0, 2).map((purpose) => (
                                                             <span
                                                                 key={purpose}
-                                                                className="rounded-lg border border-[#005B5B]/12 bg-[#005B5B]/6 px-2 py-0.5 text-[9px] font-bold text-[#005B5B] transition-transform duration-200 hover:scale-105"
+                                                                className="rounded-full border border-[#005B5B]/20 bg-[#DDEDEA] px-2.5 py-1 text-[9px] font-bold text-[#005B5B] shadow-sm transition-transform duration-200 hover:scale-105"
                                                             >
                                                                 {purpose}
                                                             </span>
@@ -716,7 +700,7 @@ export default function MatchingClient({
 
                                                     <Link
                                                         href={`/profile/${user.id}`}
-                                                        className="mt-auto flex h-[40px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#005B5B] to-[#1B7575] text-[13px] font-bold text-white shadow-[0_4px_12px_rgba(0,91,91,0.12)] transition-all duration-300 ease-out hover:from-[#004a4a] hover:to-[#134e4a] hover:shadow-[0_8px_20px_rgba(0,91,91,0.22)] active:scale-[0.98]"
+                                                        className="mt-auto flex h-[42px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#004F4F] via-[#006A6A] to-[#8B5E34] text-[13px] font-bold text-white shadow-[0_12px_24px_rgba(0,91,91,0.18)] transition-all duration-300 ease-out hover:from-[#003F3F] hover:via-[#005B5B] hover:to-[#764C29] hover:shadow-[0_18px_34px_rgba(0,91,91,0.28)] active:scale-[0.98]"
                                                     >
                                                         <span>詳細を見る</span>
                                                         <svg
