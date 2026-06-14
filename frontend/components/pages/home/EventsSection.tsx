@@ -10,7 +10,7 @@ export default async function EventsSection() {
     const events = (result.data as ApiEvent[]).map((event) => formatApiEvent(event));
 
     return (
-        <section className="w-full max-w-296 mx-auto flex flex-col items-start pt-4 gap-8">
+        <section id="latest-events" className="w-full max-w-296 mx-auto flex scroll-mt-24 flex-col items-start pt-4 gap-8">
             <div className="w-full flex flex-row justify-between items-end">
                 <div className="flex flex-col items-start gap-2">
                     <div className="flex flex-row items-center gap-2">

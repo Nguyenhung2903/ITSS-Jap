@@ -10,7 +10,7 @@ export type GroupPageResult =
     | { success: false; message: string };
 
 function groupPageCacheKey(groupId: number) {
-    return `group:${groupId}`;
+    return `group:v2:${groupId}`;
 }
 
 export function readGroupPageCache(groupId: number): GroupPageData | null {

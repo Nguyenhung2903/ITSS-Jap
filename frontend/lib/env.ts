@@ -3,7 +3,11 @@
 export function getApiBaseUrl(): string {
     const raw = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
     if (!raw) {
-        throw new Error("NEXT_PUBLIC_API_BASE_URL is not set");
+        if (typeof window !== "undefined") {
+            return `${window.location.origin}/api`;
+        }
+        // Fallback for SSR/build-time
+        return "http://127.0.0.1:5001/api";
     }
     if (raw.startsWith("http://") || raw.startsWith("https://")) {
         return raw.replace(/\/$/, "");
@@ -21,9 +25,13 @@ export function getSocketBaseUrl(): string {
         return `https://${fromEnv.replace(/\/$/, "")}`;
     }
 
+    if (typeof window !== "undefined") {
+        return window.location.origin;
+    }
+
     try {
         return getApiBaseUrl().replace(/\/api$/, "");
     } catch {
-        return "http://localhost:5000";
+        return "http://127.0.0.1:5001";
     }
 }

@@ -17,7 +17,7 @@ export type EventsListResult =
     | { success: false; message: string };
 
 function eventsCacheKey(format: EventFormat, page: number, search?: string) {
-    return `events:${format}:${page}:${normalizeSearchQuery(search) ?? ""}`;
+    return `events:v2:${format}:${page}:${normalizeSearchQuery(search) ?? ""}`;
 }
 
 export function readEventsCache(

@@ -35,7 +35,7 @@ type CommunityClientProps = {
 
 type FilterDropdownProps = {
     value: string;
-    options: string[];
+    options: readonly string[];
     placeholder?: string;
     customPlaceholder: string;
     onChange: (value: string) => void;
@@ -332,7 +332,49 @@ export default function CommunityClient({
             <Sidebar />
 
             <div className="relative flex flex-1 flex-col overflow-hidden">
-                <TopNav />
+                <TopNav
+                    showSearch
+                    searchPlaceholder={`グループを検索…（${MIN_SEARCH_LENGTH}文字以上）`}
+                    searchValue={searchKeyword}
+                    onSearch={setSearchKeyword}
+                    searchClassName="w-[min(42vw,520px)]"
+                >
+                    <div className="hidden min-w-0 flex-wrap items-center gap-3 xl:flex">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
+                                興味:
+                            </span>
+                            <FilterDropdown
+                                value={hobbyFilter}
+                                options={hobbyTagOptions}
+                                customPlaceholder="興味を入力"
+                                onChange={setHobbyFilter}
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
+                                レベル:
+                            </span>
+                            <FilterDropdown
+                                value={levelFilter}
+                                options={GROUP_LANGUAGE_LEVEL_OPTIONS}
+                                customPlaceholder="レベルを入力"
+                                onChange={setLevelFilter}
+                            />
+                        </div>
+
+                        {isFiltering && (
+                            <button
+                                type="button"
+                                onClick={resetFilters}
+                                className="flex h-[52px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-4 text-[13px] font-bold text-[#923118] shadow-[0_8px_18px_rgba(79,55,30,0.04)] transition-all duration-300 hover:bg-[#F3D0C0] active:scale-95"
+                            >
+                                クリア
+                            </button>
+                        )}
+                    </div>
+                </TopNav>
 
                 <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] p-8 lg:p-12">
                     <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
@@ -382,7 +424,7 @@ export default function CommunityClient({
                                 <div className="h-px flex-1 bg-[#D9C7A5]/60" />
                             </div>
 
-                            <div className="hide-scrollbar flex w-full gap-4 overflow-x-auto pb-4 select-none">
+                            <div className="scrollbar-hide -mt-3 flex w-full gap-4 overflow-x-auto px-0.5 pt-3 pb-4 select-none">
                                 {joinedGroups.length > 0 ? (
                                     joinedGroups.map((group) => (
                                         <Link
@@ -390,7 +432,7 @@ export default function CommunityClient({
                                             href={`/community/${group.id}`}
                                             className="block shrink-0"
                                         >
-                                            <div className="group relative flex h-[118px] w-[300px] cursor-pointer items-center gap-4 overflow-hidden rounded-[26px] border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-4 shadow-[0_14px_32px_rgba(79,55,30,0.08)] ring-1 ring-white/70 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-[#005B5B]/45 hover:bg-white hover:shadow-[0_22px_44px_rgba(0,91,91,0.12)] active:scale-[0.98]">
+                                                <div className="group relative flex h-[118px] w-[300px] cursor-pointer items-center gap-4 overflow-hidden rounded-[26px] border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-4 shadow-[0_14px_32px_rgba(79,55,30,0.08)] ring-1 ring-white/70 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#005B5B]/45 hover:bg-white hover:shadow-[0_22px_44px_rgba(0,91,91,0.12)] active:scale-[0.98]">
                                                 <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
 
                                                 <div className="relative h-[78px] w-[78px] shrink-0 overflow-hidden rounded-2xl border-[3px] border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_10px_22px_rgba(79,55,30,0.16)]">
@@ -425,33 +467,7 @@ export default function CommunityClient({
                             </div>
                         </section>
 
-                        <section className="relative z-40 flex w-full flex-col gap-4 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 p-5 shadow-[0_18px_45px_rgba(79,55,30,0.10)] backdrop-blur-sm lg:flex-row lg:items-center">
-                            <div className="relative min-w-[260px] flex-1">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5E34]/55">
-                                    <svg
-                                        width="18"
-                                        height="18"
-                                        viewBox="0 0 18 18"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        aria-hidden
-                                    >
-                                        <path
-                                            d="M16.6 18L10.3 11.7C9.8 12.1 9.225 12.4167 8.575 12.65C7.925 12.8833 7.23333 13 6.5 13C4.68333 13 3.14583 12.3708 1.8875 11.1125C0.629167 9.85417 0 8.31667 0 6.5C0 4.68333 0.629167 3.14583 1.8875 1.8875C3.14583 0.629167 4.68333 0 6.5 0C8.31667 0 9.85417 0.629167 11.1125 1.8875C12.3708 3.14583 13 4.68333 13 6.5C13 7.23333 12.8833 7.925 12.65 8.575C12.4167 9.225 12.1 9.8 11.7 10.3L18 16.6L16.6 18ZM6.5 11C7.75 11 8.8125 10.5625 9.6875 9.6875C10.5625 8.8125 11 7.75 11 6.5C11 5.25 10.5625 4.1875 9.6875 3.3125C8.8125 2.4375 7.75 2 6.5 2C5.25 2 4.1875 2.4375 3.3125 3.3125C2.4375 4.1875 2 5.25 2 6.5C2 7.75 2.4375 8.8125 3.3125 9.6875C4.1875 10.5625 5.25 11 6.5 11Z"
-                                            fill="currentColor"
-                                        />
-                                    </svg>
-                                </div>
-
-                                <input
-                                    type="text"
-                                    placeholder={`グループを検索…（${MIN_SEARCH_LENGTH}文字以上）`}
-                                    value={searchKeyword}
-                                    onChange={(event) => setSearchKeyword(event.target.value)}
-                                    className="h-[52px] w-full rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] pl-12 pr-4 text-[15px] text-[#181D1B] shadow-[0_8px_18px_rgba(79,55,30,0.04)] outline-none transition-all duration-300 placeholder:text-[#6E7979]/45 hover:bg-white focus:border-[#005B5B]/40 focus:bg-white focus:ring-4 focus:ring-[#005B5B]/10"
-                                />
-                            </div>
-
+                        <section className="relative z-40 flex w-full flex-col gap-3 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 p-5 shadow-[0_18px_45px_rgba(79,55,30,0.10)] backdrop-blur-sm xl:hidden">
                             <div className="flex flex-wrap items-center gap-3">
                                 <div className="flex items-center gap-2">
                                     <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">

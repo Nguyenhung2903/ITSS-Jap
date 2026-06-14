@@ -51,7 +51,6 @@ export type UserProfile = {
     avatarUrl: string;
     gallery: string[];
     isVerified: boolean;
-    isStoryteller: boolean;
     isOnline: boolean;
     mutualFriendsCount: number;
     purposes: ProfilePurpose[];

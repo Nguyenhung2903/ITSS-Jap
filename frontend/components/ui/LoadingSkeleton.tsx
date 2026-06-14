@@ -9,13 +9,13 @@ export default function LoadingSkeleton({ count = 6, className = "" }: LoadingSk
             {Array.from({ length: count }).map((_, index) => (
                 <div
                     key={index}
-                    className="h-72 animate-pulse rounded-[28px] border border-[#DFE3E1]/60 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.02)]"
+                    className="h-72 animate-pulse rounded-[28px] border border-[#D9C7A5]/60 bg-[#FFFDF7] shadow-[0_14px_32px_rgba(79,55,30,0.08)]"
                 >
-                    <div className="h-32 rounded-t-[28px] bg-[#E8F0ED]" />
+                    <div className="h-32 rounded-t-[28px] bg-[#F8EEDB]" />
                     <div className="space-y-3 p-5">
-                        <div className="h-4 w-2/3 rounded bg-[#E8F0ED]" />
-                        <div className="h-3 w-full rounded bg-[#EEF5F2]" />
-                        <div className="h-3 w-4/5 rounded bg-[#EEF5F2]" />
+                        <div className="h-4 w-2/3 rounded bg-[#DDEDEA]" />
+                        <div className="h-3 w-full rounded bg-[#F3E7D2]" />
+                        <div className="h-3 w-4/5 rounded bg-[#F3E7D2]" />
                     </div>
                 </div>
             ))}

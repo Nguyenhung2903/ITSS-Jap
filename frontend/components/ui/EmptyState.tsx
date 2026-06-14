@@ -16,11 +16,11 @@ export default function EmptyState({
     return (
         <div
             className={[
-                "flex flex-col items-center justify-center gap-4 rounded-[28px] border border-[#DFE3E1]/60 bg-white px-6 py-16 text-center shadow-[0_8px_30px_rgba(0,0,0,0.025)]",
+                "flex flex-col items-center justify-center gap-4 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] px-6 py-16 text-center shadow-[0_16px_40px_rgba(79,55,30,0.08)]",
                 className,
             ].join(" ")}
         >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8F4F1] text-[#005B5B]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#005B5B]/15 bg-[#DDEDEA] text-[#005B5B] shadow-sm">
                 <span className="text-2xl" aria-hidden="true">⌕</span>
             </div>
             <div className="space-y-1">

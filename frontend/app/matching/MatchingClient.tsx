@@ -77,8 +77,42 @@ function getLearningLanguage(user: MatchingUser) {
 }
 
 function getJlptLevel(user: MatchingUser) {
-    const withLevel = user.languages.find((language) => language.level);
-    return withLevel?.level ?? "未設定";
+    const nativeLanguage = getNativeLanguage(user);
+    const learningLanguage = getLearningLanguage(user);
+    const learningEntry = user.languages.find(
+        (language) => language.type === "learning" || language.language === learningLanguage
+    );
+
+    if (learningLanguage === "日本") {
+        if (nativeLanguage === "日本") return "母語";
+        return learningEntry?.level ?? "未設定";
+    }
+
+    if (learningLanguage === "ベトナム") {
+        return formatVietnameseLevel(learningEntry?.level);
+    }
+
+    return learningEntry?.level ?? "未設定";
+}
+
+function formatVietnameseLevel(level?: string | null) {
+    if (!level) return "初級";
+
+    const normalized = level.trim().toLowerCase();
+
+    if (["advanced", "上級", "高級", "cao cấp", "cao cap", "nâng cao", "nang cao"].includes(normalized)) {
+        return "上級";
+    }
+
+    if (["intermediate", "中級", "trung cấp", "trung cap"].includes(normalized)) {
+        return "中級";
+    }
+
+    if (["beginner", "初級", "sơ cấp", "so cap", "cơ bản", "co ban"].includes(normalized)) {
+        return "初級";
+    }
+
+    return level;
 }
 
 function getPurposes(user: MatchingUser) {

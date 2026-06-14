@@ -1,7 +1,7 @@
 import { normalizeSearchQuery } from "@/lib/search";
 import { readSessionCache, writeSessionCache } from "@/lib/session-cache";
 
-export const MATCHING_HOME_CACHE_KEY = "matching:home";
+export const MATCHING_HOME_CACHE_KEY = "matching:home:v2";
 export const MATCHING_HOME_CACHE_TTL_MS = 60_000;
 
 export type MatchingHomeData = {

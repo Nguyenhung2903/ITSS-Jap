@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import TopNav from "@/components/layouts/TopNav";
@@ -42,6 +43,8 @@ export default function EventsClient({
     initialHasMore = false,
     initialError = null,
 }: EventsClientProps = {}) {
+    const searchParams = useSearchParams();
+    const initialSearch = searchParams.get("search") ?? "";
     const { user, isLoading: isAuthLoading, isAuthenticated } = useAuth();
     const currentUserId = user?.id;
 
@@ -58,7 +61,7 @@ export default function EventsClient({
     const [joinError, setJoinError] = useState<string | null>(null);
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [createSuccess, setCreateSuccess] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
     const debouncedSearchQuery = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
 
     const prevFiltersRef = useRef<string | null>(null);
@@ -128,7 +131,7 @@ export default function EventsClient({
             return;
         }
 
-        const cached = readEventsCache("all", 1);
+        const cached = initialSearch ? null : readEventsCache("all", 1);
 
         if (cached) {
             setEvents(cached.data.map((event) => formatApiEvent(event, currentUserId)));
@@ -137,8 +140,8 @@ export default function EventsClient({
             return;
         }
 
-        void loadEvents(1, "all", "");
-    }, [isAuthLoading, isAuthenticated, currentUserId, loadEvents]);
+        void loadEvents(1, "all", initialSearch);
+    }, [isAuthLoading, isAuthenticated, currentUserId, loadEvents, initialSearch]);
 
     const filterKey = JSON.stringify({ activeTab, debouncedSearchQuery });
 

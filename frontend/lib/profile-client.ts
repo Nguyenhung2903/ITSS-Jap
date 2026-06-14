@@ -8,7 +8,7 @@ export type ProfileResult =
     | { success: false; message: string };
 
 function profileCacheKey(userId: string) {
-    return `profile:${userId}`;
+    return `profile:v2:${userId}`;
 }
 
 export function readProfileCache(userId: string): UserProfile | null {

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/lib/auth-context";
 import SearchInput from "@/components/ui/SearchInput";
@@ -13,6 +14,8 @@ interface TopNavProps {
     searchPlaceholder?: string;
     searchValue?: string;
     onSearch?: (query: string) => void;
+    searchClassName?: string;
+    children?: ReactNode;
 }
 
 export default function TopNav({
@@ -22,14 +25,16 @@ export default function TopNav({
     searchPlaceholder,
     searchValue = "",
     onSearch,
+    searchClassName = "w-[min(60vw,340px)]",
+    children,
 }: TopNavProps) {
     const { user } = useAuth();
     const profileHref = user?.id ? `/profile/${user.id}` : "/profile";
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "ユーザー";
 
     return (
-        <header className="relative top-0 z-40 flex h-18 w-full items-center justify-between border-b border-[#D9C7A5]/45 bg-[#FFFDF7]/88 px-4 shadow-[0_10px_32px_rgba(79,55,30,0.08)] backdrop-blur-xl md:px-8">
-            <div className="flex min-w-0 items-center gap-4 md:gap-6">
+        <header className="relative top-0 z-[90] flex min-h-18 w-full items-center justify-between gap-4 border-b border-[#D9C7A5]/45 bg-[#FFFDF7]/88 px-4 py-3 shadow-[0_10px_32px_rgba(79,55,30,0.08)] backdrop-blur-xl md:px-8">
+            <div className="flex min-w-0 flex-1 items-center gap-4 md:gap-6">
                 {backLink && (
                     <Link
                         href={backLink}
@@ -62,7 +67,7 @@ export default function TopNav({
                             value={searchValue}
                             placeholder={searchPlaceholder || "検索"}
                             onValueChange={(value) => onSearch?.(value)}
-                            className="w-[min(60vw,340px)]"
+                            className={searchClassName}
                         />
                     </div>
                 ) : (
@@ -72,6 +77,8 @@ export default function TopNav({
                         </h2>
                     )
                 )}
+
+                {children}
             </div>
 
             <div className="flex flex-row items-center gap-4 md:gap-6">

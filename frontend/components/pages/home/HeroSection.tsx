@@ -27,7 +27,7 @@ export default function HeroSection() {
                             今すぐ始める
                         </Link>
                         <Link
-                            href="#mission"
+                            href="#latest-events"
                             className="flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur border border-white/20 text-white text-[16px] font-bold rounded-xl hover:bg-white/20 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
                         >
                             詳しく見る

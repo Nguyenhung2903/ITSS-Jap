@@ -8,6 +8,11 @@ export type AppNotification = {
     type: string;
     message: string;
     relatedUserId: number | null;
+    relatedUser?: {
+        id: number;
+        name: string;
+        avatarUrl?: string | null;
+    } | null;
     sessionId: number | null;
     isRead: boolean;
     createdAt: string;

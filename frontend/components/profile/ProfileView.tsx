@@ -39,6 +39,216 @@ function ProgressBar({ percent }: { percent: number }) {
     );
 }
 
+type TransparentIconName =
+    | "spark"
+    | "language"
+    | "culture"
+    | "study"
+    | "friends"
+    | "business"
+    | "partner"
+    | "cooking"
+    | "travel"
+    | "anime"
+    | "photo"
+    | "music"
+    | "sports"
+    | "code"
+    | "reading"
+    | "movie"
+    | "game"
+    | "vietnam"
+    | "japan"
+    | "coffee"
+    | "art"
+    | "walk";
+
+function getTransparentIconName(label: string, category: "purpose" | "interest"): TransparentIconName {
+    const normalized = label.toLowerCase();
+
+    if (/(言語|language|交換|会話|conversation)/i.test(label)) return "language";
+    if (/(文化|culture|交流)/i.test(label)) return "culture";
+    if (/(学習|勉強|study|jlpt|日本語|ベトナム語)/i.test(label)) return "study";
+    if (/(友達|友人|friends?|仲間)/i.test(label)) return "friends";
+    if (/(ビジネス|business|仕事|career|キャリア)/i.test(label)) return "business";
+    if (/(料理|cook|food|ご飯|食|cuisine)/i.test(label)) return "cooking";
+    if (/(旅行|旅|travel|trip|観光)/i.test(label)) return "travel";
+    if (/(アニメ|anime|漫画|manga)/i.test(label)) return "anime";
+    if (/(写真|photo|camera|カメラ)/i.test(label)) return "photo";
+    if (/(音楽|music|歌|song|楽器)/i.test(label)) return "music";
+    if (/(スポーツ|sports?|運動|サッカー|野球|gym|ジム)/i.test(label)) return "sports";
+    if (/(プログラミング|program|code|coding|開発|it|tech)/i.test(label)) return "code";
+    if (/(読書|book|reading|本)/i.test(label)) return "reading";
+    if (/(映画|movie|film|cinema)/i.test(label)) return "movie";
+    if (/(ゲーム|game|gaming)/i.test(label)) return "game";
+    if (/(ベトナム|vietnam|viet)/i.test(label)) return "vietnam";
+    if (/(日本|japan|和|茶道|神社)/i.test(label)) return "japan";
+    if (/(カフェ|coffee|tea|お茶)/i.test(label)) return "coffee";
+    if (/(アート|art|絵|design|デザイン)/i.test(label)) return "art";
+    if (/(散歩|walk|walking|公園)/i.test(label)) return "walk";
+
+    return category === "purpose" || normalized.includes("partner") ? "partner" : "spark";
+}
+
+function TransparentIconSvg({ name }: { name: TransparentIconName }) {
+    switch (name) {
+        case "language":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2.3 3.2H8.2M5.2 2V3.2M4 3.2C4.35 5.05 5.55 6.75 7.35 7.7M7.7 3.2C7.2 5 5.9 6.75 3.8 8M7.9 12.8L9 10H12.2L13.3 12.8M9.55 8.65H11.65L12.95 12.8M1.5 1.5H8.7C9.35 1.5 9.9 2.05 9.9 2.7V6.6C9.9 7.25 9.35 7.8 8.7 7.8H6.4L3.7 10V7.8H1.5V1.5Z" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "culture":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2 5.2H13M3.2 5.2L4.1 12.5M11.8 5.2L10.9 12.5M5.2 5.2V12.5M9.8 5.2V12.5M1.5 12.5H13.5M7.5 1.5L12.7 4H2.3L7.5 1.5Z" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "study":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2.2 2.2H6.8C7.35 2.2 7.8 2.65 7.8 3.2V12.2C7.8 11.65 7.35 11.2 6.8 11.2H2.2V2.2ZM7.8 3.2C7.8 2.65 8.25 2.2 8.8 2.2H12.8V11.2H8.8C8.25 11.2 7.8 11.65 7.8 12.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "friends":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M5.8 7.2C7.05 7.2 8.05 6.2 8.05 4.95C8.05 3.7 7.05 2.7 5.8 2.7C4.55 2.7 3.55 3.7 3.55 4.95C3.55 6.2 4.55 7.2 5.8 7.2ZM1.8 12.4C2.25 10.5 3.8 9.35 5.8 9.35C7.8 9.35 9.35 10.5 9.8 12.4M10.2 7.2C11.2 7.2 12 6.4 12 5.4C12 4.4 11.2 3.6 10.2 3.6M10.8 9.4C12.05 9.7 12.95 10.7 13.25 12.4" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
+                </svg>
+            );
+        case "business":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M5.3 4V3.1C5.3 2.55 5.75 2.1 6.3 2.1H8.7C9.25 2.1 9.7 2.55 9.7 3.1V4M2.1 5.1H12.9V12.4H2.1V5.1ZM2.1 7.2C3.6 8 5.4 8.4 7.5 8.4C9.6 8.4 11.4 8 12.9 7.2M6.5 8.4H8.5" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "cooking":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M3.2 6.2H11.8L11.1 12.4H3.9L3.2 6.2ZM5 6.2C4.4 5.65 4.1 5.05 4.1 4.4C4.1 3.2 5.05 2.3 6.25 2.3C6.65 1.65 7.35 1.3 8.1 1.3C9.25 1.3 10.2 2.2 10.2 3.35C11 3.55 11.6 4.25 11.6 5.1C11.6 5.5 11.45 5.9 11.2 6.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "travel":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2 8.1L13 3.2L9.6 12.8L7.2 8.9L2 8.1ZM7.2 8.9L9.4 6.7" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "anime":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2.3 3.5C3.45 2.4 5.15 1.75 7.5 1.75C9.85 1.75 11.55 2.4 12.7 3.5V9.8C11.55 11.45 9.75 12.55 7.5 12.55C5.25 12.55 3.45 11.45 2.3 9.8V3.5ZM5 6.4H5.05M10 6.4H10.05M5.4 9.2C6.4 10 8.6 10 9.6 9.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "photo":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2 5H4.25L5.15 3.2H9.85L10.75 5H13V12.2H2V5ZM7.5 10.2C8.7 10.2 9.7 9.2 9.7 8C9.7 6.8 8.7 5.8 7.5 5.8C6.3 5.8 5.3 6.8 5.3 8C5.3 9.2 6.3 10.2 7.5 10.2Z" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "music":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M5.2 10.7C5.2 11.65 4.45 12.4 3.5 12.4C2.55 12.4 1.8 11.65 1.8 10.7C1.8 9.75 2.55 9 3.5 9C4.45 9 5.2 9.75 5.2 10.7ZM5.2 10.7V3.4L11.9 2.2V8.9M11.9 8.9C11.9 9.85 11.15 10.6 10.2 10.6C9.25 10.6 8.5 9.85 8.5 8.9C8.5 7.95 9.25 7.2 10.2 7.2C11.15 7.2 11.9 7.95 11.9 8.9ZM5.2 5.4L11.9 4.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "sports":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <circle cx="7.5" cy="7.5" r="5.7" stroke="currentColor" strokeWidth="1.35" />
+                    <path d="M4.1 3.1C5.2 5 7.35 6.7 12.3 6.5M2.6 8.4C5.1 7.9 8.3 8.8 10.8 12M8.4 1.9C7.7 4.3 5.9 7.2 3.4 10.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+            );
+        case "code":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M5.2 4.2L2 7.5L5.2 10.8M9.8 4.2L13 7.5L9.8 10.8M8.4 2.7L6.6 12.3" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "reading":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2.3 2.8H6.2C6.9 2.8 7.5 3.4 7.5 4.1V12.2C7.5 11.5 6.9 10.9 6.2 10.9H2.3V2.8ZM7.5 4.1C7.5 3.4 8.1 2.8 8.8 2.8H12.7V10.9H8.8C8.1 10.9 7.5 11.5 7.5 12.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "movie":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2.2 4H12.8V11.8H2.2V4ZM5.2 4L6.3 1.8M8.7 4L9.8 1.8M3.5 1.8H12.2M6.2 6.3L9.8 7.9L6.2 9.5V6.3Z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "game":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M4.4 6.1H10.6C12 6.1 13.1 7.2 13.1 8.6V9.9C13.1 11 12.2 11.9 11.1 11.9C10.45 11.9 9.85 11.6 9.5 11.05L8.95 10.2H6.05L5.5 11.05C5.15 11.6 4.55 11.9 3.9 11.9C2.8 11.9 1.9 11 1.9 9.9V8.6C1.9 7.2 3 6.1 4.4 6.1ZM4.7 8.1V9.9M3.8 9H5.6M10.1 8.4H10.15M11.45 9.5H11.5" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "vietnam":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M2 4.6C4.9 2.35 8.7 2.35 13 4.6C10.4 6.2 7.7 6.65 4.9 6M3.2 8.1C5.4 7.5 8.3 7.7 11.4 9.4M5.3 11.2C6.6 10.95 8.1 11.05 9.8 11.7M7.5 2.2V12.8" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
+                </svg>
+            );
+        case "japan":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <circle cx="7.5" cy="7.5" r="3.1" stroke="currentColor" strokeWidth="1.35" />
+                    <path d="M7.5 1.6V3M7.5 12V13.4M1.6 7.5H3M12 7.5H13.4M3.35 3.35L4.35 4.35M10.65 10.65L11.65 11.65M11.65 3.35L10.65 4.35M4.35 10.65L3.35 11.65" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+            );
+        case "coffee":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M3 5.2H10V8.4C10 10.1 8.6 11.5 6.9 11.5H6.1C4.4 11.5 3 10.1 3 8.4V5.2ZM10 6.2H11.3C12.15 6.2 12.8 6.85 12.8 7.7C12.8 8.55 12.15 9.2 11.3 9.2H10M4.4 2.1V3.4M7 1.7V3M9.6 2.1V3.4M2.2 12.8H11.2" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "art":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M7.4 2.1C4.25 2.1 1.8 4.25 1.8 7.1C1.8 9.55 3.7 11.7 6.1 11.7H7.1C7.75 11.7 8.15 11 7.8 10.45C7.45 9.85 7.85 9.1 8.55 9.1H9.5C11.55 9.1 13.2 7.55 13.2 5.7C13.2 3.65 10.75 2.1 7.4 2.1ZM4.8 6H4.85M7.1 4.7H7.15M9.5 5.1H9.55M5.8 8.5H5.85" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "walk":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M8 3.1C8.75 3.1 9.35 2.5 9.35 1.75M7.25 5.1L5.8 7.2L7.8 8.9L6.7 12.8M8.25 5.1L10 7.15L12.1 7.45M5.7 7.25L3 7.8M7.8 8.9L10.1 12.8M7.25 5.1C7.8 4.35 8.9 4.3 9.55 5.05" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            );
+        case "partner":
+            return (
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                    <path d="M4.8 7.1C5.9 7.1 6.8 6.2 6.8 5.1C6.8 4 5.9 3.1 4.8 3.1C3.7 3.1 2.8 4 2.8 5.1C2.8 6.2 3.7 7.1 4.8 7.1ZM8.2 11.9C7.8 10.35 6.45 9.4 4.8 9.4C3.15 9.4 1.8 10.35 1.4 11.9M10 4.2H13M11.5 2.7V5.7M9.1 8.1H12.9M9.1 10.4H12.9" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
+                </svg>
+            );
+        default:
+            return (
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
+                    <path d="M6.5 1.5L7.7 5.3L11.5 6.5L7.7 7.7L6.5 11.5L5.3 7.7L1.5 6.5L5.3 5.3L6.5 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                </svg>
+            );
+    }
+}
+
+function TransparentTagIcon({
+    label,
+    category,
+    size = "md",
+}: {
+    label: string;
+    category: "purpose" | "interest";
+    size?: "md" | "lg";
+}) {
+    const iconName = getTransparentIconName(label, category);
+
+    return (
+        <span
+            className={`flex shrink-0 items-center justify-center rounded-full border border-current/20 bg-transparent text-current/80 ${size === "lg" ? "h-8 w-8" : "h-6 w-6"}`}
+        >
+            <TransparentIconSvg name={iconName} />
+        </span>
+    );
+}
+
 function ActionButtonSpinner() {
     return (
         <span className="h-4 w-4 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
@@ -335,13 +545,14 @@ function ConfirmDialog({
             : "bg-[#923118] hover:bg-[#7A2813]";
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-            <div className="flex w-full max-w-md flex-col gap-4 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#181D1B]/45 px-4 backdrop-blur-sm">
+            <div className="relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-[32px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
                 {title && (
-                    <h3 className="text-center text-[18px] font-bold text-[#181D1B]">{title}</h3>
+                    <h3 className="pt-2 text-center text-[18px] font-extrabold text-[#005B5B]">{title}</h3>
                 )}
 
-                <p className="whitespace-pre-line text-center text-[16px] font-medium leading-relaxed text-[#181D1B]">
+                <p className="whitespace-pre-line text-center text-[15px] font-medium leading-relaxed text-[#3E4948]">
                     {description}
                 </p>
 
@@ -350,7 +561,7 @@ function ConfirmDialog({
                         type="button"
                         onClick={onCancel}
                         disabled={isBusy}
-                        className="rounded-xl bg-[#F3E7D2] px-8 py-2.5 text-[14px] font-medium text-[#3E4948] transition-all hover:bg-[#E4D1B2] disabled:opacity-60"
+                        className="rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-8 py-2.5 text-[14px] font-bold text-[#8B5E34] transition-all hover:bg-[#F8EEDB] disabled:opacity-60"
                     >
                         いいえ
                     </button>
@@ -359,7 +570,7 @@ function ConfirmDialog({
                         type="button"
                         onClick={onConfirm}
                         disabled={isBusy}
-                        className={`rounded-xl px-8 py-2.5 text-[14px] font-bold text-white transition-all disabled:opacity-60 ${confirmClass}`}
+                        className={`rounded-2xl px-8 py-2.5 text-[14px] font-bold text-white shadow-[0_12px_24px_rgba(0,91,91,0.12)] transition-all active:scale-[0.98] disabled:opacity-60 ${confirmClass}`}
                     >
                         {isBusy ? "処理中..." : confirmLabel}
                     </button>
@@ -385,9 +596,10 @@ function PassConfirmDialog({
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-            <div className="flex w-full max-w-md flex-col gap-4 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
-                <h3 className="text-center text-[18px] font-bold text-[#181D1B]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#181D1B]/45 px-4 backdrop-blur-sm">
+            <div className="relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-[32px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
+                <h3 className="pt-2 text-center text-[18px] font-extrabold text-[#005B5B]">
                     本当に見送りますか？
                 </h3>
 
@@ -406,7 +618,7 @@ function PassConfirmDialog({
                         type="button"
                         onClick={onCancel}
                         disabled={isBusy}
-                        className="rounded-xl bg-[#F3E7D2] px-8 py-2.5 text-[14px] font-medium text-[#3E4948] transition-all hover:bg-[#E4D1B2] disabled:opacity-60"
+                        className="rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-8 py-2.5 text-[14px] font-bold text-[#8B5E34] transition-all hover:bg-[#F8EEDB] disabled:opacity-60"
                     >
                         キャンセル
                     </button>
@@ -415,7 +627,7 @@ function PassConfirmDialog({
                         type="button"
                         onClick={onConfirm}
                         disabled={isBusy}
-                        className="rounded-xl bg-[#8B5E34] px-8 py-2.5 text-[14px] font-bold text-white transition-all hover:bg-[#764C29] disabled:opacity-60"
+                        className="rounded-2xl bg-[#8B5E34] px-8 py-2.5 text-[14px] font-bold text-white shadow-[0_12px_24px_rgba(79,55,30,0.14)] transition-all hover:bg-[#764C29] active:scale-[0.98] disabled:opacity-60"
                     >
                         {isBusy ? "処理中..." : "見送る"}
                     </button>
@@ -451,12 +663,13 @@ function ReportDialog({
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-            <div className="flex w-full max-w-md flex-col gap-4 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
-                <h3 className="text-[18px] font-bold text-[#181D1B]">このユーザーを通報する</h3>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#181D1B]/45 px-4 backdrop-blur-sm">
+            <div className="relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-[32px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
+                <h3 className="pt-2 text-[18px] font-extrabold text-[#005B5B]">このユーザーを通報する</h3>
 
                 {success ? (
-                    <p className="py-4 text-center text-[14px] font-medium text-[#005B5B]">
+                    <p className="rounded-2xl border border-[#005B5B]/15 bg-[#DDEDEA]/60 px-4 py-4 text-center text-[14px] font-bold text-[#005B5B]">
                         通報を受け付けました。ご協力ありがとうございます。
                     </p>
                 ) : (
@@ -493,7 +706,11 @@ function ReportDialog({
                             )}
                         </div>
 
-                        {error && <p className="text-[13px] text-[#923118]">{error}</p>}
+                        {error && (
+                            <p className="rounded-2xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-4 py-3 text-[13px] font-bold text-[#923118]">
+                                {error}
+                            </p>
+                        )}
                     </>
                 )}
 
@@ -502,7 +719,7 @@ function ReportDialog({
                         type="button"
                         onClick={onCancel}
                         disabled={isBusy}
-                        className="rounded-xl bg-[#F3E7D2] px-5 py-2.5 text-[14px] font-medium text-[#3E4948] transition-all hover:bg-[#E4D1B2] disabled:opacity-60"
+                        className="rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-5 py-2.5 text-[14px] font-bold text-[#8B5E34] transition-all hover:bg-[#F8EEDB] disabled:opacity-60"
                     >
                         キャンセル
                     </button>
@@ -512,7 +729,7 @@ function ReportDialog({
                             type="button"
                             onClick={onSubmit}
                             disabled={isBusy}
-                            className="rounded-xl bg-[#005B5B] px-5 py-2.5 text-[14px] font-bold text-white transition-all hover:bg-[#004A4A] disabled:opacity-60"
+                            className="rounded-2xl bg-[#005B5B] px-5 py-2.5 text-[14px] font-bold text-white shadow-[0_12px_24px_rgba(0,91,91,0.16)] transition-all hover:bg-[#004A4A] active:scale-[0.98] disabled:opacity-60"
                         >
                             {isBusy ? "送信中..." : "送信する"}
                         </button>
@@ -824,7 +1041,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                         src={resolveImageUrl(images[activeIndex])}
                                         alt={profile.name}
                                         fill
-                                        className="object-cover"
+                                        className="object-contain p-2"
                                         priority
                                     />
 
@@ -960,14 +1177,6 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                             </div>
                                         )}
 
-                                        {!isOwn && profile.isStoryteller && (
-                                            <div className="flex w-full items-center gap-2.5 rounded-xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-3.5 py-1.5">
-                                                <span className="h-2 w-2 rounded-full bg-[#923118]" />
-                                                <span className="text-[11px] font-bold text-[#923118]">
-                                                    ストーリーテラー
-                                                </span>
-                                            </div>
-                                        )}
                                     </div>
 
                                     {profile.purposes.length > 0 && (
@@ -976,13 +1185,17 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                                 交流の目的
                                             </h4>
 
-                                            <div className="flex flex-wrap gap-1.5">
+                                            <div className="flex flex-wrap gap-2">
                                                 {profile.purposes.map((purpose) => (
                                                     <span
                                                         key={purpose.label}
-                                                        className="flex items-center gap-1 rounded-full border border-[#005B5B]/20 bg-[#DDEDEA] px-2.5 py-1.5 text-[11px] font-bold text-[#005B5B]"
+                                                        className="flex items-center gap-2 rounded-full border border-[#005B5B]/20 bg-[#DDEDEA] px-3.5 py-2 text-[13px] font-extrabold text-[#005B5B]"
                                                     >
-                                                        <span className="text-[12px]">{purpose.emoji}</span>
+                                                        <TransparentTagIcon
+                                                            label={purpose.label}
+                                                            category="purpose"
+                                                            size="lg"
+                                                        />
                                                         {purpose.label}
                                                     </span>
                                                 ))}
@@ -1091,15 +1304,19 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                             {profile.interests.map((interest, index) => (
                                                 <div
                                                     key={interest.name}
-                                                    className={`group flex min-h-[84px] cursor-default flex-col items-center justify-center gap-2 rounded-2xl border p-4 transition-all duration-300 hover:-translate-y-0.5 ${index % 2 === 0
+                                                    className={`group flex min-h-[104px] cursor-default flex-col items-center justify-center gap-3 rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-0.5 ${index % 2 === 0
                                                             ? "border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
                                                             : "border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118]"
                                                         }`}
                                                 >
-                                                    <span className="text-[22px] transition-transform duration-300 group-hover:scale-110">
-                                                        {interest.icon}
+                                                    <span className="transition-transform duration-300 group-hover:scale-110">
+                                                        <TransparentTagIcon
+                                                            label={interest.name}
+                                                            category="interest"
+                                                            size="lg"
+                                                        />
                                                     </span>
-                                                    <span className="text-center text-[12px] font-bold">
+                                                    <span className="text-center text-[16px] font-extrabold">
                                                         {interest.name}
                                                     </span>
                                                 </div>
@@ -1112,7 +1329,10 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                     <section className="flex flex-col gap-4">
                                         <SectionTitle>イベント・活動</SectionTitle>
 
-                                        <Link href="/events" className="block w-full transition-transform hover:scale-[1.01]">
+                                        <Link
+                                            href={`/events?search=${encodeURIComponent(profile.upcomingEvent.title)}`}
+                                            className="block w-full transition-transform hover:scale-[1.01]"
+                                        >
                                             <div className="flex w-full items-center justify-between rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-5 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 transition-all hover:border-[#005B5B]/35">
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-gradient-to-r from-[#004F4F] via-[#006A6A] to-[#8B5E34] text-white">

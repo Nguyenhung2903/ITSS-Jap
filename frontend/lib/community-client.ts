@@ -1,7 +1,7 @@
 import type { ApiGroup } from "@/lib/community-format";
 import { invalidateSessionCache, readSessionCache, writeSessionCache } from "@/lib/session-cache";
 
-export const COMMUNITY_HOME_CACHE_KEY = "community:home";
+export const COMMUNITY_HOME_CACHE_KEY = "community:home:v2";
 export const COMMUNITY_HOME_CACHE_TTL_MS = 60_000;
 
 export type CommunityHomeData = {

@@ -2,7 +2,7 @@ import type { ChatMessage, ChatSessionItem } from "@/app/actions/chat";
 import { readSessionCache, writeSessionCache } from "@/lib/session-cache";
 
 export const CHAT_INBOX_CACHE_TTL_MS = 30_000;
-const CHAT_INBOX_CACHE_KEY = "chat:inbox";
+const CHAT_INBOX_CACHE_KEY = "chat:inbox:v2";
 
 export type ChatInboxData = {
     chats: ChatSessionItem[];
@@ -18,7 +18,7 @@ export function readChatInboxCache(_sessionId?: number | null): ChatInboxData | 
     return readSessionCache<ChatInboxData>(CHAT_INBOX_CACHE_KEY, CHAT_INBOX_CACHE_TTL_MS);
 }
 
-function writeChatInboxCache(data: ChatInboxData) {
+export function writeChatInboxCache(data: ChatInboxData) {
     writeSessionCache(CHAT_INBOX_CACHE_KEY, data);
 }
 
@@ -217,3 +217,57 @@ export async function sendChatMessageClient(
         };
     }
 }
+
+export async function sendChatMessageWithAttachmentClient(
+    sessionId: number,
+    file: File,
+    content?: string
+): Promise<
+    | { success: true; data: ChatMessage }
+    | { success: false; message: string }
+> {
+    try {
+        const formData = new FormData();
+        formData.append("sessionId", String(sessionId));
+        formData.append("attachment", file);
+
+        if (content?.trim()) {
+            formData.append("content", content.trim());
+        }
+
+        const res = await fetch("/api/chat/messages", {
+            method: "POST",
+            body: formData,
+            cache: "no-store",
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+            const message =
+                data && typeof data === "object" && "error" in data && typeof data.error === "string"
+                    ? data.error
+                    : "送信に失敗しました。";
+            return { success: false, message };
+        }
+
+        return { success: true, data: data as ChatMessage };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : "送信に失敗しました。",
+        };
+    }
+}
+
+export function patchChatInboxCacheAfterRead(sessionId: number) {
+    const cached = readChatInboxCache();
+    if (!cached) return;
+    writeChatInboxCache({
+        ...cached,
+        chats: cached.chats.map((chat) =>
+            chat.id === sessionId ? { ...chat, unreadCount: 0 } : chat
+        ),
+    });
+}
+

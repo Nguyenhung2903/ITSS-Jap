@@ -119,7 +119,7 @@ export default function Sidebar() {
                 href={hrefPath}
                 onMouseEnter={() => prefetchForPath(hrefPath)}
                 onFocus={() => prefetchForPath(hrefPath)}
-                className={`group relative flex items-center gap-4 rounded-[22px] border px-5 py-4 transition-all duration-300 ease-out active:scale-[0.98] ${isActive
+                className={`group relative flex min-h-[64px] items-center gap-4 overflow-hidden rounded-[22px] border px-5 py-4 transition-all duration-300 ease-out active:scale-[0.98] ${isActive
                         ? "border-[#F6EAD5]/20 bg-gradient-to-r from-white/16 via-white/10 to-[#2DD4BF]/10 text-white shadow-[0_18px_45px_rgba(0,0,0,0.22)]"
                         : "border-transparent text-white/60 hover:translate-x-1 hover:border-white/8 hover:bg-white/8 hover:text-white"
                     }`}

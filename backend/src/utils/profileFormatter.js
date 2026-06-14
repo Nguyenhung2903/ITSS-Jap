@@ -82,11 +82,6 @@ async function getIsVerified(userId) {
     return !!approved;
 }
 
-async function getIsStoryteller(userId) {
-    const postCount = await prisma.post.count({ where: { authorId: userId } });
-    return postCount >= 1;
-}
-
 async function getMutualFriendsCount(viewerId, targetId) {
     const [viewerGroups, targetGroups] = await Promise.all([
         prisma.groupMember.findMany({
@@ -190,10 +185,9 @@ async function getViewerInteraction(viewerId, targetId) {
 async function formatProfile(user, options = {}) {
     const { viewerId = null, viewType = "own" } = options;
 
-    const [isVerified, isStoryteller, mutualFriendsCount, upcomingEvent, interaction] =
+    const [isVerified, mutualFriendsCount, upcomingEvent, interaction] =
         await Promise.all([
             getIsVerified(user.id),
-            viewType === "other" ? getIsStoryteller(user.id) : Promise.resolve(false),
             viewType === "other" && viewerId
                 ? getMutualFriendsCount(viewerId, user.id)
                 : Promise.resolve(0),
@@ -244,7 +238,6 @@ async function formatProfile(user, options = {}) {
         avatarUrl: user.avatarUrl || gallery[0],
         gallery,
         isVerified,
-        isStoryteller,
         isOnline: false,
         mutualFriendsCount,
         purposes,

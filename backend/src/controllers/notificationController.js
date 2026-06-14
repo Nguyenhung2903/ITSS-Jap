@@ -8,7 +8,43 @@ exports.getNotifications = async (req, res) => {
             take: 50,
         });
 
-        res.json(list);
+        const relatedUserIds = [
+            ...new Set(list.map((item) => item.relatedUserId).filter(Boolean)),
+        ];
+        const relatedUsers = relatedUserIds.length
+            ? await prisma.verifiedUser.findMany({
+                  where: { id: { in: relatedUserIds } },
+                  select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      avatarUrl: true,
+                  },
+              })
+            : [];
+        const relatedUserMap = new Map(relatedUsers.map((user) => [user.id, user]));
+
+        res.json(
+            list.map((item) => {
+                const relatedUser = item.relatedUserId
+                    ? relatedUserMap.get(item.relatedUserId)
+                    : null;
+
+                return {
+                    ...item,
+                    relatedUser: relatedUser
+                        ? {
+                              id: relatedUser.id,
+                              name:
+                                  [relatedUser.firstName, relatedUser.lastName]
+                                      .filter(Boolean)
+                                      .join(" ") || "ユーザー",
+                              avatarUrl: relatedUser.avatarUrl,
+                          }
+                        : null,
+                };
+            })
+        );
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
