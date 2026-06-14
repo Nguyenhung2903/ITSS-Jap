@@ -109,6 +109,7 @@ exports.createPost = async (req, res) => {
                         `${req.user.firstName} vừa đăng bài mới trong nhóm`,
 
                     relatedUserId: req.user.id,
+                    sessionId: groupIdNum,
                 })),
             });
 
@@ -228,7 +229,7 @@ exports.likePost = async (req, res) => {
 
         const post = await prisma.post.findUnique({
             where: { id: postId },
-            select: { authorId: true },
+            select: { authorId: true, groupId: true },
         });
 
         if (post && post.authorId !== req.user.id) {
@@ -243,6 +244,7 @@ exports.likePost = async (req, res) => {
                             `${req.user.firstName} đã thích bài viết của bạn`,
 
                         relatedUserId: req.user.id,
+                        sessionId: post.groupId,
                     },
                 });
 
@@ -310,6 +312,7 @@ exports.commentPost = async (req, res) => {
                             `${req.user.firstName} đã bình luận bài viết của bạn`,
 
                         relatedUserId: req.user.id,
+                        sessionId: post.groupId,
                     },
                 });
 

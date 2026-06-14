@@ -6,16 +6,24 @@ import { useRouter } from "next/navigation";
 import {
     getNotificationsAction,
     markNotificationReadAction,
+    markAllNotificationsReadAction,
     type AppNotification,
 } from "@/app/actions/notification";
 import { resolveImageUrl } from "@/lib/image";
 
 function getNotificationLink(notification: AppNotification): string | null {
-    if (notification.type === "MATCH" && notification.sessionId) {
+    const type = notification.type;
+    if (["NEW_MESSAGE", "MESSAGE", "MATCH", "MATCH_SUCCESS"].includes(type) && notification.sessionId) {
         return `/chat?session=${notification.sessionId}`;
     }
-    if (notification.type === "PROFILE_LIKE" && notification.relatedUserId) {
+    if (["PROFILE_LIKE", "LIKE"].includes(type) && notification.relatedUserId) {
         return `/profile/${notification.relatedUserId}`;
+    }
+    if (["NEW_POST", "POST_LIKE", "POST_COMMENT"].includes(type) && notification.sessionId) {
+        return `/community/${notification.sessionId}`;
+    }
+    if (type.startsWith("EVENT") || type === "EVENT") {
+        return "/events";
     }
     if (notification.relatedUserId) {
         return `/profile/${notification.relatedUserId}`;
@@ -42,7 +50,7 @@ function getNotificationTitle(notification: AppNotification) {
     if ((notification.type === "NEW_MESSAGE" || notification.type === "MESSAGE") && name) {
         return `${name}さんから新しいメッセージが届きました。`;
     }
-    if (notification.type === "MATCH" && name) {
+    if ((notification.type === "MATCH" || notification.type === "MATCH_SUCCESS") && name) {
         return `${name}さんとマッチしました。`;
     }
 
@@ -50,12 +58,11 @@ function getNotificationTitle(notification: AppNotification) {
 }
 
 function getNotificationTypeLabel(type: string) {
-    if (type === "PROFILE_LIKE") return "いいね";
-    if (type === "NEW_MESSAGE" || type === "MESSAGE") return "メッセージ";
-    if (type === "MATCH") return "マッチ";
-    if (type === "EVENT") return "イベント";
-    if (type === "GROUP") return "グループ";
-    return "通知";
+    if (["PROFILE_LIKE", "LIKE"].includes(type)) return "プロフィール";
+    if (["NEW_MESSAGE", "MESSAGE", "MATCH", "MATCH_SUCCESS"].includes(type)) return "チャット";
+    if (["NEW_POST", "POST_LIKE", "POST_COMMENT"].includes(type)) return "コミュニティ";
+    if (type.startsWith("EVENT") || type === "EVENT") return "イベント";
+    return "その他";
 }
 
 export default function NotificationBell() {
@@ -75,6 +82,13 @@ export default function NotificationBell() {
             setNotifications(res.data);
         }
     }, []);
+
+    // Load on mount and poll every 30 seconds
+    useEffect(() => {
+        loadNotifications();
+        const interval = setInterval(loadNotifications, 30000);
+        return () => clearInterval(interval);
+    }, [loadNotifications]);
 
     useEffect(() => {
         if (!open) return;
@@ -104,6 +118,15 @@ export default function NotificationBell() {
         }
     };
 
+    const handleMarkAllRead = async () => {
+        const res = await markAllNotificationsReadAction();
+        if (res.success) {
+            setNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true }))
+            );
+        }
+    };
+
     return (
         <div className="relative" ref={panelRef}>
             <button
@@ -122,14 +145,23 @@ export default function NotificationBell() {
                     />
                 </svg>
                 {unreadCount > 0 && (
-                    <span className="absolute right-2 top-2 h-2 min-w-[8px] rounded-full bg-[#E76F51] px-0.5 ring-2 ring-[#FFFDF7]" />
+                    <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#E76F51] ring-2 ring-[#FFFDF7]" />
                 )}
             </button>
 
             {open && (
                 <div className="absolute right-0 top-12 z-[300] flex max-h-[420px] w-[min(360px,calc(100vw-32px))] flex-col overflow-hidden rounded-[28px] border border-[#D9C7A5]/80 bg-[#FFFDF7] shadow-[0_24px_60px_rgba(79,55,30,0.22)]">
-                    <div className="border-b border-[#D9C7A5]/60 bg-[#FFFDF7] px-5 py-4">
+                    <div className="flex items-center justify-between border-b border-[#D9C7A5]/60 bg-[#FFFDF7] px-5 py-3">
                         <h3 className="text-[14px] font-extrabold text-[#005B5B]">通知</h3>
+                        {unreadCount > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleMarkAllRead}
+                                className="cursor-pointer text-[12px] font-bold text-[#8B5E34] hover:underline"
+                            >
+                                すべて既読にする
+                            </button>
+                        )}
                     </div>
                     <div className="flex-1 overflow-y-auto bg-[linear-gradient(180deg,#FFFDF7_0%,#F8F4EA_100%)]">
                         {isLoading ? (

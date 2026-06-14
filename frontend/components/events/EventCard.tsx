@@ -18,6 +18,7 @@ export type EventCardData = {
     memberAvatars: string[];
     extraMemberCount: number;
     isJoined?: boolean;
+    isInterested?: boolean;
 };
 
 function formatEventTime(iso: string) {
@@ -32,12 +33,14 @@ function formatEventTime(iso: string) {
 type EventCardProps = {
     event: EventCardData;
     onJoin?: (eventId: number) => void;
+    onLike?: (eventId: number) => void;
     isJoining?: boolean;
 };
 
-export default function EventCard({ event, onJoin, isJoining }: EventCardProps) {
+export default function EventCard({ event, onJoin, onLike, isJoining }: EventCardProps) {
     const isOnline = event.format === "online";
     const imageSrc = resolveImageUrl(event.imageUrl, "/assets/images/events/event-1.png");
+    const isExpired = new Date(event.eventTime) < new Date();
 
     return (
         <article className="group relative flex min-h-[400px] w-full flex-col overflow-hidden rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#005B5B]/45 hover:bg-white hover:shadow-[0_24px_54px_rgba(0,91,91,0.16)] lg:flex-row">
@@ -49,14 +52,14 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                         src={imageSrc}
                         alt={event.title}
                         fill
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        className={`object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${isExpired ? "grayscale" : ""}`}
                         sizes="420px"
                     />
                 </div>
 
                 <div className="absolute inset-0 bg-gradient-to-t from-[#181D1B]/58 via-[#181D1B]/12 to-transparent" />
 
-                {event.isNew && (
+                {event.isNew && !isExpired && (
                     <span className="absolute left-5 top-5 z-10 rounded-xl bg-[#923118] px-4 py-1.5 text-[11px] font-black tracking-widest text-[#FFF7F6] uppercase shadow-[0_4px_10px_rgba(146,49,24,0.3)]">
                         NEW
                     </span>
@@ -192,17 +195,33 @@ export default function EventCard({ event, onJoin, isJoining }: EventCardProps) 
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={() => onJoin?.(event.id)}
-                        disabled={isJoining || event.isJoined}
-                        className={`rounded-2xl px-8 py-3 text-[15px] font-bold transition-all duration-300 ease-out active:scale-95 ${event.isJoined
-                                ? "cursor-default border border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
-                                : "cursor-pointer bg-gradient-to-r from-[#004F4F] via-[#006A6A] to-[#8B5E34] text-white shadow-[0_12px_24px_rgba(0,91,91,0.18)] hover:-translate-y-0.5 hover:from-[#003F3F] hover:via-[#005B5B] hover:to-[#764C29] hover:shadow-[0_18px_34px_rgba(0,91,91,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
-                            }`}
-                    >
-                        {event.isJoined ? "参加済み" : isJoining ? "処理中…" : "参加する"}
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={() => !isExpired && onLike?.(event.id)}
+                            disabled={isJoining || isExpired}
+                            className={`rounded-2xl px-6 py-3 text-[14px] font-bold transition-all duration-300 ease-out active:scale-95 ${
+                                event.isInterested
+                                    ? "cursor-pointer border border-[#8B5E34]/25 bg-[#F8EEDB] text-[#8B5E34]"
+                                    : "cursor-pointer border border-[#D9C7A5]/70 bg-[#FFFDF7] text-[#3E4948] hover:border-[#8B5E34]/30 hover:bg-white"
+                            } ${isExpired ? "cursor-not-allowed opacity-50" : ""}`}
+                        >
+                            {event.isInterested ? "興味あり (選択中)" : "興味あり"}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => !isExpired && onJoin?.(event.id)}
+                            disabled={isJoining || isExpired}
+                            className={`rounded-2xl px-6 py-3 text-[14px] font-bold transition-all duration-300 ease-out active:scale-95 ${
+                                event.isJoined
+                                    ? "cursor-default border border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
+                                    : "cursor-pointer bg-gradient-to-r from-[#004F4F] via-[#006A6A] to-[#8B5E34] text-white shadow-[0_12px_24px_rgba(0,91,91,0.18)] hover:-translate-y-0.5 hover:from-[#003F3F] hover:via-[#005B5B] hover:to-[#764C29] hover:shadow-[0_18px_34px_rgba(0,91,91,0.28)]"
+                            } ${isExpired ? "cursor-not-allowed opacity-50" : ""}`}
+                        >
+                            {event.isJoined ? "参加予定" : isJoining ? "処理中…" : "参加する"}
+                        </button>
+                    </div>
                 </div>
             </div>
         </article>

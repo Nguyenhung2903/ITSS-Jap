@@ -4,13 +4,15 @@ import { cookies } from "next/headers";
 import { getApiBaseUrl } from "@/lib/api";
 import { normalizeSearchQuery } from "@/lib/search";
 
-export type EventFormat = "online" | "offline" | "all";
+export type EventFormat = "online" | "offline" | "all" | "liked" | "joined" | "expired";
 
 export async function getEventsAction(params?: {
     page?: number;
     format?: EventFormat;
     search?: string;
     joinedOnly?: boolean;
+    likedOnly?: boolean;
+    expiredOnly?: boolean;
 }) {
     try {
         const cookieStore = await cookies();
@@ -22,10 +24,23 @@ export async function getEventsAction(params?: {
 
         const query = new URLSearchParams();
         if (params?.page) query.set("page", String(params.page));
-        if (params?.format && params.format !== "all") query.set("format", params.format);
+        if (params?.format) {
+            const fmt = params.format;
+            if (fmt === "offline" || fmt === "online") {
+                query.set("format", fmt);
+            } else if (fmt === "liked") {
+                query.set("likedOnly", "true");
+            } else if (fmt === "joined") {
+                query.set("joinedOnly", "true");
+            } else if (fmt === "expired") {
+                query.set("expiredOnly", "true");
+            }
+        }
         const normalizedSearch = normalizeSearchQuery(params?.search);
         if (normalizedSearch) query.set("search", normalizedSearch);
         if (params?.joinedOnly) query.set("joinedOnly", "true");
+        if (params?.likedOnly) query.set("likedOnly", "true");
+        if (params?.expiredOnly) query.set("expiredOnly", "true");
 
         const res = await fetch(
             `${getApiBaseUrl()}/events?${query.toString()}`,
@@ -117,7 +132,7 @@ export async function createEventAction(payload: CreateEventPayload) {
     }
 }
 
-export async function engageEventAction(eventId: number) {
+export async function engageEventAction(eventId: number, type: "joined" | "interested" = "joined") {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("tomoio_token")?.value;
@@ -134,6 +149,7 @@ export async function engageEventAction(eventId: number) {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
+                body: JSON.stringify({ type }),
             }
         );
 

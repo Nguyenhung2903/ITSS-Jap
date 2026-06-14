@@ -4,7 +4,7 @@ import type { ApiEvent } from "@/lib/events-format";
 
 export const EVENTS_CACHE_TTL_MS = 60_000;
 
-export type EventFormat = "online" | "offline" | "all";
+export type EventFormat = "online" | "offline" | "all" | "liked" | "joined" | "expired";
 
 export type EventsListData = {
     data: ApiEvent[];
@@ -48,7 +48,15 @@ export async function fetchEventsListClient(params?: {
 
     const query = new URLSearchParams();
     query.set("page", String(page));
-    if (format !== "all") query.set("format", format);
+    if (format === "offline" || format === "online") {
+        query.set("format", format);
+    } else if (format === "liked") {
+        query.set("likedOnly", "true");
+    } else if (format === "joined") {
+        query.set("joinedOnly", "true");
+    } else if (format === "expired") {
+        query.set("expiredOnly", "true");
+    }
     const normalizedSearch = normalizeSearchQuery(search);
     if (normalizedSearch) query.set("search", normalizedSearch);
 

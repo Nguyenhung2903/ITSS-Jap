@@ -22,12 +22,15 @@ const CreateEventModal = dynamic(() => import("@/components/events/CreateEventMo
     ssr: false,
 });
 
-type TabFilter = "all" | "offline" | "online";
+type TabFilter = "all" | "offline" | "online" | "liked" | "joined" | "expired";
 
 const TAB_OPTIONS: { id: TabFilter; label: string }[] = [
     { id: "all", label: "全て" },
     { id: "offline", label: "対面のみ" },
     { id: "online", label: "オンラインのみ" },
+    { id: "liked", label: "興味あり" },
+    { id: "joined", label: "参加予定" },
+    { id: "expired", label: "終了" },
 ];
 
 type EventsClientProps = {
@@ -171,24 +174,48 @@ export default function EventsClient({
     const hasPendingSearch =
         searchQuery.trim().length > 0 && normalizeSearchQuery(searchQuery) === undefined;
 
-    const handleJoin = useCallback(async (eventId: number) => {
+    const handleJoin = useCallback(async (eventId: number, type: "joined" | "interested" = "joined") => {
         setJoiningId(eventId);
         setJoinError(null);
 
-        const result = await engageEventAction(eventId);
+        const result = await engageEventAction(eventId, type);
 
         if (result.success) {
             setEvents((prev) =>
-                prev.map((event) =>
-                    event.id === eventId
-                        ? {
-                            ...event,
-                            isJoined: true,
-                            extraMemberCount:
-                                event.extraMemberCount + (event.isJoined ? 0 : 1),
-                        }
-                        : event
-                )
+                prev.map((event) => {
+                    if (event.id !== eventId) return event;
+
+                    const wasJoined = event.isJoined;
+                    const wasInterested = event.isInterested;
+
+                    let isJoined = event.isJoined;
+                    let isInterested = event.isInterested;
+
+                    if (result.data?.deleted) {
+                        isJoined = false;
+                        isInterested = false;
+                    } else if (result.data?.engagementType === "joined") {
+                        isJoined = true;
+                        isInterested = false;
+                    } else if (result.data?.engagementType === "interested") {
+                        isJoined = false;
+                        isInterested = true;
+                    }
+
+                    let extraMemberCount = event.extraMemberCount;
+                    if (isJoined && !wasJoined) {
+                        extraMemberCount += 1;
+                    } else if (!isJoined && wasJoined) {
+                        extraMemberCount = Math.max(extraMemberCount - 1, 0);
+                    }
+
+                    return {
+                        ...event,
+                        isJoined,
+                        isInterested,
+                        extraMemberCount,
+                    };
+                })
             );
         } else {
             setJoinError(result.message ?? "参加に失敗しました。");
@@ -338,7 +365,8 @@ export default function EventsClient({
                                         <EventCard
                                             key={event.id}
                                             event={event}
-                                            onJoin={handleJoin}
+                                            onJoin={(id) => handleJoin(id, "joined")}
+                                            onLike={(id) => handleJoin(id, "interested")}
                                             isJoining={joiningId === event.id}
                                         />
                                     ))}

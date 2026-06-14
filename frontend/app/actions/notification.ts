@@ -37,3 +37,13 @@ export async function markNotificationReadAction(id: number) {
 
     return { success: true as const };
 }
+
+export async function markAllNotificationsReadAction() {
+    const result = await apiPatch("/notifications/read-all", {});
+
+    if (!result.ok) {
+        return { success: false as const, message: result.message };
+    }
+
+    return { success: true as const };
+}

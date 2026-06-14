@@ -200,10 +200,12 @@ exports.getEvents = async (req, res) => {
         const page  = Math.max(parseInt(req.query.page  || "1"),  1);
         const limit = Math.max(parseInt(req.query.limit || "10"), 1);
 
-        const { format, search: rawSearch, status, fromDate, toDate, joinedOnly } = req.query;
+        const { format, search: rawSearch, status, fromDate, toDate, joinedOnly, likedOnly, expiredOnly } = req.query;
         const search = normalizeSearchQuery(rawSearch);
         const userId = req.user?.id;
         const isJoinedOnly = joinedOnly === "true";
+        const isLikedOnly = likedOnly === "true";
+        const isExpiredOnly = expiredOnly === "true";
 
         const where = {
             AND: [
@@ -228,17 +230,23 @@ exports.getEvents = async (req, res) => {
                     ? { engagements: { some: { userId, engagementType: "joined" } } }
                     : {},
 
-                fromDate || toDate
+                isLikedOnly && userId
+                    ? { engagements: { some: { userId, engagementType: "interested" } } }
+                    : {},
+
+                isExpiredOnly
+                    ? { eventTime: { lt: new Date() } }
+                    : !fromDate && !toDate && !isJoinedOnly && !isLikedOnly
+                        ? { eventTime: { gte: new Date() } }
+                        : {},
+
+                (fromDate || toDate) && !isExpiredOnly
                     ? {
                         eventTime: {
                             ...(fromDate ? { gte: new Date(fromDate) } : {}),
                             ...(toDate   ? { lte: new Date(toDate)   } : {}),
                         },
                     }
-                    : {},
-
-                !fromDate && !toDate && !isJoinedOnly
-                    ? { eventTime: { gte: new Date() } }
                     : {},
             ],
         };
@@ -277,7 +285,7 @@ exports.getEvents = async (req, res) => {
                         },
                     },
                 },
-                orderBy: { eventTime: "asc" },
+                orderBy: { eventTime: isExpiredOnly ? "desc" : "asc" },
                 skip: (page - 1) * limit,
                 take: limit,
             }),
@@ -285,25 +293,28 @@ exports.getEvents = async (req, res) => {
         ]);
 
         const eventIds = events.map((e) => e.id);
-        const myJoined =
+        const myEngagements =
             userId && eventIds.length > 0
                 ? await prisma.eventEngagement.findMany({
                       where: {
                           userId,
                           eventId: { in: eventIds },
-                          engagementType: "joined",
                       },
-                      select: { eventId: true },
+                      select: { eventId: true, engagementType: true },
                   })
                 : [];
-        const joinedSet = new Set(myJoined.map((row) => row.eventId));
+        const joinedSet = new Set(myEngagements.filter(e => e.engagementType === "joined").map((row) => row.eventId));
+        const interestedSet = new Set(myEngagements.filter(e => e.engagementType === "interested").map((row) => row.eventId));
 
         const formatted = events.map((event) => {
-            const isParticipant = joinedSet.has(event.id);
+            const isJoined = joinedSet.has(event.id);
+            const isInterested = interestedSet.has(event.id);
             return {
                 ...event,
+                isJoined,
+                isInterested,
                 urlLink:
-                    event.format === "online" && !isParticipant ? null : event.urlLink,
+                    event.format === "online" && !isJoined ? null : event.urlLink,
                 participantCount: event._count.engagements,
             };
         });
@@ -399,6 +410,11 @@ exports.engageEvent = async (req, res) => {
     try {
         const eventId = Number(req.params.id);
         const userId  = req.user.id;
+        const type    = req.body.type || "joined";
+
+        if (!["joined", "interested"].includes(type)) {
+            return res.status(400).json({ error: "Engagement type không hợp lệ" });
+        }
 
         const event = await prisma.event.findUnique({ where: { id: eventId } });
         if (!event) return res.status(404).json({ error: "Event not found" });
@@ -413,16 +429,32 @@ exports.engageEvent = async (req, res) => {
         const existing = await prisma.eventEngagement.findUnique({
             where: { eventId_userId: { eventId, userId } },
         });
-        if (existing) return res.status(400).json({ error: "Bạn đã tham gia sự kiện này rồi" });
+
+        if (existing) {
+            if (existing.engagementType === type) {
+                await prisma.eventEngagement.delete({
+                    where: { eventId_userId: { eventId, userId } },
+                });
+                return res.json({ message: "Đã huỷ tham gia thành công", deleted: true });
+            } else {
+                const updated = await prisma.eventEngagement.update({
+                    where: { eventId_userId: { eventId, userId } },
+                    data: { engagementType: type },
+                });
+                return res.json(updated);
+            }
+        }
 
         const engagement = await prisma.eventEngagement.create({
-            data: { eventId, userId, engagementType: "joined" },
+            data: { eventId, userId, engagementType: type },
         });
 
-        global.io?.to(`user_${event.adminId}`).emit("newEventParticipant", {
-            eventId,
-            userId,
-        });
+        if (type === "joined") {
+            global.io?.to(`user_${event.adminId}`).emit("newEventParticipant", {
+                eventId,
+                userId,
+            });
+        }
 
         return res.json(engagement);
     } catch (err) {

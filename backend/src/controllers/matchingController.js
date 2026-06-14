@@ -115,6 +115,27 @@ async function searchUsersForUser(userId, query) {
             OR: [
                 { firstName: { contains: s, mode: "insensitive" } },
                 { lastName: { contains: s, mode: "insensitive" } },
+                {
+                    hobbies: {
+                        some: {
+                            hobbyName: { contains: s, mode: "insensitive" },
+                        },
+                    },
+                },
+                {
+                    purposes: {
+                        some: {
+                            purpose: { contains: s, mode: "insensitive" },
+                        },
+                    },
+                },
+                {
+                    languages: {
+                        some: {
+                            level: { contains: s, mode: "insensitive" },
+                        },
+                    },
+                },
             ],
         });
     }
@@ -178,39 +199,85 @@ async function searchUsersForUser(userId, query) {
     const users = await prisma.verifiedUser.findMany({
         where,
         select: USER_LIST_SELECT,
-        skip,
-        take: limit + 1,
-        orderBy: { id: "asc" },
     });
 
-    const hasMore = users.length > limit;
+    function calculateSearchScore(user, s) {
+        if (!s) return 0;
+        const sLower = s.toLowerCase();
 
-    if (hasMore) {
-        users.pop();
+        const firstName = (user.firstName || "").toLowerCase();
+        const lastName = (user.lastName || "").toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        const fullNameAlt = `${lastName} ${firstName}`;
+
+        if (fullName === sLower || fullNameAlt === sLower || firstName === sLower || lastName === sLower) {
+            return 10000;
+        }
+        if (fullName.startsWith(sLower) || fullNameAlt.startsWith(sLower) || firstName.startsWith(sLower) || lastName.startsWith(sLower)) {
+            return 5000;
+        }
+        if (fullName.includes(sLower) || firstName.includes(sLower) || lastName.includes(sLower)) {
+            return 2000;
+        }
+
+        const hobbyMatch = user.hobbies.some(h => (h.hobbyName || "").toLowerCase().includes(sLower));
+        if (hobbyMatch) {
+            return 1000;
+        }
+
+        const purposeMatch = user.purposes.some(p => (p.purpose || "").toLowerCase().includes(sLower));
+        if (purposeMatch) {
+            return 100;
+        }
+
+        const levelMatch = user.languages.some(l => (l.level || "").toLowerCase().includes(sLower));
+        if (levelMatch) {
+            return 10;
+        }
+
+        return 0;
     }
 
-    let total;
-
-    if (page > 1) {
-        total = undefined;
-    } else if (!hasMore) {
-        total = users.length;
-    } else {
-        total = await prisma.verifiedUser.count({ where });
-    }
-
-    const data = users.map((user) => ({
-        ...user,
-        score:
+    const dataWithScore = users.map((user) => {
+        const searchScore = normalizedSearch ? calculateSearchScore(user, normalizedSearch) : 0;
+        const completenessScore =
             (user.hobbies.length ? 2 : 0) +
             (user.languages.length ? 2 : 0) +
-            (user.purposes.length ? 1 : 0),
-    }));
+            (user.purposes.length ? 1 : 0);
+        return {
+            ...user,
+            searchScore,
+            score: completenessScore,
+        };
+    });
+
+    if (normalizedSearch) {
+        dataWithScore.sort((a, b) => {
+            if (b.searchScore !== a.searchScore) {
+                return b.searchScore - a.searchScore;
+            }
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            return a.id - b.id;
+        });
+    } else {
+        dataWithScore.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            return a.id - b.id;
+        });
+    }
+
+    const total = dataWithScore.length;
+    const paginatedUsers = dataWithScore.slice(skip, skip + limit);
+    const hasMore = skip + limit < total;
 
     return {
-        data,
+        data: paginatedUsers,
         total,
-        hasMore: page > 1 ? hasMore : hasMore || (total != null && page * limit < total),
+        hasMore,
     };
 }
 

@@ -65,22 +65,21 @@ function formatLanguageName(language: string) {
 function getNativeLanguage(user: MatchingUser) {
     const native = user.languages.find((language) => language.type === "native");
     if (native) return native.language;
-    return user.languages[0]?.language ?? "未設定";
+    return user.languages.find((language) => language.level === "母語" || !language.type)?.language ?? "未設定";
 }
 
 function getLearningLanguage(user: MatchingUser) {
-    const learning = user.languages.find(
-        (language) => language.type === "learning" || language.level
-    );
+    const learning = user.languages.find((language) => language.type === "learning");
     if (learning) return learning.language;
-    return user.languages[1]?.language ?? user.languages[0]?.language ?? "未設定";
+    const fallback = user.languages.find((language) => language.type !== "native" && language.level !== "母語");
+    return fallback?.language ?? "未設定";
 }
 
 function getJlptLevel(user: MatchingUser) {
     const nativeLanguage = getNativeLanguage(user);
     const learningLanguage = getLearningLanguage(user);
     const learningEntry = user.languages.find(
-        (language) => language.type === "learning" || language.language === learningLanguage
+        (language) => language.type === "learning" || (language.language === learningLanguage && language.type !== "native")
     );
 
     if (learningLanguage === "日本") {

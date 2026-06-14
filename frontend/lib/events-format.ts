@@ -25,6 +25,8 @@ export type ApiEvent = {
     createdAt?: string;
     participantCount?: number;
     engagements?: ApiEngagement[];
+    isJoined?: boolean;
+    isInterested?: boolean;
 };
 
 export function formatApiEvent(event: ApiEvent, currentUserId?: number): EventCardData {
@@ -37,8 +39,13 @@ export function formatApiEvent(event: ApiEvent, currentUserId?: number): EventCa
     const participantCount = event.participantCount ?? joinedEngagements.length;
     const displayAvatars = avatars.length > 0 ? avatars : ["/assets/images/avatars/avatar.jpg"];
     const extraCount = Math.max(participantCount - 3, 0);
+    
     const isJoined = currentUserId
-        ? joinedEngagements.some((e) => e.userId === currentUserId)
+        ? (event.isJoined !== undefined ? event.isJoined : joinedEngagements.some((e) => e.userId === currentUserId))
+        : false;
+
+    const isInterested = currentUserId
+        ? (event.isInterested !== undefined ? event.isInterested : (event.engagements ?? []).some((e) => e.userId === currentUserId && e.engagementType === "interested"))
         : false;
 
     const createdAt = event.createdAt ? new Date(event.createdAt) : null;
@@ -57,5 +64,6 @@ export function formatApiEvent(event: ApiEvent, currentUserId?: number): EventCa
         memberAvatars: displayAvatars,
         extraMemberCount: extraCount,
         isJoined,
+        isInterested,
     };
 }
