@@ -275,6 +275,7 @@ exports.reportUser = async (req, res) => {
             data: {
                 reason,
                 evidenceUrl,
+                status: "APPROVED",
                 parties: {
                     create: [
                         { userId: actorId, partyRole: "REPORTER" },

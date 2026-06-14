@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, type ReactNode } from "react";
 import {
     getUserProfileAction,
@@ -18,6 +19,7 @@ import {
     type Nationality,
     type ProfileLanguageEdit,
 } from "@/lib/profile-languages";
+import { resolveImageUrl } from "@/lib/image";
 
 type ProfileEditModalProps = {
     profile: UserProfile;
@@ -225,8 +227,21 @@ export default function ProfileEditModal({
     );
     const [hobbies, setHobbies] = useState(profile.interests.map((interest) => interest.name));
     const [purposes, setPurposes] = useState(profile.purposes.map((purpose) => purpose.label));
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const galleryImages = Array.from(
+        new Set(
+            [
+                profile.avatarUrl,
+                ...(Array.isArray(profile.gallery) ? profile.gallery : []),
+            ].filter(Boolean)
+        )
+    );
+    const safeGalleryImages =
+        galleryImages.length > 0 ? galleryImages : ["/assets/images/avatars/avatar.jpg"];
+    const activeImage = safeGalleryImages[activeImageIndex] ?? safeGalleryImages[0];
 
     useEffect(() => {
         if (!open) return;
@@ -237,6 +252,7 @@ export default function ProfileEditModal({
         setLanguageEdit(languagesFromProfile(profile.languages));
         setHobbies(profile.interests.map((interest) => interest.name));
         setPurposes(profile.purposes.map((purpose) => purpose.label));
+        setActiveImageIndex(0);
         setError(null);
     }, [open, profile]);
 
@@ -353,6 +369,57 @@ export default function ProfileEditModal({
                 </div>
 
                 <div className="flex flex-1 flex-col gap-6 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.08),transparent_30%),linear-gradient(180deg,#FFFDF7_0%,#F8F4EA_45%,#F3EFE4_100%)] px-4 py-6 sm:px-6">
+                    <section className="flex flex-col gap-5 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_14px_32px_rgba(79,55,30,0.08)] sm:p-8">
+                        <SectionHeader
+                            title="プロフィール写真"
+                            icon={
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                    <path d="M4 5.5C4 4.12 5.12 3 6.5 3H17.5C18.88 3 20 4.12 20 5.5V18.5C20 19.88 18.88 21 17.5 21H6.5C5.12 21 4 19.88 4 18.5V5.5ZM7 16.8H17L14.1 12.9L11.75 15.85L10.2 13.9L7 16.8ZM9 10.5C9.83 10.5 10.5 9.83 10.5 9C10.5 8.17 9.83 7.5 9 7.5C8.17 7.5 7.5 8.17 7.5 9C7.5 9.83 8.17 10.5 9 10.5Z" />
+                                </svg>
+                            }
+                        />
+
+                        <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
+                            <div className="relative aspect-square overflow-hidden rounded-[24px] border-[8px] border-[#F6EAD5] bg-white shadow-inner">
+                                <Image
+                                    src={resolveImageUrl(activeImage)}
+                                    alt={profile.name}
+                                    fill
+                                    className="object-contain"
+                                    sizes="160px"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <p className="text-[13px] leading-5 font-medium text-[#6E7979]">
+                                    登録時の写真がメイン画像として表示されます。投稿や関連する投稿画像はギャラリーに並びます。
+                                </p>
+
+                                <div className="grid grid-cols-4 gap-2">
+                                    {safeGalleryImages.slice(0, 8).map((image, index) => (
+                                        <button
+                                            key={`${image}-${index}`}
+                                            type="button"
+                                            onClick={() => setActiveImageIndex(index)}
+                                            className={`relative aspect-square overflow-hidden rounded-2xl border bg-white transition-all ${index === activeImageIndex
+                                                    ? "border-[#005B5B] shadow-[0_0_0_3px_rgba(0,91,91,0.15)]"
+                                                    : "border-[#F1E5CF] opacity-75 hover:opacity-100"
+                                                }`}
+                                        >
+                                            <Image
+                                                src={resolveImageUrl(image)}
+                                                alt={`プロフィール写真 ${index + 1}`}
+                                                fill
+                                                className={index === 0 ? "object-contain p-1" : "object-cover"}
+                                                sizes="72px"
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <section className="flex flex-col gap-6 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_14px_32px_rgba(79,55,30,0.08)] sm:p-8">
                         <SectionHeader
                             title="基本情報"

@@ -998,13 +998,11 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
         return unique.length > 0 ? unique : ["/assets/images/avatars/avatar.jpg"];
     }, [profile.gallery, profile.avatarUrl]);
 
-    const goPrev = useCallback(() => {
-        setActiveIndex((index) => (index === 0 ? images.length - 1 : index - 1));
+    useEffect(() => {
+        setActiveIndex((index) => Math.min(index, images.length - 1));
     }, [images.length]);
 
-    const goNext = useCallback(() => {
-        setActiveIndex((index) => (index === images.length - 1 ? 0 : index + 1));
-    }, [images.length]);
+    const activeImage = images[activeIndex] ?? images[0];
 
     return (
         <div
@@ -1036,12 +1034,14 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                             <aside className="relative flex w-full shrink-0 flex-col gap-5 rounded-[32px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-5 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 lg:sticky lg:top-[104px] lg:w-[340px]">
                                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-[32px] bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
 
-                                <div className="group relative h-[320px] w-full overflow-hidden rounded-2xl border-[3px] border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_10px_22px_rgba(79,55,30,0.16)]">
+                                <div className="relative overflow-hidden rounded-[28px] border border-[#F1E5CF] bg-[#F5EBD8] p-4 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">
+                                    <div className="pointer-events-none absolute inset-x-4 top-4 h-1 rounded-full bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
+                                    <div className="relative mt-3 aspect-square w-full overflow-hidden rounded-2xl border-[10px] border-[#FFFDF7] bg-white shadow-inner">
                                     <Image
-                                        src={resolveImageUrl(images[activeIndex])}
+                                        src={resolveImageUrl(activeImage)}
                                         alt={profile.name}
                                         fill
-                                        className="object-contain p-2"
+                                        className="object-contain"
                                         priority
                                     />
 
@@ -1055,78 +1055,26 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                             </span>
                                         </div>
                                     )}
-
-                                    {images.length > 1 && (
-                                        <>
-                                            <button
-                                                type="button"
-                                                onClick={goPrev}
-                                                className="absolute left-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100"
-                                                aria-label="前の写真"
-                                            >
-                                                <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-                                                    <path
-                                                        d="M6.5 1L1.5 6L6.5 11"
-                                                        stroke="white"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                    />
-                                                </svg>
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={goNext}
-                                                className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100"
-                                                aria-label="次の写真"
-                                            >
-                                                <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-                                                    <path
-                                                        d="M1.5 1L6.5 6L1.5 11"
-                                                        stroke="white"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                    />
-                                                </svg>
-                                            </button>
-
-                                            <div className="absolute bottom-4 z-10 flex w-full justify-center gap-1.5">
-                                                {images.map((_, index) => (
-                                                    <button
-                                                        key={index}
-                                                        type="button"
-                                                        onClick={() => setActiveIndex(index)}
-                                                        className={`h-1.5 rounded-full transition-all ${index === activeIndex
-                                                                ? "w-5 bg-white"
-                                                                : "w-1.5 bg-white/55"
-                                                            }`}
-                                                        aria-label={`写真${index + 1}`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
+                                    </div>
                                 </div>
 
-                                {images.length > 1 && (
-                                    <div className="-mt-1 flex h-[54px] w-full gap-2">
-                                        {images.slice(0, 4).map((image, index) => (
+                                {images.length > 0 && (
+                                    <div className="grid w-full grid-cols-4 gap-2">
+                                        {images.slice(0, 8).map((image, index) => (
                                             <button
                                                 key={`${image}-${index}`}
                                                 type="button"
                                                 onClick={() => setActiveIndex(index)}
-                                                className={`relative h-full w-[calc(25%-6px)] shrink-0 overflow-hidden rounded-xl transition-all ${index === activeIndex
-                                                        ? "ring-2 ring-[#005B5B] ring-offset-2 ring-offset-[#FFFDF7]"
-                                                        : "opacity-70 hover:opacity-100"
+                                                className={`relative aspect-square overflow-hidden rounded-2xl border bg-white transition-all ${index === activeIndex
+                                                        ? "border-[#005B5B] shadow-[0_0_0_3px_rgba(0,91,91,0.15)]"
+                                                        : "border-[#F1E5CF] opacity-75 hover:opacity-100"
                                                     }`}
                                             >
                                                 <Image
                                                     src={resolveImageUrl(image)}
                                                     alt={`ギャラリー ${index + 1}`}
                                                     fill
-                                                    className="object-cover"
+                                                    className={index === 0 ? "object-contain p-1" : "object-cover"}
                                                     sizes="80px"
                                                 />
                                             </button>

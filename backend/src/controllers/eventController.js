@@ -62,11 +62,11 @@ exports.createEvent = async (req, res) => {
                 address: address?.trim() || null,
                 urlLink: urlLink?.trim() || null,
                 imageUrl: imageUrl?.trim() || null,
-                status: "PENDING",
+                status: "APPROVED",
                 adminId: req.user.id,
             },
         });
-        global.io?.emit("newEventPending", { eventId: event.id, title: event.title });
+        global.io?.emit("newEventApproved", { eventId: event.id, title: event.title });
 
         return res.status(201).json(event);
     } catch (err) {
@@ -131,10 +131,6 @@ exports.updateEvent = async (req, res) => {
         if (!existing) return res.status(404).json({ error: "Event not found" });
         if (existing.adminId !== req.user.id) return res.status(403).json({ error: "Forbidden" });
 
-        if (existing.status === "APPROVED") {
-            return res.status(400).json({ error: "Không thể chỉnh sửa sự kiện đã được duyệt" });
-        }
-
         let parsedTime;
         if (eventTime !== undefined) {
             parsedTime = new Date(eventTime);
@@ -174,6 +170,7 @@ exports.updateEvent = async (req, res) => {
                 ...(address !== undefined && { address: address ? address.trim() : null}),
                 ...(urlLink !== undefined && { urlLink: urlLink ? urlLink.trim() : null}),
                 ...(imageUrl !== undefined && { imageUrl: imageUrl ? imageUrl.trim() : null}),
+                status: "APPROVED",
             },
         });
 
@@ -190,10 +187,6 @@ exports.deleteEvent = async (req, res) => {
         const event = await prisma.event.findUnique({ where: { id } });
         if (!event) return res.status(404).json({ error: "Event not found" });
         if (event.adminId !== req.user.id) return res.status(403).json({ error: "Forbidden" });
-        if (event.status === "APPROVED") {
-            return res.status(400).json({ error: "Không thể xoá sự kiện đã được duyệt" });
-        }
-
         await prisma.event.delete({ where: { id } });
         return res.json({ message: "Đã xoá sự kiện thành công" });
     } catch (err) {

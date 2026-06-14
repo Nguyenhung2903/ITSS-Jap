@@ -56,7 +56,7 @@ exports.register = async (req, res) => {
 
             const stream = cloudinary.uploader.upload_stream(
                 {
-                    folder: "cccd",
+                    folder: "avatars",
                 },
                 (error, result) => {
 
@@ -77,7 +77,8 @@ exports.register = async (req, res) => {
             data: {
                 email: email.trim().toLowerCase(),
                 password: hashed,
-                status: UserStatus.PENDING,
+                avatarUrl: uploadResult.secure_url,
+                status: UserStatus.VERIFIED,
             },
         });
 
@@ -115,7 +116,7 @@ exports.register = async (req, res) => {
         await prisma.kycRequest.create({
             data: {
                 documentImageUrl: uploadResult.secure_url,
-                status: KycStatus.PENDING,
+                status: KycStatus.APPROVED,
                 userId: user.id,
             },
         });

@@ -30,7 +30,46 @@ echo "Applying Prisma migrations to the Neon.tech database..."
 cd /app/backend
 ./node_modules/.bin/prisma migrate deploy
 
-# 2. Check if database is empty and auto-seed if needed
+# 2. Auto-approve records that previously depended on an admin UI
+echo "Auto-approving records that require admin review..."
+node -e "
+const { PrismaClient, UserStatus, KycStatus, EventStatus, ReportCaseStatus } = require('@prisma/client');
+const prisma = new PrismaClient();
+async function main() {
+  const [users, kyc, events, reports] = await prisma.\$transaction([
+    prisma.verifiedUser.updateMany({
+      where: { status: UserStatus.PENDING },
+      data: { status: UserStatus.VERIFIED },
+    }),
+    prisma.kycRequest.updateMany({
+      where: { status: KycStatus.PENDING },
+      data: { status: KycStatus.APPROVED },
+    }),
+    prisma.event.updateMany({
+      where: { status: EventStatus.PENDING },
+      data: { status: EventStatus.APPROVED },
+    }),
+    prisma.reportCase.updateMany({
+      where: { status: ReportCaseStatus.PENDING },
+      data: { status: ReportCaseStatus.APPROVED },
+    }),
+  ]);
+  console.log(JSON.stringify({
+    verifiedUsers: users.count,
+    kycRequests: kyc.count,
+    events: events.count,
+    reportCases: reports.count,
+  }));
+}
+main()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+"
+
+# 3. Check if database is empty and auto-seed if needed
 echo "Checking database user count..."
 USER_COUNT=$(node -e "
 const { PrismaClient } = require('@prisma/client');
@@ -53,12 +92,12 @@ else
     echo "Database has $USER_COUNT users. Skipping seed."
 fi
 
-# 3. Start Backend in the background
+# 4. Start Backend in the background
 echo "Starting Express + WebSockets backend on port 5001..."
 PORT=5001 node src/server.js &
 BACKEND_PID=$!
 
-# 4. Start Next.js Frontend in the background
+# 5. Start Next.js Frontend in the background
 echo "Starting Next.js frontend on port 3000..."
 cd /app/frontend
 npm run start -- -p 3000 &
@@ -73,6 +112,6 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM
 
-# 5. Start Nginx in the foreground on port 7860
+# 6. Start Nginx in the foreground on port 7860
 echo "Starting Nginx reverse proxy on port 7860..."
 nginx -c /app/nginx.conf -g "daemon off;"

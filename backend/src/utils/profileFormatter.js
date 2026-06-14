@@ -72,6 +72,17 @@ function buildGallery(user) {
             photos.push(photo.url);
         }
     }
+    for (const post of user.posts || []) {
+        if (post.image && !photos.includes(post.image)) {
+            photos.push(post.image);
+        }
+    }
+    for (const comment of user.comments || []) {
+        const image = comment.post?.image;
+        if (image && !photos.includes(image)) {
+            photos.push(image);
+        }
+    }
     return photos.length > 0 ? photos : ["/assets/images/avatars/avatar.jpg"];
 }
 

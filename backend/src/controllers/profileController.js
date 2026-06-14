@@ -8,6 +8,21 @@ const profileInclude = {
     languages: true,
     purposes: true,
     userPhotos: true,
+    posts: {
+        where: { image: { not: null } },
+        select: { image: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+    },
+    comments: {
+        select: {
+            post: {
+                select: { image: true, createdAt: true },
+            },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+    },
 };
 
 exports.getProfile = async (req, res) => {
