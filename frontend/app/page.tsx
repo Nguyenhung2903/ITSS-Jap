@@ -6,6 +6,8 @@ import MissionSection from "@/components/pages/home/MissionSection";
 import EventsSection from "@/components/pages/home/EventsSection";
 import StatsSection from "@/components/pages/home/StatsSection";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F6FAF8] font-sans">

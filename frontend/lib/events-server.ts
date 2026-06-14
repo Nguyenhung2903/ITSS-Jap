@@ -18,23 +18,28 @@ export async function fetchPublicEventsList(params?: {
     if (params?.limit) query.set("limit", String(params.limit));
     const qs = query.toString();
 
-    const res = await fetch(`${getApiBaseUrl()}/events/public${qs ? `?${qs}` : ""}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        next: { revalidate: 60 },
-    });
+    try {
+        const res = await fetch(`${getApiBaseUrl()}/events/public${qs ? `?${qs}` : ""}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            next: { revalidate: 60 },
+        });
 
-    const data = await res.json().catch(() => null);
+        const data = await res.json().catch(() => null);
 
-    if (!res.ok) {
+        if (!res.ok) {
+            return { data: [], total: 0, hasMore: false };
+        }
+
+        return {
+            data: Array.isArray(data?.data) ? data.data : [],
+            total: data?.total ?? 0,
+            hasMore: Boolean(data?.hasMore),
+        };
+    } catch (error) {
+        console.error("fetchPublicEventsList failed:", error);
         return { data: [], total: 0, hasMore: false };
     }
-
-    return {
-        data: Array.isArray(data?.data) ? data.data : [],
-        total: data?.total ?? 0,
-        hasMore: Boolean(data?.hasMore),
-    };
 }
 
 export async function fetchEventsList(params?: {
