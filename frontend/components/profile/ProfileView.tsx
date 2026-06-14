@@ -1036,13 +1036,19 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
 
                                 <div className="relative overflow-hidden rounded-[28px] border border-[#F1E5CF] bg-[#F5EBD8] p-4 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">
                                     <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-[10px] border-[#FFFDF7] bg-white shadow-inner">
-                                    <Image
-                                        src={resolveImageUrl(activeImage)}
-                                        alt={profile.name}
-                                        fill
-                                        className="object-contain"
-                                        priority
-                                    />
+                                    {!activeImage || activeImage.includes("avatar_") || activeImage.includes("avatar.jpg") ? (
+                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[72px] uppercase select-none">
+                                            {profile.name?.trim()?.[0] || "T"}
+                                        </div>
+                                    ) : (
+                                        <Image
+                                            src={resolveImageUrl(activeImage)}
+                                            alt={profile.name}
+                                            fill
+                                            className="object-contain"
+                                            priority
+                                        />
+                                    )}
 
                                     {!isOwn && swipeExit && <ActionSwipeOverlay direction={swipeExit} />}
 
@@ -1069,13 +1075,19 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                                         : "border-[#F1E5CF] opacity-75 hover:opacity-100"
                                                     }`}
                                             >
-                                                <Image
-                                                    src={resolveImageUrl(image)}
-                                                    alt={`ギャラリー ${index + 1}`}
-                                                    fill
-                                                    className={index === 0 ? "object-contain p-1" : "object-cover"}
-                                                    sizes="80px"
-                                                />
+                                                {!image || image.includes("avatar_") || image.includes("avatar.jpg") ? (
+                                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[18px] uppercase select-none">
+                                                        {profile.name?.trim()?.[0] || "T"}
+                                                    </div>
+                                                ) : (
+                                                    <Image
+                                                        src={resolveImageUrl(image)}
+                                                        alt={`ギャラリー ${index + 1}`}
+                                                        fill
+                                                        className={index === 0 ? "object-contain p-1" : "object-cover"}
+                                                        sizes="80px"
+                                                    />
+                                                )}
                                             </button>
                                         ))}
                                     </div>

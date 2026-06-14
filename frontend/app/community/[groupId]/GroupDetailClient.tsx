@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback, useEffect } from "react";
+import Link from "next/link";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import TopNav from "@/components/layouts/TopNav";
 import { joinGroupAction, leaveGroupAction } from "@/app/actions/group";
@@ -55,6 +56,8 @@ export default function GroupDetailClient({
     const [loadingComments, setLoadingComments] = useState<Set<number>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isJoinLoading, setIsJoinLoading] = useState(false);
+    const [submittingCommentIds, setSubmittingCommentIds] = useState<Set<number>>(new Set());
+    const submittingRef = useRef<Set<number>>(new Set());
 
     useEffect(() => {
         if (invalid || groupId <= 0) return;
@@ -195,35 +198,49 @@ export default function GroupDetailClient({
 
     const handleComment = async (postId: number) => {
         if (!isJoined) return;
+        if (submittingRef.current.has(postId)) return;
+
         const content = commentInputs[postId];
         if (!content?.trim()) return;
 
-        const res = await commentPostAction(postId, content);
-        if (res.success) {
-            const { password: _, ...safeAuthor } = res.data.author ?? {};
-            const newComment = { ...res.data, author: safeAuthor };
+        submittingRef.current.add(postId);
+        setSubmittingCommentIds((prev) => new Set(prev).add(postId));
 
-            setCommentsByPost((prev) => ({
-                ...prev,
-                [postId]: [...(prev[postId] ?? []), newComment],
-            }));
-            setPosts(
-                posts.map((p) =>
-                    p.id === postId
-                        ? {
-                              ...p,
-                              _count: {
-                                  ...p._count,
-                                  comments: (p._count?.comments ?? 0) + 1,
-                              },
-                          }
-                        : p
-                )
-            );
-            setCommentInputs({ ...commentInputs, [postId]: "" });
-            if (!expandedPostIds.has(postId)) {
-                setExpandedPostIds(new Set(expandedPostIds).add(postId));
+        try {
+            const res = await commentPostAction(postId, content);
+            if (res.success) {
+                const { password: _, ...safeAuthor } = res.data.author ?? {};
+                const newComment = { ...res.data, author: safeAuthor };
+
+                setCommentsByPost((prev) => ({
+                    ...prev,
+                    [postId]: [...(prev[postId] ?? []), newComment],
+                }));
+                setPosts(
+                    posts.map((p) =>
+                        p.id === postId
+                            ? {
+                                  ...p,
+                                  _count: {
+                                      ...p._count,
+                                      comments: (p._count?.comments ?? 0) + 1,
+                                  },
+                              }
+                            : p
+                    )
+                );
+                setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+                if (!expandedPostIds.has(postId)) {
+                    setExpandedPostIds(new Set(expandedPostIds).add(postId));
+                }
             }
+        } finally {
+            submittingRef.current.delete(postId);
+            setSubmittingCommentIds((prev) => {
+                const next = new Set(prev);
+                next.delete(postId);
+                return next;
+            });
         }
     };
 
@@ -535,20 +552,26 @@ export default function GroupDetailClient({
                                                         ) : (
                                                             comments.map((comment) => (
                                                                 <div key={comment.id} className="flex gap-3">
-                                                                    <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0]">
-                                                                        <Image
-                                                                            src={getAvatar(comment.author)}
-                                                                            alt={getFullName(comment.author)}
-                                                                            fill
-                                                                            sizes="32px"
-                                                                            className="object-cover"
-                                                                        />
-                                                                    </div>
+                                                                    <Link href={`/profile/${comment.author?.id}`} className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0] transition-all hover:scale-105 active:scale-[0.98]">
+                                                                        {!comment.author?.avatarUrl || comment.author?.avatarUrl?.includes("avatar_") ? (
+                                                                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[11px] uppercase">
+                                                                                {getFullName(comment.author)?.trim()?.[0] || "T"}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Image
+                                                                                src={getAvatar(comment.author)}
+                                                                                alt={getFullName(comment.author)}
+                                                                                fill
+                                                                                sizes="32px"
+                                                                                className="object-cover"
+                                                                            />
+                                                                        )}
+                                                                    </Link>
                                                                     <div className="flex-1 rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] p-3 shadow-sm">
                                                                         <div className="flex justify-between items-center mb-1">
-                                                                            <span className="text-[12px] font-bold text-[#181D1B]">
+                                                                            <Link href={`/profile/${comment.author?.id}`} className="text-[12px] font-bold text-[#181D1B] hover:text-[#005B5B] transition-colors">
                                                                                 {getFullName(comment.author)}
-                                                                            </span>
+                                                                            </Link>
                                                                             <span className="text-[10px] font-medium text-[#6E7979]">
                                                                                 {formatTime(comment.createdAt)}
                                                                             </span>
@@ -568,6 +591,7 @@ export default function GroupDetailClient({
                                                                     <input
                                                                         type="text"
                                                                         value={commentInputs[post.id] ?? ""}
+                                                                        disabled={submittingCommentIds.has(post.id)}
                                                                         onChange={(e) =>
                                                                             setCommentInputs({
                                                                                 ...commentInputs,
@@ -575,15 +599,19 @@ export default function GroupDetailClient({
                                                                             })
                                                                         }
                                                                         onKeyDown={(e) => {
-                                                                            if (e.key === "Enter") handleComment(post.id);
+                                                                            if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                                                                                e.preventDefault();
+                                                                                handleComment(post.id);
+                                                                            }
                                                                         }}
                                                                         placeholder="コメントを書く…"
-                                                                        className="w-full rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-2 text-[12px] font-medium text-[#181D1B] outline-none placeholder:text-[#6E7979]/45 focus:border-[#005B5B]/40 focus:ring-2 focus:ring-[#005B5B]/15"
+                                                                        className="w-full rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-2 text-[12px] font-medium text-[#181D1B] outline-none placeholder:text-[#6E7979]/45 focus:border-[#005B5B]/40 focus:ring-2 focus:ring-[#005B5B]/15 disabled:opacity-60"
                                                                     />
                                                                     <button
                                                                         type="button"
+                                                                        disabled={submittingCommentIds.has(post.id)}
                                                                         onClick={() => handleComment(post.id)}
-                                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#005B5B]"
+                                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#005B5B] disabled:opacity-40"
                                                                     >
                                                                         <svg width="15" height="12" viewBox="0 0 15 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                             <path d="M0 12V0L14.25 6L0 12ZM1.5 9.75L10.3875 6L1.5 2.25V4.875L6 6L1.5 7.125V9.75Z" fill="#005B5B" />
@@ -632,21 +660,34 @@ function PostAuthor({
     getAvatar: (user: any) => string;
     formatTime: (date: string) => string;
 }) {
+    const isUploaded = !post.author?.avatarUrl || post.author?.avatarUrl?.includes("avatar_");
     return (
         <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 overflow-hidden rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_8px_18px_rgba(79,55,30,0.12)]">
-                <Image
-                    src={getAvatar(post.author)}
-                    alt={getFullName(post.author)}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                />
-            </div>
+            <Link
+                href={`/profile/${post.author?.id}`}
+                className="relative h-10 w-10 overflow-hidden rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_8px_18px_rgba(79,55,30,0.12)] transition-all hover:scale-105 active:scale-[0.98]"
+            >
+                {isUploaded ? (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[14px] uppercase">
+                        {getFullName(post.author)?.trim()?.[0] || "T"}
+                    </div>
+                ) : (
+                    <Image
+                        src={getAvatar(post.author)}
+                        alt={getFullName(post.author)}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                    />
+                )}
+            </Link>
             <div className="flex flex-col">
-                <span className="text-[14px] font-bold leading-5 text-[#181D1B]">
+                <Link
+                    href={`/profile/${post.author?.id}`}
+                    className="text-[14px] font-bold leading-5 text-[#181D1B] hover:text-[#005B5B] transition-colors"
+                >
                     {getFullName(post.author)}
-                </span>
+                </Link>
                 <span className="text-[11px] font-medium text-[#6E7979] leading-4">
                     {formatTime(post.createdAt)}
                 </span>
@@ -671,9 +712,19 @@ function CommentAvatar({
     currentUser: any;
     getAvatar: (user: any) => string;
 }) {
+    const isUploaded = !currentUser?.avatarUrl || currentUser?.avatarUrl?.includes("avatar_");
     return (
-        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0]">
-            <Image src={getAvatar(currentUser)} alt="You" fill sizes="32px" className="object-cover" />
-        </div>
+        <Link
+            href={`/profile/${currentUser?.id}`}
+            className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0] transition-all hover:scale-105 active:scale-[0.98]"
+        >
+            {isUploaded ? (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[11px] uppercase">
+                    {currentUser?.firstName?.trim()?.[0] || currentUser?.email?.trim()?.[0] || "T"}
+                </div>
+            ) : (
+                <Image src={getAvatar(currentUser)} alt="You" fill sizes="32px" className="object-cover" />
+            )}
+        </Link>
     );
 }

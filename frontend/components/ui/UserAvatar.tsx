@@ -25,17 +25,19 @@ export default function UserAvatar({
     priority = false,
 }: UserAvatarProps) {
     const [failed, setFailed] = useState(false);
-    const imageSrc = resolveImageUrl(failed ? null : src);
+    const isUploaded = src?.includes("avatar_");
+    const hasImage = src && !isUploaded && !failed;
+    const imageSrc = hasImage ? resolveImageUrl(src) : null;
 
     return (
         <div
             className={[
-                "relative shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white shadow-sm",
+                "relative shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white shadow-sm flex items-center justify-center font-black uppercase select-none",
                 className,
             ].join(" ")}
             style={{ width: size, height: size }}
         >
-            {!failed && imageSrc ? (
+            {hasImage && imageSrc ? (
                 <Image
                     src={imageSrc}
                     alt={name || "ユーザー"}
@@ -46,7 +48,7 @@ export default function UserAvatar({
                     onError={() => setFailed(true)}
                 />
             ) : (
-                <span className="flex h-full w-full items-center justify-center text-[14px] font-black">
+                <span style={{ fontSize: `${Math.max(10, Math.floor(size * 0.38))}px` }}>
                     {initialFromName(name)}
                 </span>
             )}

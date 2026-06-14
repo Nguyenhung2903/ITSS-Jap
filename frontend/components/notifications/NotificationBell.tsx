@@ -53,6 +53,20 @@ function getNotificationTitle(notification: AppNotification) {
     if ((notification.type === "MATCH" || notification.type === "MATCH_SUCCESS") && name) {
         return `${name}さんとマッチしました。`;
     }
+    if (notification.type === "POST_LIKE" && name) {
+        return `${name} đã thích bài viết của bạn`;
+    }
+    if (notification.type === "POST_COMMENT" && name) {
+        return `${name} đã bình luận bài viết của bạn`;
+    }
+    if (notification.type === "NEW_POST" && name) {
+        return `${name} vừa đăng bài mới trong nhóm`;
+    }
+
+    if (notification.message?.startsWith("undefined ")) {
+        const fallbackName = name || "ユーザー";
+        return notification.message.replace("undefined ", `${fallbackName} `);
+    }
 
     return notification.message;
 }
@@ -176,21 +190,25 @@ export default function NotificationBell() {
                                     onClick={() => handleNotificationClick(notification)}
                                     className={`flex w-full items-start gap-3 border-b border-[#D9C7A5]/45 px-5 py-4 text-left transition-colors hover:bg-[#F8EEDB]/70 ${!notification.isRead ? "bg-[#DDEDEA]/55" : ""}`}
                                 >
-                                    <span className="relative mt-0.5 h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#D9C7A5]/70 bg-[#F8EEDB]">
-                                        {notification.relatedUser?.avatarUrl ? (
-                                            <Image
-                                                src={resolveImageUrl(notification.relatedUser.avatarUrl)}
-                                                alt=""
-                                                fill
-                                                sizes="36px"
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <span className="flex h-full w-full items-center justify-center text-[12px] font-black text-[#005B5B]">
-                                                {getNotificationTypeLabel(notification.type).slice(0, 1)}
-                                            </span>
-                                        )}
-                                    </span>
+                                    <span className="relative mt-0.5 h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#D9C7A5]/70 bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white flex items-center justify-center font-black select-none uppercase">
+                                        {notification.relatedUser?.avatarUrl && !notification.relatedUser.avatarUrl.includes("avatar_") ? (
+                                             <Image
+                                                 src={resolveImageUrl(notification.relatedUser.avatarUrl)}
+                                                 alt=""
+                                                 fill
+                                                 sizes="36px"
+                                                 className="object-cover"
+                                             />
+                                         ) : (
+                                             <span className="text-[12px] font-black">
+                                                 {notification.relatedUser?.name ? (
+                                                     notification.relatedUser.name.trim()[0]?.toUpperCase()
+                                                 ) : (
+                                                     getNotificationTypeLabel(notification.type).slice(0, 1)
+                                                 )}
+                                             </span>
+                                         )}
+                                     </span>
 
                                     <span className="min-w-0 flex-1">
                                         <span className="mb-1 inline-flex rounded-full border border-[#005B5B]/15 bg-[#E8F4F2] px-2 py-0.5 text-[10px] font-black text-[#005B5B]">

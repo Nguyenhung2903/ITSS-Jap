@@ -860,12 +860,18 @@ export default function ChatClient({
                                 )}
 
                                 <div className="relative h-12 w-12 shrink-0">
-                                    <Image
-                                        src={getAvatarUrl(target?.avatarUrl)}
-                                        alt={getDisplayName(target)}
-                                        fill
-                                        className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.14)]"
-                                    />
+                                    {!target?.avatarUrl || target.avatarUrl.includes("avatar_") ? (
+                                        <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[18px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.14)]">
+                                            {getDisplayName(target)?.trim()?.[0] || "T"}
+                                        </div>
+                                    ) : (
+                                        <Image
+                                            src={getAvatarUrl(target?.avatarUrl)}
+                                            alt={getDisplayName(target)}
+                                            fill
+                                            className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.14)]"
+                                        />
+                                    )}
 
                                     {target?.isOnline && (
                                         <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#FFFDF7] bg-[#22C55E]" />
@@ -915,12 +921,18 @@ export default function ChatClient({
                         <header className="z-10 flex h-[76px] w-full shrink-0 items-center justify-between border-b border-[#D9C7A5]/55 bg-[#FFFDF7]/88 px-6 shadow-[0_10px_32px_rgba(79,55,30,0.08)] backdrop-blur-xl">
                             <div className="flex items-center gap-3">
                                 <div className="relative h-11 w-11 shrink-0">
-                                    <Image
-                                        src={getAvatarUrl(selectedChat.targetUser?.avatarUrl)}
-                                        alt={getDisplayName(selectedChat.targetUser)}
-                                        fill
-                                        className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
-                                    />
+                                    {!selectedChat.targetUser?.avatarUrl || selectedChat.targetUser.avatarUrl.includes("avatar_") ? (
+                                        <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[16px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.12)]">
+                                            {getDisplayName(selectedChat.targetUser)?.trim()?.[0] || "T"}
+                                        </div>
+                                    ) : (
+                                        <Image
+                                            src={getAvatarUrl(selectedChat.targetUser?.avatarUrl)}
+                                            alt={getDisplayName(selectedChat.targetUser)}
+                                            fill
+                                            className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
+                                        />
+                                    )}
 
                                     {selectedChat.targetUser?.isOnline && (
                                         <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#FFFDF7] bg-[#22C55E]" />
@@ -1096,12 +1108,18 @@ export default function ChatClient({
                                         ) : (
                                             <div className="mt-5 flex w-full items-start gap-3">
                                                 <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-[#EFE3D0] shadow-[0_4px_10px_rgba(79,55,30,0.14)]">
-                                                    <Image
-                                                        src={getAvatarUrl(message.sender.avatarUrl)}
-                                                        alt={getDisplayName(message.sender)}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
+                                                    {!message.sender?.avatarUrl || message.sender.avatarUrl.includes("avatar_") ? (
+                                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[12px] uppercase select-none">
+                                                            {getDisplayName(message.sender)?.trim()?.[0] || "T"}
+                                                        </div>
+                                                    ) : (
+                                                        <Image
+                                                            src={getAvatarUrl(message.sender.avatarUrl)}
+                                                            alt={getDisplayName(message.sender)}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    )}
                                                 </div>
 
                                                 <div className="flex max-w-[80%] flex-col items-start gap-1">
