@@ -2,6 +2,8 @@
 
 # Exit immediately if a command exits with a non-zero status
 set -e
+# Enable print trace for real-time unbuffered debugging
+set -x
 
 echo "=== Tomoio System Startup ==="
 
@@ -20,7 +22,7 @@ fi
 # 1. Run Prisma Migration
 echo "Applying Prisma migrations to the Neon.tech database..."
 cd /app/backend
-npx prisma migrate deploy
+./node_modules/.bin/prisma migrate deploy
 
 # 2. Check if database is empty and auto-seed if needed
 echo "Checking database user count..."
