@@ -27,8 +27,10 @@ function formatMemberCount(count: number) {
 
 function extraMembersLabel(count: number) {
     if (count <= 2) return "";
+
     const extra = count - 2;
     if (extra >= 1000) return `+${Math.floor(extra / 1000)}K`;
+
     return `+${extra}`;
 }
 
@@ -39,32 +41,35 @@ type GroupRecommendCardProps = {
 };
 
 export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRecommendCardProps) {
-    const displayTags = [...group.hobbyTags, ...group.languageTags].slice(0, 2);
+    const displayTags = [...group.hobbyTags, ...group.languageTags].slice(0, 3);
     const showAvatars = group.memberCount > 0 && group.memberAvatars.length > 0;
     const extraLabel = extraMembersLabel(group.memberCount);
 
     return (
         <Link href={`/community/${group.id}`} className="block h-full">
-            <article className="h-full bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.015)] overflow-hidden flex flex-col group cursor-pointer hover:shadow-[0_25px_50px_rgba(0,91,91,0.07)] hover:-translate-y-1.5 transition-all duration-300 ease-out border border-[#DFE3E1]/40">
-                <div className="h-44 w-full relative shrink-0 bg-gray-100 overflow-hidden">
+            <article className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#005B5B]/45 hover:bg-white hover:shadow-[0_24px_54px_rgba(0,91,91,0.16)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-1.5 bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
+
+                <div className="relative h-44 w-full shrink-0 overflow-hidden bg-[#EFE3D0]">
                     <Image
                         src={group.coverImg}
                         alt={group.name}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#181D1B]/75 via-[#181D1B]/20 to-transparent" />
+
                     {displayTags.length > 0 && (
-                        <div className="absolute bottom-5 left-5 flex flex-row gap-2 z-10">
+                        <div className="absolute bottom-5 left-5 z-10 flex flex-wrap gap-2">
                             {displayTags.map((tag, index) => (
                                 <span
                                     key={`${tag}-${index}`}
-                                    className={`px-3 py-1 rounded-full text-[10px] font-black text-white tracking-[0.5px] uppercase ${
-                                        index === 0
-                                            ? "bg-[#005B5B] shadow-[0_2px_4px_rgba(0,91,91,0.3)]"
-                                            : "bg-white/20 backdrop-blur-md border border-white/10"
-                                    }`}
+                                    className={`rounded-full border px-3 py-1 text-[10px] font-black tracking-[0.5px] uppercase shadow-sm backdrop-blur-md ${index % 2 === 0
+                                            ? "border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
+                                            : "border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118]"
+                                        }`}
                                     style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                 >
                                     {formatTagLabel(tag)}
@@ -74,89 +79,111 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
                     )}
                 </div>
 
-                <div className="flex-1 p-6 flex flex-col justify-between min-h-[240px] bg-white">
+                <div className="flex min-h-[244px] flex-1 flex-col justify-between p-6">
                     <div>
-                        <h4 className="text-[18px] font-extrabold text-[#181D1B] leading-6 mb-2 group-hover:text-[#005B5B] transition-colors duration-300">{group.name}</h4>
-                        <p className="text-[13px] text-[#6E7979] leading-[21px] line-clamp-3">{group.desc}</p>
+                        <h4 className="mb-2 text-[18px] leading-6 font-extrabold text-[#181D1B] transition-colors duration-300 group-hover:text-[#005B5B]">
+                            {group.name}
+                        </h4>
+                        <p className="line-clamp-3 text-[13px] leading-[21px] text-[#6E7979]">
+                            {group.desc}
+                        </p>
                     </div>
 
-                    <div className="flex justify-between items-end mt-6">
-                        {showAvatars ? (
-                            <div className="flex flex-col gap-1.5">
-                                <div className="flex -space-x-1.5">
-                                    {group.memberAvatars.slice(0, 2).map((avatar, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="w-7.5 h-7.5 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative shadow-xs"
-                                        >
-                                            <Image
-                                                src={resolveImageUrl(avatar, "/assets/images/avatars/avatar-1.jpg")}
-                                                alt=""
-                                                fill
-                                                sizes="30px"
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                    ))}
-                                    {group.memberCount > 2 && (
-                                        <div className="w-7.5 h-7.5 rounded-full border-2 border-white bg-[#EAEFEC] flex justify-center items-center shadow-xs">
-                                            <span
-                                                className="text-[10px] font-bold text-[#526160]"
-                                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    <div className="mt-6 rounded-2xl border border-[#E4D1B2]/80 bg-[#F8EEDB] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+                        <div className="flex items-end justify-between gap-3">
+                            {showAvatars ? (
+                                <div className="flex min-w-0 flex-col gap-1.5">
+                                    <div className="flex -space-x-1.5">
+                                        {group.memberAvatars.slice(0, 2).map((avatar, index) => (
+                                            <div
+                                                key={index}
+                                                className="relative h-8 w-8 overflow-hidden rounded-full border-2 border-[#FFFDF7] bg-[#EFE3D0] shadow-[0_4px_10px_rgba(79,55,30,0.14)]"
                                             >
-                                                {extraLabel}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                                <p
-                                    className="text-[10.5px] font-bold text-[#BEC9C8] tracking-[0.55px] uppercase leading-none"
-                                    style={{
-                                        fontFamily:
-                                            group.memberCount >= 1000
-                                                ? "'Plus Jakarta Sans', sans-serif"
-                                                : "Manrope",
-                                    }}
-                                >
-                                    {formatMemberCount(group.memberCount)} メンバー
-                                </p>
-                            </div>
-                        ) : (
-                            <p className="text-[10.5px] font-bold text-[#BEC9C8] tracking-[0.55px] uppercase pb-1 leading-none">
-                                {group.memberCount > 0
-                                    ? `${formatMemberCount(group.memberCount)} メンバー`
-                                    : "メンバー募集中"}
-                            </p>
-                        )}
+                                                <Image
+                                                    src={resolveImageUrl(
+                                                        avatar,
+                                                        "/assets/images/avatars/avatar-1.jpg"
+                                                    )}
+                                                    alt=""
+                                                    fill
+                                                    sizes="32px"
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        ))}
 
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (!group.isJoined && onJoin) onJoin(group.id);
-                            }}
-                            disabled={group.isJoined || isJoining}
-                            className={`px-5 py-2.5 rounded-xl text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 shrink-0 active:scale-95 ${
-                                group.isJoined
-                                    ? "bg-[#923118]/8 text-[#923118] border border-[#923118]/20 cursor-default"
-                                    : "bg-white hover:bg-[#005B5B] text-[#005B5B] hover:text-white border border-[#005B5B]/35 hover:border-transparent cursor-pointer shadow-xs hover:shadow-[0_4px_12px_rgba(0,91,91,0.15)]"
-                            }`}
-                        >
-                            {group.isJoined && (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={3}
-                                    stroke="currentColor"
-                                    className="w-2.5 h-2.5"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                </svg>
+                                        {group.memberCount > 2 && (
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFDF7] bg-[#DDEDEA] shadow-[0_4px_10px_rgba(79,55,30,0.12)]">
+                                                <span
+                                                    className="text-[10px] font-bold text-[#005B5B]"
+                                                    style={{
+                                                        fontFamily:
+                                                            "'Plus Jakarta Sans', sans-serif",
+                                                    }}
+                                                >
+                                                    {extraLabel}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <p
+                                        className="text-[10.5px] leading-none font-bold tracking-[0.55px] text-[#8B5E34] uppercase"
+                                        style={{
+                                            fontFamily:
+                                                group.memberCount >= 1000
+                                                    ? "'Plus Jakarta Sans', sans-serif"
+                                                    : "Manrope",
+                                        }}
+                                    >
+                                        {formatMemberCount(group.memberCount)} メンバー
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="pb-1 text-[10.5px] leading-none font-bold tracking-[0.55px] text-[#8B5E34] uppercase">
+                                    {group.memberCount > 0
+                                        ? `${formatMemberCount(group.memberCount)} メンバー`
+                                        : "メンバー募集中"}
+                                </p>
                             )}
-                            {group.isJoined ? "参加中" : isJoining ? "処理中…" : "参加する"}
-                        </button>
+
+                            <button
+                                type="button"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+
+                                    if (!group.isJoined && onJoin) {
+                                        onJoin(group.id);
+                                    }
+                                }}
+                                disabled={group.isJoined || isJoining}
+                                className={`flex shrink-0 items-center gap-1.5 rounded-2xl px-5 py-2.5 text-[13px] font-bold transition-all duration-300 active:scale-95 ${group.isJoined
+                                        ? "cursor-default border border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118]"
+                                        : "cursor-pointer border border-[#005B5B]/25 bg-[#FFFDF7] text-[#005B5B] shadow-sm hover:border-transparent hover:bg-[#005B5B] hover:text-white hover:shadow-[0_10px_22px_rgba(0,91,91,0.18)]"
+                                    }`}
+                            >
+                                {group.isJoined && (
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={3}
+                                        stroke="currentColor"
+                                        className="h-2.5 w-2.5"
+                                        aria-hidden
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="m4.5 12.75 6 6 9-13.5"
+                                        />
+                                    </svg>
+                                )}
+
+                                {group.isJoined ? "参加中" : isJoining ? "処理中…" : "参加する"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </article>
