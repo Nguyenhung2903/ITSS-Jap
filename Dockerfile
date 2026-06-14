@@ -35,6 +35,7 @@ RUN npm run build
 
 # --- 3. Finalize setup ---
 WORKDIR /app
+COPY database/ /app/database/
 COPY nginx.conf /app/nginx.conf
 COPY start.sh /app/start.sh
 
