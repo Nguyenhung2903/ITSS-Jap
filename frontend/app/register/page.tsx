@@ -77,7 +77,7 @@ export default function RegisterPage() {
         event.preventDefault();
         setError(null);
 
-        if (!email.trim() || !password.trim() || !nationality || purposes.length === 0 || !file) {
+        if (!email.trim() || !password.trim() || !nationality || purposes.length === 0) {
             setError("すべての項目を入力・選択してください。");
             return;
         }
@@ -90,7 +90,9 @@ export default function RegisterPage() {
             formData.append("password", password);
             formData.append("language", nationality);
             formData.append("purpose", purposes.join(", "));
-            formData.append("cccd", file);
+            if (file) {
+                formData.append("cccd", file);
+            }
 
             const response = await fetch("/api/auth/register", {
                 method: "POST",
@@ -398,7 +400,7 @@ export default function RegisterPage() {
                                             </div>
                                             <div className="flex flex-col items-center gap-1 text-center">
                                                 <span className="text-[14px] font-semibold text-[#181D1B]">
-                                                    プロフィール写真をアップロード
+                                                    プロフィール写真をアップロード（任意）
                                                 </span>
                                                 <span className="text-[12px] font-medium text-[#6E7979]">
                                                     JPEG, PNG, WEBP / 最大5MB

@@ -7,6 +7,8 @@ const { signToken } = require("../utils/jwt");
 const cloudinary = require("../utils/cloudinary");
 const { hasCloudinaryConfig } = require("../utils/cloudinary");
 
+const DEFAULT_AVATAR_URL = "/assets/images/avatars/avatar.jpg";
+
 exports.register = async (req, res) => {
     try {
 
@@ -28,18 +30,6 @@ exports.register = async (req, res) => {
             });
         }
 
-        if (!req.file) {
-            return res.status(400).json({
-                error: "CCCD required",
-            });
-        }
-
-        if (!hasCloudinaryConfig()) {
-            return res.status(503).json({
-                error: "Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
-            });
-        }
-
         const existed = await prisma.verifiedUser.findUnique({
             where: {
                 email: email.trim().toLowerCase(),
@@ -52,24 +42,36 @@ exports.register = async (req, res) => {
             });
         }
 
-        const uploadResult = await new Promise((resolve, reject) => {
+        let avatarUrl = DEFAULT_AVATAR_URL;
+        let documentImageUrl = DEFAULT_AVATAR_URL;
 
-            const stream = cloudinary.uploader.upload_stream(
-                {
-                    folder: "avatars",
-                },
-                (error, result) => {
+        if (req.file && hasCloudinaryConfig()) {
+            try {
+                const uploadResult = await new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        {
+                            folder: "avatars",
+                        },
+                        (error, result) => {
+                            if (error) {
+                                return reject(error);
+                            }
 
-                    if (error) {
-                        return reject(error);
-                    }
+                            resolve(result);
+                        }
+                    );
 
-                    resolve(result);
+                    stream.end(req.file.buffer);
+                });
+
+                if (uploadResult?.secure_url) {
+                    avatarUrl = uploadResult.secure_url;
+                    documentImageUrl = uploadResult.secure_url;
                 }
-            );
-
-            stream.end(req.file.buffer);
-        });
+            } catch (uploadError) {
+                console.error("REGISTER AVATAR UPLOAD ERROR:", uploadError);
+            }
+        }
 
         const hashed = await bcrypt.hash(password.trim(), 10);
         /** @type {any} */
@@ -77,7 +79,7 @@ exports.register = async (req, res) => {
             data: {
                 email: email.trim().toLowerCase(),
                 password: hashed,
-                avatarUrl: uploadResult.secure_url,
+                avatarUrl,
                 status: UserStatus.VERIFIED,
             },
         });
@@ -115,7 +117,7 @@ exports.register = async (req, res) => {
 
         await prisma.kycRequest.create({
             data: {
-                documentImageUrl: uploadResult.secure_url,
+                documentImageUrl,
                 status: KycStatus.APPROVED,
                 userId: user.id,
             },
