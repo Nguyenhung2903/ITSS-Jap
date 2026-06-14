@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const AUTH_COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: false, // Set to false to support SSL termination behind reverse proxies (like Hugging Face)
-    sameSite: "lax" as const,
+    secure: isProduction,
+    sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
 };

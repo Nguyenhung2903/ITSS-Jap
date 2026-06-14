@@ -5,6 +5,7 @@ const { splitPurposeValues } = require("../utils/purposeUtils");
 
 const { signToken } = require("../utils/jwt");
 const cloudinary = require("../utils/cloudinary");
+const { hasCloudinaryConfig } = require("../utils/cloudinary");
 
 exports.register = async (req, res) => {
     try {
@@ -30,6 +31,12 @@ exports.register = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({
                 error: "CCCD required",
+            });
+        }
+
+        if (!hasCloudinaryConfig()) {
+            return res.status(503).json({
+                error: "Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
             });
         }
 
@@ -154,16 +161,10 @@ exports.login = async (req, res) => {
             });
         }
 
-        console.log("INPUT:", password.trim());
-
-        console.log("HASH:", user.password);
-
         const valid = await bcrypt.compare(
             password.trim(),
             user.password
         );
-
-        console.log("VALID:", valid);
 
         if (!valid) {
             return res.status(400).json({
