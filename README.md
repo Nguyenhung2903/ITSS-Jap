@@ -1,3 +1,13 @@
+---
+title: Tomoio
+emoji: 🌸
+colorFrom: green
+colorTo: teal
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Tomoio Local Development
 
 Du an gom 3 phan:
