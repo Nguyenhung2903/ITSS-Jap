@@ -72,7 +72,7 @@ function buildGallery(user) {
             photos.push(photo.url);
         }
     }
-    return photos.length > 0 ? photos : ["/image/avatar-large.png"];
+    return photos.length > 0 ? photos : ["/assets/images/avatars/avatar.jpg"];
 }
 
 async function getIsVerified(userId) {

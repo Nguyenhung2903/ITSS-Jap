@@ -35,7 +35,7 @@ export function formatApiEvent(event: ApiEvent, currentUserId?: number): EventCa
         .map((url) => resolveImageUrl(url));
 
     const participantCount = event.participantCount ?? joinedEngagements.length;
-    const displayAvatars = avatars.length > 0 ? avatars : ["/image/avatar.jpg"];
+    const displayAvatars = avatars.length > 0 ? avatars : ["/assets/images/avatars/avatar.jpg"];
     const extraCount = Math.max(participantCount - 3, 0);
     const isJoined = currentUserId
         ? joinedEngagements.some((e) => e.userId === currentUserId)
@@ -52,7 +52,7 @@ export function formatApiEvent(event: ApiEvent, currentUserId?: number): EventCa
         format: event.format,
         address: event.address,
         urlLink: event.urlLink,
-        imageUrl: resolveImageUrl(event.imageUrl, "/image/event-1.png"),
+        imageUrl: resolveImageUrl(event.imageUrl, "/assets/images/events/event-1.png"),
         isNew,
         memberAvatars: displayAvatars,
         extraMemberCount: extraCount,

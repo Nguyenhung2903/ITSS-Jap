@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   title: "Tomoio",
   description: "Kết nối giao lưu văn hóa Việt - Nhật tại Hà Nội",
   icons: {
-    icon: "/image/hero-bg.png",
+    icon: "/assets/images/home/hero-bg.png",
   }
 };
 

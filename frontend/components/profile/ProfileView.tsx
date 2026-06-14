@@ -671,7 +671,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                   ? [profile.avatarUrl]
                   : [];
         const unique = [...new Set(raw.filter(Boolean))];
-        return unique.length > 0 ? unique : ["/image/avatar-large.png"];
+        return unique.length > 0 ? unique : ["/assets/images/avatars/avatar.jpg"];
     }, [profile.gallery, profile.avatarUrl]);
 
     const goPrev = useCallback(() => {

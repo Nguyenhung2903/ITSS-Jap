@@ -22,7 +22,7 @@ export type ApiGroup = {
     members?: { user?: { avatarUrl?: string | null } }[];
 };
 
-const DEFAULT_COVERS = ["/image/rec-1.png", "/image/rec-2.png", "/image/rec-3.png"];
+const DEFAULT_COVERS = ["/assets/images/recommendations/rec-1.png", "/assets/images/recommendations/rec-2.png", "/assets/images/recommendations/rec-3.png"];
 
 export function formatJoinedGroup(g: ApiGroup): JoinedGroupItem {
     const memberCount = g.memberCount ?? g._count?.members ?? 0;
@@ -30,7 +30,7 @@ export function formatJoinedGroup(g: ApiGroup): JoinedGroupItem {
         id: g.groupId,
         name: g.name,
         members: `${memberCount.toLocaleString("ja-JP")} メンバー`,
-        img: g.groupAvatar || "/image/group-1.jpg",
+        img: g.groupAvatar || "/assets/images/groups/group-1.jpg",
     };
 }
 

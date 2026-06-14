@@ -1,6 +1,6 @@
 const PLACEHOLDER_HOSTS = new Set(["example.com", "www.example.com"]);
 
-export function resolveImageUrl(url?: string | null, fallback = "/image/avatar.jpg") {
+export function resolveImageUrl(url?: string | null, fallback = "/assets/images/avatars/avatar.jpg") {
     if (!url?.trim()) return fallback;
 
     try {

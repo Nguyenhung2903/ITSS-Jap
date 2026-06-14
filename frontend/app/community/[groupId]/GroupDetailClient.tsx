@@ -19,7 +19,7 @@ import {
     readGroupPageCache,
 } from "@/lib/group-client";
 
-const DEFAULT_AVATAR = "/image/avatar.jpg";
+const DEFAULT_AVATAR = "/assets/images/avatars/avatar.jpg";
 
 type GroupDetailClientProps = {
     groupId: number;
@@ -294,7 +294,7 @@ export default function GroupDetailClient({
                     <div className="w-full bg-white border-b border-footer shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col items-center">
                         <div className="w-full max-w-5xl h-64 relative bg-gray-300">
                             <Image
-                                src={groupInfo.groupCover || "/image/city-bg.png"}
+                                src={groupInfo.groupCover || "/assets/images/home/city-bg.png"}
                                 alt="Cover"
                                 fill
                                 sizes="(max-width: 1024px) 100vw, 1024px"
@@ -308,7 +308,7 @@ export default function GroupDetailClient({
                                 <div className="w-32 h-32 bg-white rounded-2xl p-1 border border-footer shadow-md shrink-0">
                                     <div className="w-full h-full relative rounded-xl overflow-hidden">
                                         <Image
-                                            src={groupInfo.groupAvatar || "/image/group-1.jpg"}
+                                            src={groupInfo.groupAvatar || "/assets/images/groups/group-1.jpg"}
                                             alt={groupInfo.name}
                                             fill
                                             sizes="128px"

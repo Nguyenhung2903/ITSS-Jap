@@ -2,7 +2,7 @@ import Image from "next/image";
 import { fetchPublicStats } from "@/lib/stats-server";
 import { resolveImageUrl } from "@/lib/image";
 
-const FALLBACK_AVATARS = ["/image/avatar-1.jpg", "/image/avatar-2.jpg", "/image/avatar-3.jpg"];
+const FALLBACK_AVATARS = ["/assets/images/avatars/avatar-1.jpg", "/assets/images/avatars/avatar-2.jpg", "/assets/images/avatars/avatar-3.jpg"];
 
 function formatExtraUserCount(count: number) {
     if (count >= 1000) {
@@ -31,7 +31,7 @@ export default async function StatsSection() {
                 <div className="md:col-span-8 relative bg-surface rounded-3xl p-8 overflow-hidden flex flex-col justify-between h-full isolation-isolate">
                     <div className="absolute top-0 right-0 bottom-0 w-[33.33%] z-1">
                         <Image
-                            src="/image/city-bg.png"
+                            src="/assets/images/home/city-bg.png"
                             alt="Cityscape"
                             fill
                             className="object-cover opacity-10"

@@ -49,7 +49,7 @@ export default async function EventsSection() {
                         >
                             <div className="relative w-full h-48 bg-gray-200">
                                 <Image
-                                    src={event.imageUrl ?? "/image/event-1.png"}
+                                    src={event.imageUrl ?? "/assets/images/events/event-1.png"}
                                     alt={event.title}
                                     fill
                                     className="object-cover"

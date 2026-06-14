@@ -89,7 +89,7 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
                                             className="w-8 h-8 rounded-full border-2 border-white bg-gray-400 overflow-hidden relative"
                                         >
                                             <Image
-                                                src={avatar || "/image/avatar-1.jpg"}
+                                                src={avatar || "/assets/images/avatars/avatar-1.jpg"}
                                                 alt=""
                                                 fill
                                                 sizes="32px"

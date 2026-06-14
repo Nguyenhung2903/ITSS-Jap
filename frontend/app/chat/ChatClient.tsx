@@ -26,7 +26,7 @@ import { resolveTranslatedText } from "@/lib/chat-translation";
 import { useAuth } from "@/lib/auth-context";
 import ChatImagePreview from "@/components/chat/ChatImagePreview";
 
-const DEFAULT_AVATAR = "/image/avatar-1.jpg";
+const DEFAULT_AVATAR = "/assets/images/avatars/avatar-1.jpg";
 
 type SessionUser = {
     id: number;

@@ -6,7 +6,7 @@ export default function HeroSection() {
         <section className="w-full mx-auto justify-center">
             <div className="relative w-full min-h-125 md:h-130 rounded-3xl overflow-hidden flex items-center shadow-lg py-[65.5px]">
                 <div className="absolute inset-0 z-0 bg-footer">
-                    <Image src="/image/hero-bg.png" alt="日本の風景" fill className="w-full object-cover object-center" priority />
+                    <Image src="/assets/images/home/hero-bg.png" alt="日本の風景" fill className="w-full object-cover object-center" priority />
                     <div className="absolute inset-0 bg-linear-to-r from-[#1B7575]/90 via-[#1B7575]/40 to-[#1B7575]/0"></div>
                 </div>
                 <div className="relative z-10 p-8 md:p-16 flex flex-col items-start max-w-2xl">

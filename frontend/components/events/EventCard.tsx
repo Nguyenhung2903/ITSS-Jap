@@ -33,7 +33,7 @@ type EventCardProps = {
 
 export default function EventCard({ event, onJoin, isJoining }: EventCardProps) {
     const isOnline = event.format === "online";
-    const imageSrc = resolveImageUrl(event.imageUrl, "/image/event-1.png");
+    const imageSrc = resolveImageUrl(event.imageUrl, "/assets/images/events/event-1.png");
 
     return (
         <article className="flex w-full min-h-[400px] flex-col overflow-hidden rounded-xl border border-[rgba(169,180,177,0.1)] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] lg:flex-row">

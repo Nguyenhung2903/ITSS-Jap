@@ -1,9 +1,8 @@
 {
-  "name": "36-be",
+  "name": "tomoio-backend",
   "version": "1.0.0",
-  "description": "ITSS 1",
-  "main": "index.js",
-  "types": "module",
+  "description": "Tomoio local backend API",
+  "main": "src/server.js",
   "scripts": {
     "build": "prisma generate",
     "postinstall": "prisma generate",
@@ -17,10 +16,6 @@
   "prisma": {
     "seed": "node prisma/seed.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hthanggg0221/36-be.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -28,10 +23,6 @@
     "node": ">=20"
   },
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/hthanggg0221/36-be/issues"
-  },
-  "homepage": "https://github.com/hthanggg0221/36-be#readme",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcrypt": "^6.0.0",

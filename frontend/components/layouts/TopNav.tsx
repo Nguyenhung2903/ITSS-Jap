@@ -23,7 +23,7 @@ export default function TopNav({
     onSearch,
 }: TopNavProps) {
     const { user } = useAuth();
-    const avatarUrl = user?.avatarUrl || "/image/avatar.jpg";
+    const avatarUrl = user?.avatarUrl || "/assets/images/avatars/avatar.jpg";
 
     return (
         <header className="relative w-full h-18 bg-[rgba(255,255,255,0.7)] backdrop-blur-[6px] flex justify-between items-center px-8 top-0 z-40">
