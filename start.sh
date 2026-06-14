@@ -13,11 +13,19 @@ if [ -z "$DATABASE_URL" ]; then
     exit 1
 fi
 
-# Fallback DIRECT_URL to DATABASE_URL if not set (needed for Prisma schema validation)
+# Fallback DIRECT_URL if not set (needed for Prisma schema validation/migrations)
 if [ -z "$DIRECT_URL" ]; then
-    echo "DIRECT_URL is not set. Using DATABASE_URL as fallback."
-    export DIRECT_URL="$DATABASE_URL"
+    if [[ "$DATABASE_URL" == *"-pooler."* ]]; then
+        echo "DIRECT_URL is not set. Deriving Neon direct URL from DATABASE_URL."
+        export DIRECT_URL="${DATABASE_URL/-pooler/}"
+    else
+        echo "DIRECT_URL is not set. Using DATABASE_URL as fallback."
+        export DIRECT_URL="$DATABASE_URL"
+    fi
 fi
+
+# Neon pooler can time out Prisma advisory locks during Space restarts.
+export PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK=1
 
 # Fallback JWT_SECRET if not set to prevent login crashes
 if [ -z "$JWT_SECRET" ]; then
@@ -28,7 +36,19 @@ fi
 # 1. Run Prisma Migration
 echo "Applying Prisma migrations to the Neon.tech database..."
 cd /app/backend
-./node_modules/.bin/prisma migrate deploy
+MIGRATE_OK=0
+for attempt in 1 2 3; do
+    if ./node_modules/.bin/prisma migrate deploy; then
+        MIGRATE_OK=1
+        break
+    fi
+    echo "Prisma migrate deploy failed on attempt $attempt. Retrying in 5 seconds..."
+    sleep 5
+done
+
+if [ "$MIGRATE_OK" -ne 1 ]; then
+    echo "WARNING: Prisma migrate deploy failed after retries. Continuing startup with existing schema."
+fi
 
 # 2. Auto-approve records that previously depended on an admin UI
 echo "Auto-approving records that require admin review..."
