@@ -311,7 +311,7 @@ export default function ChatClient({
     const [isLoadingChats, setIsLoadingChats] = useState(false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
-    const [isTranslationOn, setIsTranslationOn] = useState(true);
+    const [isTranslationOn, setIsTranslationOn] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [messageText, setMessageText] = useState("");
     const [error, setError] = useState<string | null>(null);

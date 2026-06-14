@@ -1035,8 +1035,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-[32px] bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
 
                                 <div className="relative overflow-hidden rounded-[28px] border border-[#F1E5CF] bg-[#F5EBD8] p-4 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">
-                                    <div className="pointer-events-none absolute inset-x-4 top-4 h-1 rounded-full bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
-                                    <div className="relative mt-3 aspect-square w-full overflow-hidden rounded-2xl border-[10px] border-[#FFFDF7] bg-white shadow-inner">
+                                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-[10px] border-[#FFFDF7] bg-white shadow-inner">
                                     <Image
                                         src={resolveImageUrl(activeImage)}
                                         alt={profile.name}
