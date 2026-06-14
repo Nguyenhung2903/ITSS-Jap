@@ -6,6 +6,7 @@ import Sidebar from "@/components/layouts/Sidebar";
 import TopNav from "@/components/layouts/TopNav";
 import { joinGroupAction, leaveGroupAction } from "@/app/actions/group";
 import { useAuth } from "@/lib/auth-context";
+import { resolveImageUrl } from "@/lib/image";
 import {
     createPostAction,
     likePostAction,
@@ -278,7 +279,7 @@ export default function GroupDetailClient({
         return [user.lastName, user.firstName].filter(Boolean).join(" ") || "ユーザー";
     };
 
-    const getAvatar = (user: any) => user?.avatarUrl || DEFAULT_AVATAR;
+    const getAvatar = (user: any) => resolveImageUrl(user?.avatarUrl, DEFAULT_AVATAR);
 
     const allTags = [
         ...(groupInfo.hobbyTags || []).map((t) => t.name),

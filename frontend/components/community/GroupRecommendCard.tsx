@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { resolveImageUrl } from "@/lib/image";
 
 export type GroupCardData = {
     id: number;
@@ -44,25 +45,25 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
 
     return (
         <Link href={`/community/${group.id}`} className="block h-full">
-            <article className="h-full bg-white rounded-[32px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group cursor-pointer hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)] transition-shadow">
-                <div className="h-48 w-full relative shrink-0 bg-gray-300 overflow-hidden">
+            <article className="h-full bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.015)] overflow-hidden flex flex-col group cursor-pointer hover:shadow-[0_25px_50px_rgba(0,91,91,0.07)] hover:-translate-y-1.5 transition-all duration-300 ease-out border border-[#DFE3E1]/40">
+                <div className="h-44 w-full relative shrink-0 bg-gray-100 overflow-hidden">
                     <Image
                         src={group.coverImg}
                         alt={group.name}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     {displayTags.length > 0 && (
-                        <div className="absolute bottom-6 left-6 flex flex-row gap-2">
+                        <div className="absolute bottom-5 left-5 flex flex-row gap-2 z-10">
                             {displayTags.map((tag, index) => (
                                 <span
                                     key={`${tag}-${index}`}
-                                    className={`px-3 py-1 rounded-full text-[10px] font-bold text-white tracking-[0.5px] uppercase ${
+                                    className={`px-3 py-1 rounded-full text-[10px] font-black text-white tracking-[0.5px] uppercase ${
                                         index === 0
-                                            ? "bg-[rgba(0,91,91,0.9)]"
-                                            : "bg-white/20 backdrop-blur-md"
+                                            ? "bg-[#005B5B] shadow-[0_2px_4px_rgba(0,91,91,0.3)]"
+                                            : "bg-white/20 backdrop-blur-md border border-white/10"
                                     }`}
                                     style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                 >
@@ -73,32 +74,32 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
                     )}
                 </div>
 
-                <div className="flex-1 p-8 flex flex-col justify-between min-h-[254px]">
+                <div className="flex-1 p-6 flex flex-col justify-between min-h-[240px] bg-white">
                     <div>
-                        <h4 className="text-[20px] font-normal text-[#181D1B] leading-7 mb-3">{group.name}</h4>
-                        <p className="text-[14px] text-[#526160] leading-[23px] line-clamp-2">{group.desc}</p>
+                        <h4 className="text-[18px] font-extrabold text-[#181D1B] leading-6 mb-2 group-hover:text-[#005B5B] transition-colors duration-300">{group.name}</h4>
+                        <p className="text-[13px] text-[#6E7979] leading-[21px] line-clamp-3">{group.desc}</p>
                     </div>
 
-                    <div className="flex justify-between items-end mt-7">
+                    <div className="flex justify-between items-end mt-6">
                         {showAvatars ? (
-                            <div className="flex flex-col gap-[3px]">
-                                <div className="flex -space-x-2">
+                            <div className="flex flex-col gap-1.5">
+                                <div className="flex -space-x-1.5">
                                     {group.memberAvatars.slice(0, 2).map((avatar, idx) => (
                                         <div
                                             key={idx}
-                                            className="w-8 h-8 rounded-full border-2 border-white bg-gray-400 overflow-hidden relative"
+                                            className="w-7.5 h-7.5 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative shadow-xs"
                                         >
                                             <Image
-                                                src={avatar || "/assets/images/avatars/avatar-1.jpg"}
+                                                src={resolveImageUrl(avatar, "/assets/images/avatars/avatar-1.jpg")}
                                                 alt=""
                                                 fill
-                                                sizes="32px"
+                                                sizes="30px"
                                                 className="object-cover"
                                             />
                                         </div>
                                     ))}
                                     {group.memberCount > 2 && (
-                                        <div className="w-8 h-8 rounded-full border-2 border-white bg-[#EAEFEC] flex justify-center items-center">
+                                        <div className="w-7.5 h-7.5 rounded-full border-2 border-white bg-[#EAEFEC] flex justify-center items-center shadow-xs">
                                             <span
                                                 className="text-[10px] font-bold text-[#526160]"
                                                 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
@@ -109,7 +110,7 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
                                     )}
                                 </div>
                                 <p
-                                    className="text-[11px] text-[#6E7979] tracking-[0.55px] uppercase leading-4"
+                                    className="text-[10.5px] font-bold text-[#BEC9C8] tracking-[0.55px] uppercase leading-none"
                                     style={{
                                         fontFamily:
                                             group.memberCount >= 1000
@@ -121,9 +122,9 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
                                 </p>
                             </div>
                         ) : (
-                            <p className="text-[11px] font-normal text-[#6E7979] tracking-[0.55px] uppercase pb-1">
+                            <p className="text-[10.5px] font-bold text-[#BEC9C8] tracking-[0.55px] uppercase pb-1 leading-none">
                                 {group.memberCount > 0
-                                    ? `${formatMemberCount(group.memberCount)}人のメンバー`
+                                    ? `${formatMemberCount(group.memberCount)} メンバー`
                                     : "メンバー募集中"}
                             </p>
                         )}
@@ -136,10 +137,10 @@ export default function GroupRecommendCard({ group, onJoin, isJoining }: GroupRe
                                 if (!group.isJoined && onJoin) onJoin(group.id);
                             }}
                             disabled={group.isJoined || isJoining}
-                            className={`px-6 py-3 rounded-xl text-[14px] font-normal flex items-center gap-2 transition-opacity shrink-0 ${
+                            className={`px-5 py-2.5 rounded-xl text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 shrink-0 active:scale-95 ${
                                 group.isJoined
-                                    ? "bg-[#923118] text-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] cursor-default"
-                                    : "bg-[#D3E3E1] text-[#566664] hover:opacity-80"
+                                    ? "bg-[#923118]/8 text-[#923118] border border-[#923118]/20 cursor-default"
+                                    : "bg-white hover:bg-[#005B5B] text-[#005B5B] hover:text-white border border-[#005B5B]/35 hover:border-transparent cursor-pointer shadow-xs hover:shadow-[0_4px_12px_rgba(0,91,91,0.15)]"
                             }`}
                         >
                             {group.isJoined && (

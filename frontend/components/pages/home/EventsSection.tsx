@@ -45,7 +45,7 @@ export default async function EventsSection() {
                         <Link
                             key={event.id}
                             href="/events"
-                            className="w-full max-w-69 mx-auto h-81.5 bg-white border border-[#BEC9C8]/20 shadow-[0_1px_2px_rgba(0,0,0,0.05)] rounded-2xl flex flex-col overflow-hidden hover:shadow-md transition-shadow"
+                            className="w-full max-w-69 mx-auto h-81.5 bg-white border border-[#DFE3E1]/40 shadow-[0_2px_12px_rgba(0,0,0,0.01)] rounded-2xl flex flex-col overflow-hidden hover:shadow-[0_20px_40px_rgba(0,91,91,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                         >
                             <div className="relative w-full h-48 bg-gray-200">
                                 <Image

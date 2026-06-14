@@ -1,6 +1,6 @@
 export default function MissionSection() {
     return (
-        <section className="w-full max-w-4xl mx-auto flex flex-col items-center">
+        <section id="mission" className="w-full max-w-4xl mx-auto flex flex-col items-center">
             <div className="flex flex-col items-center mb-12">
                 <div className="w-16 h-1 bg-[#923118] rounded-full mb-8"></div>
                 <h2 className="text-[36px] font-bold text-text-main leading-10 mb-6 text-center" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

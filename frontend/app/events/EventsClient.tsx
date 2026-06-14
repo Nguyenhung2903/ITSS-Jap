@@ -201,36 +201,36 @@ export default function EventsClient({
                 </div>
 
                 <div className="flex w-full flex-col items-center px-8 py-12">
-                    <div className="flex w-full max-w-[960px] flex-col gap-[15px]">
+                    <div className="flex w-full max-w-[960px] flex-col gap-[20px]">
                         <header className="flex flex-col gap-6 border-b border-[rgba(169,180,177,0.15)] pb-6 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex flex-col gap-1">
-                                <h1 className="text-[24px] font-bold leading-8 text-[#2A3432]">コミュニティイベント</h1>
-                                <p className="text-[14px] leading-5 text-[#727D7A]">
+                            <div className="flex flex-col gap-1.5">
+                                <h1 className="text-[30px] font-extrabold leading-10 text-[#181D1B] tracking-tight">コミュニティイベント</h1>
+                                <p className="text-[14px] font-medium leading-5 text-[#6E7979]">
                                     言語と文化をつなぐ、特別な体験に参加しましょう
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setCreateModalOpen(true)}
-                                className="flex shrink-0 items-center gap-2 rounded-full bg-[#036A6A] px-6 py-2.5 text-[14px] font-bold text-[#E0FFFE] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-90"
+                                className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#005B5B] to-[#1B7575] hover:from-[#004a4a] hover:to-[#134e4a] px-6 py-3.5 text-[14px] font-bold text-white shadow-[0_8px_16px_-4px_rgba(0,91,91,0.2)] hover:shadow-[0_12px_24px_-4px_rgba(0,91,91,0.3)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300 ease-out select-none cursor-pointer"
                             >
                                 <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
-                                    <path d="M4.5 0V9M0 4.5H9" stroke="#E0FFFE" strokeWidth="1.5" />
+                                    <path d="M4.5 0V9M0 4.5H9" stroke="white" strokeWidth="1.8" />
                                 </svg>
                                 イベントを作成
                             </button>
                         </header>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2.5 pb-2">
                             {TAB_OPTIONS.map((tab) => (
                                 <button
                                     key={tab.id}
                                     type="button"
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`rounded-full px-4 py-2 text-[14px] font-medium transition-colors ${
+                                    className={`rounded-full px-5 py-2.5 text-[14px] font-bold transition-all duration-300 ease-out active:scale-95 ${
                                         activeTab === tab.id
-                                            ? "bg-[#E1EAE7] text-[#536261]"
-                                            : "text-[#56615F] hover:bg-[#E1EAE7]/50"
+                                            ? "bg-[#005B5B] text-white shadow-[0_4px_12px_rgba(0,91,91,0.25)] scale-[1.02]"
+                                            : "bg-white hover:bg-[#EAF0ED] hover:border-[#005B5B]/30 text-[#3E4948] border border-[#DFE3E1]/70 hover:-translate-y-0.5 shadow-xs"
                                     }`}
                                 >
                                     {tab.label}
@@ -239,13 +239,13 @@ export default function EventsClient({
                         </div>
 
                         {createSuccess && (
-                            <div className="rounded-lg border border-[rgba(3,106,106,0.2)] bg-[rgba(3,106,106,0.06)] px-4 py-3 text-[14px] text-[#036A6A]">
+                            <div className="rounded-xl border border-[rgba(3,106,106,0.2)] bg-[rgba(3,106,106,0.06)] px-4 py-3.5 text-[14px] font-semibold text-[#036A6A] animate-profile-action-scale-in">
                                 {createSuccess}
                             </div>
                         )}
 
                         {errorMessage && (
-                            <div className="rounded-lg border border-[#E8B4B0] bg-[#FFF7F6] px-4 py-3 text-[14px] text-[#A43E24]">
+                            <div className="rounded-xl border border-[#E8B4B0] bg-[#FFF7F6] px-4 py-3.5 text-[14px] font-semibold text-[#A43E24] animate-profile-action-scale-in">
                                 <p>{errorMessage}</p>
                                 {isAuthenticated === false && (
                                     <Link
@@ -259,7 +259,7 @@ export default function EventsClient({
                         )}
 
                         {joinError && (
-                            <div className="rounded-lg border border-[#E8B4B0] bg-[#FFF7F6] px-4 py-3 text-[14px] text-[#A43E24]">
+                            <div className="rounded-xl border border-[#E8B4B0] bg-[#FFF7F6] px-4 py-3.5 text-[14px] font-semibold text-[#A43E24] animate-profile-action-scale-in">
                                 {joinError}
                             </div>
                         )}
@@ -269,11 +269,11 @@ export default function EventsClient({
                                 [1, 2, 3].map((s) => (
                                     <div
                                         key={s}
-                                        className="h-[400px] w-full animate-pulse rounded-xl bg-white/80"
+                                        className="h-[400px] w-full animate-pulse rounded-2xl bg-white border border-[#DFE3E1]/40 shadow-xs"
                                     />
                                 ))
                             ) : events.length > 0 ? (
-                                <div className={`flex flex-col gap-12 transition-opacity ${isRefreshing ? "opacity-60" : ""}`}>
+                                <div className={`flex flex-col gap-12 transition-opacity duration-300 ${isRefreshing ? "opacity-60" : ""}`}>
                                 {events.map((event) => (
                                     <EventCard
                                         key={event.id}
@@ -284,12 +284,12 @@ export default function EventsClient({
                                 ))}
                                 </div>
                             ) : (
-                                <div className="rounded-xl border border-dashed border-[rgba(169,180,177,0.3)] bg-white px-6 py-16 text-center text-[14px] text-[#727D7A]">
+                                <div className="rounded-2xl border border-dashed border-[#BEC9C8]/50 bg-white px-6 py-16 text-center text-[14px] text-[#727D7A] shadow-xs">
                                     {errorMessage ? (
                                         "イベントを読み込めませんでした。"
                                     ) : (
                                         <>
-                                            <p>
+                                            <p className="font-semibold">
                                                 {hasPendingSearch
                                                     ? `${MIN_SEARCH_LENGTH}文字以上入力してください。`
                                                     : normalizeSearchQuery(searchQuery)
@@ -301,7 +301,7 @@ export default function EventsClient({
                                                           : "表示できるイベントがありません。"}
                                             </p>
                                             {activeTab === "all" && !normalizeSearchQuery(searchQuery) && !hasPendingSearch && (
-                                                <p className="mt-2 text-[13px] leading-5">
+                                                <p className="mt-2 text-[13px] leading-5 text-gray-400">
                                                     一覧には「承認済み（APPROVED）」かつ「開催日が未来」のイベントのみ表示されます。
                                                     作成直後は承認待ち（PENDING）のため表示されません。
                                                 </p>
@@ -318,12 +318,21 @@ export default function EventsClient({
                                     type="button"
                                     onClick={handleLoadMore}
                                     disabled={isLoadingMore}
-                                    className="flex items-center gap-2 rounded-full bg-[#E1EAE7] px-6 py-3 text-[14px] font-bold text-[#036A6A] transition-opacity hover:opacity-90 disabled:opacity-60"
+                                    className="flex items-center justify-center gap-2 h-12 px-8 bg-white border border-[#DFE3E1]/70 hover:border-[#005B5B]/30 hover:bg-[#EBF1EE] hover:-translate-y-0.5 text-[#005B5B] text-[14px] font-bold rounded-full shadow-xs hover:shadow-[0_4px_12px_rgba(0,91,91,0.08)] active:scale-95 transition-all duration-300 ease-out cursor-pointer disabled:opacity-50"
                                 >
-                                    {isLoadingMore ? "読み込み中…" : "もっとイベントを表示"}
-                                    <svg width="7" height="5" viewBox="0 0 7 5" fill="none" aria-hidden>
-                                        <path d="M3.5 5L0 0.5H7L3.5 5Z" fill="#036A6A" />
-                                    </svg>
+                                    {isLoadingMore ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-[#005B5B] border-t-transparent rounded-full animate-spin" />
+                                            <span>読み込み中…</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>もっとイベントを表示</span>
+                                            <svg className="transition-transform duration-300 group-hover:translate-y-0.5" width="7" height="5" viewBox="0 0 7 5" fill="none" aria-hidden>
+                                                <path d="M3.5 5L0 0.5H7L3.5 5Z" fill="#005B5B" />
+                                            </svg>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         )}

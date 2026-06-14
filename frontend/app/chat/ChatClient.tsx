@@ -25,6 +25,7 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 import { resolveTranslatedText } from "@/lib/chat-translation";
 import { useAuth } from "@/lib/auth-context";
 import ChatImagePreview from "@/components/chat/ChatImagePreview";
+import { resolveImageUrl } from "@/lib/image";
 
 const DEFAULT_AVATAR = "/assets/images/avatars/avatar-1.jpg";
 
@@ -42,7 +43,7 @@ function getDisplayName(user?: { firstName?: string | null; lastName?: string | 
 }
 
 function getAvatarUrl(url?: string | null) {
-    return url || DEFAULT_AVATAR;
+    return resolveImageUrl(url, DEFAULT_AVATAR);
 }
 
 function formatMessageTime(dateStr: string) {

@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
+import { resolveImageUrl } from "@/lib/image";
 import TopNav from "@/components/layouts/TopNav";
 import ProfileEditModal from "@/components/profile/ProfileEditModal";
 import type { UserProfile } from "@/app/actions/profile";
@@ -691,84 +693,86 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                     <div
                         className={`w-full max-w-[944px] flex flex-col lg:flex-row gap-10 items-start transition-all duration-[400ms] ease-in-out will-change-transform ${!isOwn ? cardSwipeClass : ""}`}
                     >
-                        <div className="w-full lg:w-[370px] flex flex-col gap-6 shrink-0 lg:sticky lg:top-[120px]">
-                            <div className="flex flex-col gap-4 w-full">
-                                <div className="w-full h-[462.5px] rounded-[32px] bg-[#E5E9E6] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] relative overflow-hidden group">
-                                    <Image src={images[activeIndex]} alt={profile.name} fill className="object-cover" priority />
-                                    {!isOwn && swipeExit && <ActionSwipeOverlay direction={swipeExit} />}
-                                    {!isOwn && profile.isOnline && (
-                                        <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-white/20 shadow-sm backdrop-blur-md z-10">
-                                            <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
-                                            <span className="text-[10px] font-bold text-[#181D1B] uppercase tracking-[0.5px]">オンライン</span>
-                                        </div>
-                                    )}
-                                    {images.length > 1 && (
-                                        <>
-                                            <button type="button" onClick={goPrev} className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Previous photo">
-                                                <svg width="8" height="12" viewBox="0 0 8 12" fill="none"><path d="M6.5 1L1.5 6L6.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                            </button>
-                                            <button type="button" onClick={goNext} className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Next photo">
-                                                <svg width="8" height="12" viewBox="0 0 8 12" fill="none"><path d="M1.5 1L6.5 6L1.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                            </button>
-                                            <div className="absolute bottom-6 w-full flex justify-center gap-1.5 z-10">
-                                                {images.map((_, idx) => (
-                                                    <button key={idx} type="button" onClick={() => setActiveIndex(idx)} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === activeIndex ? "bg-white" : "bg-white/50"}`} aria-label={`Photo ${idx + 1}`} />
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                                {images.length > 1 && (
-                                    <div className="flex w-full gap-3 h-[83.5px]">
-                                        {images.slice(0, 4).map((img, idx) => (
-                                            <button
-                                                key={`${img}-${idx}`}
-                                                type="button"
-                                                onClick={() => setActiveIndex(idx)}
-                                                className={`relative w-[calc(25%-9px)] h-full rounded-xl overflow-hidden shrink-0 ${idx === activeIndex ? "ring-2 ring-[#005B5B] ring-offset-2" : "opacity-70 hover:opacity-100"} transition-opacity`}
-                                            >
-                                                <Image src={img} alt={`Gallery ${idx + 1}`} fill className="object-cover" sizes="80px" />
-                                            </button>
-                                        ))}
+                        <div className="w-full lg:w-[320px] bg-white border border-[#DFE3E1]/45 shadow-[0_8px_30px_rgba(0,91,91,0.03)] rounded-[32px] p-5 flex flex-col gap-5 shrink-0 lg:sticky lg:top-[120px]">
+                            <div className="w-full h-[300px] rounded-2xl bg-[#E5E9E6] relative overflow-hidden group">
+                                <Image src={resolveImageUrl(images[activeIndex])} alt={profile.name} fill className="object-cover" priority />
+                                {!isOwn && swipeExit && <ActionSwipeOverlay direction={swipeExit} />}
+                                {!isOwn && profile.isOnline && (
+                                    <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-white/20 shadow-sm backdrop-blur-md z-10">
+                                        <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                                        <span className="text-[10px] font-bold text-[#181D1B] uppercase tracking-[0.5px]">オンライン</span>
                                     </div>
                                 )}
+                                {images.length > 1 && (
+                                    <>
+                                        <button type="button" onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Previous photo">
+                                            <svg width="6" height="10" viewBox="0 0 8 12" fill="none"><path d="M6.5 1L1.5 6L6.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                        </button>
+                                        <button type="button" onClick={goNext} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Next photo">
+                                            <svg width="6" height="10" viewBox="0 0 8 12" fill="none"><path d="M1.5 1L6.5 6L1.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                        </button>
+                                        <div className="absolute bottom-4 w-full flex justify-center gap-1 z-10">
+                                            {images.map((_, idx) => (
+                                                <button key={idx} type="button" onClick={() => setActiveIndex(idx)} className={`w-1 h-1 rounded-full transition-colors ${idx === activeIndex ? "bg-white" : "bg-white/50"}`} aria-label={`Photo ${idx + 1}`} />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                            <div className="w-full bg-white border border-[#BEC9C8]/10 shadow-[0_1px_2px_rgba(0,0,0,0.05)] rounded-[32px] p-8 flex flex-col gap-5">
-                                <div className="flex items-end gap-3">
-                                    <h1 className="text-[36px] font-extrabold text-[#181D1B] tracking-[-0.9px] leading-[40px]">{profile.name}</h1>
-                                    {profile.age != null && <span className="text-[24px] font-light text-[#6E7979] leading-[32px] pb-1">{profile.age}</span>}
+                            
+                            {images.length > 1 && (
+                                <div className="flex w-full gap-2 h-[50px] -mt-1">
+                                    {images.slice(0, 4).map((img, idx) => (
+                                        <button
+                                            key={`${img}-${idx}`}
+                                            type="button"
+                                            onClick={() => setActiveIndex(idx)}
+                                            className={`relative w-[calc(25%-6px)] h-full rounded-lg overflow-hidden shrink-0 ${idx === activeIndex ? "ring-2 ring-[#005B5B] ring-offset-1" : "opacity-70 hover:opacity-100"} transition-opacity`}
+                                        >
+                                            <Image src={resolveImageUrl(img)} alt={`Gallery ${idx + 1}`} fill className="object-cover" sizes="80px" />
+                                        </button>
+                                    ))}
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <svg width="10" height="12" viewBox="0 0 10 12" fill="none" aria-hidden><path d="M5 0C2.23858 0 0 2.23858 0 5C0 8.75 5 12 5 12C5 12 10 8.75 10 5C10 2.23858 7.76142 0 5 0ZM5 7C3.89543 7 3 6.10457 3 5C3 3.89543 3.89543 3 5 3C6.10457 3 7 3.89543 7 5C7 6.10457 6.10457 7 5 7Z" fill="#1B7575" /></svg>
-                                    <span className="text-[16px] font-medium text-[#1B7575]">{profile.location}</span>
+                            )}
+
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-end gap-2.5">
+                                    <h1 className="text-[24px] font-extrabold text-[#181D1B] tracking-[-0.5px] leading-[30px]">{profile.name}</h1>
+                                    {profile.age != null && <span className="text-[18px] font-light text-[#6E7979] leading-[24px] pb-0.5">{profile.age}</span>}
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap text-[#1B7575]">
+                                    <svg width="10" height="12" viewBox="0 0 10 12" fill="none" aria-hidden><path d="M5 0C2.23858 0 0 2.23858 0 5C0 8.75 5 12 5 12C5 12 10 8.75 10 5C10 2.23858 7.76142 0 5 0ZM5 7C3.89543 7 3 6.10457 3 5C3 3.89543 3.89543 3 5 3C6.10457 3 7 3.89543 7 5C7 6.10457 6.10457 7 5 7Z" fill="currentColor" /></svg>
+                                    <span className="text-[14px] font-medium">{profile.location}</span>
                                     {!isOwn && profile.mutualFriendsCount > 0 && (
                                         <>
-                                            <span className="text-[16px] text-[#BEC9C8] px-1">·</span>
-                                            <span className="text-[14px] font-medium text-[#6E7979]">共通の友人が{profile.mutualFriendsCount}人います</span>
+                                            <span className="text-[14px] text-[#BEC9C8] px-0.5">·</span>
+                                            <span className="text-[13px] font-medium text-[#6E7979]">共通の友人が{profile.mutualFriendsCount}人</span>
                                         </>
                                     )}
                                 </div>
-                                <div className="flex flex-col gap-3 pt-1">
+                                
+                                <div className="flex flex-col gap-2.5">
                                     {profile.isVerified && (
-                                        <div className="w-full bg-[#EFF6FF] rounded-xl py-2 px-4 flex items-center gap-3">
-                                            <svg width="17" height="16" viewBox="0 0 17 16" fill="none" aria-hidden><path d="M15.5 7.625L14.075 5.9625L14.3 3.75L12.125 3.2625L11 1.35L9 2.2125L7 1.35L5.875 3.25L3.7 3.7375L3.925 5.95L2.5 7.625L3.925 9.3L3.7 11.5125L5.875 12L7 13.9125L9 13.05L11 13.9125L12.125 12L14.3 11.5125L14.075 9.3L15.5 7.625ZM7.6875 10.9375L4.875 8.125L5.93125 7.06875L7.6875 8.81875L11.5687 4.9375L12.625 6L7.6875 10.9375Z" fill="#1D4ED8" /></svg>
-                                            <span className="text-[12px] font-bold text-[#1D4ED8]">身分証確認済み</span>
+                                        <div className="w-full bg-[#EFF6FF] rounded-xl py-1.5 px-3.5 flex items-center gap-2.5">
+                                            <svg width="15" height="14" viewBox="0 0 17 16" fill="none" aria-hidden><path d="M15.5 7.625L14.075 5.9625L14.3 3.75L12.125 3.2625L11 1.35L9 2.2125L7 1.35L5.875 3.25L3.7 3.7375L3.925 5.95L2.5 7.625L3.925 9.3L3.7 11.5125L5.875 12L7 13.9125L9 13.05L11 13.9125L12.125 12L14.3 11.5125L14.075 9.3L15.5 7.625ZM7.6875 10.9375L4.875 8.125L5.93125 7.06875L7.6875 8.81875L11.5687 4.9375L12.625 6L7.6875 10.9375Z" fill="#1D4ED8" /></svg>
+                                            <span className="text-[11px] font-bold text-[#1D4ED8]">身分証確認済み</span>
                                         </div>
                                     )}
                                     {!isOwn && profile.isStoryteller && (
-                                        <div className="w-full bg-[#F0FDFA] rounded-xl py-2 px-4 flex items-center gap-3">
-                                            <svg width="17" height="15" viewBox="0 0 17 15" fill="none" aria-hidden><path d="M2 0H15C15.55 0 16 0.45 16 1V11C16 11.55 15.55 12 15 12H4L0 15V1C0 0.45 0.45 0 1 0H2Z" fill="#0F766E" /></svg>
-                                            <span className="text-[12px] font-bold text-[#0F766E]">ストーリーテラー</span>
+                                        <div className="w-full bg-[#F0FDFA] rounded-xl py-1.5 px-3.5 flex items-center gap-2.5">
+                                            <svg width="15" height="13" viewBox="0 0 17 15" fill="none" aria-hidden><path d="M2 0H15C15.55 0 16 0.45 16 1V11C16 11.55 15.55 12 15 12H4L0 15V1C0 0.45 0.45 0 1 0H2Z" fill="#0F766E" /></svg>
+                                            <span className="text-[11px] font-bold text-[#0F766E]">ストーリーテラー</span>
                                         </div>
                                     )}
                                 </div>
+                                
                                 {profile.purposes.length > 0 && (
-                                    <div className="w-full border-t border-[#BEC9C8]/10 pt-4 flex flex-col gap-3">
-                                        <h4 className="text-[10px] font-black text-[#005B5B] uppercase tracking-[1.5px]">交流の目的</h4>
-                                        <div className="flex flex-wrap gap-2">
+                                    <div className="w-full border-t border-[#BEC9C8]/10 pt-3 flex flex-col gap-2.5">
+                                        <h4 className="text-[10px] font-black text-[#005B5B] uppercase tracking-[1px]">交流の目的</h4>
+                                        <div className="flex flex-wrap gap-1.5">
                                             {profile.purposes.map((purpose) => (
-                                                <span key={purpose.label} className="bg-[#F0F5F2] rounded-lg px-3 py-2 text-[12px] font-bold text-[#3E4948] flex items-center gap-1.5">
-                                                    <span className="text-[14px]">{purpose.emoji}</span>
+                                                <span key={purpose.label} className="bg-[#F0F5F2] rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-[#3E4948] flex items-center gap-1">
+                                                    <span className="text-[12px]">{purpose.emoji}</span>
                                                     {purpose.label}
                                                 </span>
                                             ))}
@@ -777,46 +781,46 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                 )}
                             </div>
                         </div>
-                        <div className="flex-1 flex flex-col gap-10 min-w-0">
+                        <div className="flex-1 flex flex-col gap-6 min-w-0">
                             {profile.bio && (
-                                <section className="flex flex-col gap-4">
+                                <section className="flex flex-col gap-3">
                                     <h3 className="text-[12px] font-black text-[#005B5B] uppercase tracking-[2.4px]">自己紹介</h3>
-                                    <p className="text-[24px] font-medium text-[#3E4948] leading-[39px] whitespace-pre-wrap">{profile.bio}</p>
+                                    <div className="bg-white border border-[#DFE3E1]/40 rounded-[24px] p-6 shadow-xs">
+                                        <p className="text-[16px] font-medium text-[#3E4948] leading-[26px] whitespace-pre-wrap">{profile.bio}</p>
+                                    </div>
                                 </section>
                             )}
                             {profile.languages.length > 0 && (
                                 <section className="flex flex-col gap-4">
                                     <h3 className="text-[12px] font-black text-[#005B5B] uppercase tracking-[2.4px]">語学レベル</h3>
                                     {isOwn ? (
-                                        <div className="w-full bg-[#F0F5F2]/50 border border-[#BEC9C8]/10 rounded-[24px] p-6">
-                                            <div className="w-full bg-[#F0F5F2] rounded-[24px] p-8 flex flex-col gap-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-                                                {profile.languages.map((lang) => (
-                                                    <div key={lang.name} className="w-full bg-white border border-[#BEC9C8]/10 rounded-xl px-6 py-4 flex justify-between items-center">
-                                                        <span className="text-[16px] font-medium text-[#181D1B]">{lang.name}</span>
-                                                        <div className={`px-4 py-1.5 rounded-full ${lang.levelType === "learning" ? "bg-[#923118]/10" : "bg-[#005B5B]/10"}`}>
-                                                            <span className={`text-[10px] font-black ${lang.levelType === "learning" ? "text-[#923118]" : "text-[#005B5B]"}`}>{lang.levelText}</span>
-                                                        </div>
+                                        <div className="w-full bg-white border border-[#DFE3E1]/40 rounded-[24px] p-6 flex flex-col gap-4 shadow-xs">
+                                            {profile.languages.map((lang) => (
+                                                <div key={lang.name} className="w-full bg-[#F6FAF8] border border-[#DFE3E1]/30 rounded-xl px-5 py-3.5 flex justify-between items-center hover:border-[#005B5B]/20 transition-all duration-300">
+                                                    <span className="text-[15px] font-bold text-[#181D1B]">{lang.name}</span>
+                                                    <div className={`px-3 py-1 rounded-full text-[11px] font-black tracking-wide ${lang.levelType === "learning" ? "bg-[#923118]/8 text-[#923118]" : "bg-[#005B5B]/8 text-[#005B5B]"}`}>
+                                                        {lang.levelText}
                                                     </div>
-                                                ))}
-                                            </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : (
-                                        <div className="w-full bg-[#F0F5F2]/50 border border-[#BEC9C8]/10 rounded-[24px] p-6">
+                                        <div className="w-full bg-white border border-[#DFE3E1]/40 rounded-[24px] p-6 shadow-xs">
                                             <div className="w-full overflow-x-auto">
                                                 <table className="w-full min-w-[400px]">
                                                     <thead>
-                                                        <tr className="border-b border-[#BEC9C8]/20">
-                                                            <th className="text-left pb-4 text-[10px] font-bold text-[#6E7979] uppercase tracking-[1px]">言語</th>
-                                                            <th className="text-left pb-4 text-[10px] font-bold text-[#6E7979] uppercase tracking-[1px]">レベル</th>
-                                                            <th className="text-left pb-4 text-[10px] font-bold text-[#6E7979] uppercase tracking-[1px]">習熟度</th>
+                                                        <tr className="border-b border-[#DFE3E1]/40">
+                                                            <th className="text-left pb-3 text-[10px] font-black text-[#005B5B] uppercase tracking-[1px]">言語</th>
+                                                            <th className="text-left pb-3 text-[10px] font-black text-[#005B5B] uppercase tracking-[1px]">レベル</th>
+                                                            <th className="text-left pb-3 text-[10px] font-black text-[#005B5B] uppercase tracking-[1px]">習熟度</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {profile.languages.map((lang, idx) => (
-                                                            <tr key={lang.name} className={idx > 0 ? "border-t border-[#BEC9C8]/10" : ""}>
-                                                                <td className="py-4 text-[14px] font-bold text-[#181D1B]">{lang.name}</td>
-                                                                <td className="py-4 text-[14px] text-[#3E4948]">{lang.jlptLevel || (lang.levelType === "native" ? "ネイティブ" : "—")}</td>
-                                                                <td className="py-4"><ProgressBar percent={lang.proficiency} /></td>
+                                                            <tr key={lang.name} className={idx > 0 ? "border-t border-[#DFE3E1]/20" : ""}>
+                                                                <td className="py-3.5 text-[14px] font-bold text-[#181D1B]">{lang.name}</td>
+                                                                <td className="py-3.5 text-[14px] text-[#3E4948] font-medium">{lang.jlptLevel || (lang.levelType === "native" ? "ネイティブ" : "—")}</td>
+                                                                <td className="py-3.5"><ProgressBar percent={lang.proficiency} /></td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -831,8 +835,8 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                     <h3 className="text-[12px] font-black text-[#005B5B] uppercase tracking-[2.4px]">{isOwn ? "興味・関心" : "興味・趣味"}</h3>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                         {profile.interests.map((interest) => (
-                                            <div key={interest.name} className="bg-white border border-[#BEC9C8]/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 min-h-[77px]">
-                                                <span className="text-[20px]">{interest.icon}</span>
+                                            <div key={interest.name} className="bg-white border border-[#DFE3E1]/40 hover:border-[#005B5B]/20 hover:shadow-xs transition-all duration-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 min-h-[77px] group cursor-default">
+                                                <span className="text-[20px] group-hover:scale-110 transition-transform duration-300">{interest.icon}</span>
                                                 <span className="text-[12px] font-bold text-[#181D1B] text-center">{interest.name}</span>
                                             </div>
                                         ))}
@@ -842,18 +846,20 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                             {!isOwn && profile.upcomingEvent && (
                                 <section className="flex flex-col gap-4">
                                     <h3 className="text-[12px] font-black text-[#005B5B] uppercase tracking-[2.4px]">イベント・活動</h3>
-                                    <div className="w-full flex justify-between items-center p-5 rounded-2xl bg-gradient-to-br from-[#005B5B]/5 to-[#1B7575]/5 border border-[#005B5B]/10">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-[#005B5B] flex flex-col items-center justify-center text-white shrink-0">
-                                                <span className="text-[18px] font-bold leading-tight">{profile.upcomingEvent.dateLabel}</span>
+                                    <Link href="/events" className="block w-full transition-transform hover:scale-[1.01]">
+                                        <div className="w-full flex justify-between items-center p-5 rounded-2xl bg-gradient-to-br from-[#005B5B]/5 to-[#1B7575]/5 border border-[#005B5B]/10 hover:border-[#005B5B]/30">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-[#005B5B] flex flex-col items-center justify-center text-white shrink-0">
+                                                    <span className="text-[18px] font-bold leading-tight">{profile.upcomingEvent.dateLabel}</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[14px] font-bold text-[#181D1B]">{profile.upcomingEvent.title}</p>
+                                                    <p className="text-[12px] text-[#6E7979]">{profile.upcomingEvent.timeLabel}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-[14px] font-bold text-[#181D1B]">{profile.upcomingEvent.title}</p>
-                                                <p className="text-[12px] text-[#6E7979]">{profile.upcomingEvent.timeLabel}</p>
-                                            </div>
+                                            <span className="px-3 py-1 rounded-full bg-[#005B5B]/5 text-[10px] font-bold text-[#005B5B]">{profile.upcomingEvent.statusLabel}</span>
                                         </div>
-                                        <span className="px-3 py-1 rounded-full bg-[#005B5B]/5 text-[10px] font-bold text-[#005B5B]">{profile.upcomingEvent.statusLabel}</span>
-                                    </div>
+                                    </Link>
                                 </section>
                             )}
                             {isOwn ? (

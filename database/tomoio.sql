@@ -481,7 +481,17 @@ WHERE "username" LIKE 'seed_admin_%';
 CREATE TEMP TABLE "_seed_group_ids" ON COMMIT DROP AS
 SELECT "group_id"
 FROM "groups"
-WHERE "name" LIKE 'Seed Group %';
+WHERE "name" LIKE 'Seed Group %'
+   OR "name" LIKE '日本語会話クラブ %'
+   OR "name" LIKE 'ベトナム語初心者グループ %'
+   OR "name" LIKE 'ハノイ生活情報交換 %'
+   OR "name" LIKE '東京ベトナム交流会 %'
+   OR "name" LIKE 'JLPT N2勉強会 %'
+   OR "name" LIKE '旅行好きコミュニティ %'
+   OR "name" LIKE 'カフェで言語交換 %'
+   OR "name" LIKE '日本文化研究会 %'
+   OR "name" LIKE 'ベトナム料理を楽しむ会 %'
+   OR "name" LIKE 'IT・エンジニア交流会 %';
 
 CREATE TEMP TABLE "_seed_post_ids" ON COMMIT DROP AS
 SELECT "post_id"
@@ -504,8 +514,9 @@ WHERE "url_link" LIKE 'https://tomoio.local/events/seed-%'
 CREATE TEMP TABLE "_seed_report_ids" ON COMMIT DROP AS
 SELECT "case_id"
 FROM "report_cases"
-WHERE "evidence_url" LIKE 'https://res.cloudinary.com/demo/image/upload/reports/seed-%'
-   OR "admin_id" IN (SELECT "admin_id" FROM "_seed_admin_ids");
+WHERE "evidence_url" LIKE '/assets/images/%'
+   OR "admin_id" IN (SELECT "admin_id" FROM "_seed_admin_ids")
+   OR "reason" = '不適切な表現が含まれている、またはスパム行為の可能性があります。';
 
 DELETE FROM "Notification"
 WHERE "userId" IN (SELECT "user_id" FROM "_seed_user_ids")
@@ -605,12 +616,29 @@ INSERT INTO "verified_users" (
 SELECT
     'seed.user' || LPAD(gs::text, 3, '0') || '@tomoio.local',
     '$2b$10$361ILY2SZ6k69UBr1A4KLu7vlNUrM7srDue4l/0t32708mrohZGtS',
-    (ARRAY['Aoi','Haruto','Yui','Riku','Mei','Sora','Linh','Minh','An','Hana'])[(gs % 10) + 1],
-    (ARRAY['Nguyen','Tran','Le','Pham','Hoang','Sato','Suzuki','Takahashi','Tanaka','Ito'])[(gs % 10) + 1],
+    CASE WHEN gs % 2 = 0 
+        THEN (ARRAY['Sora','Haruka','Kota','Kenji','Hiroto','Yuki','Ryouta','Takuya','Kazuki','Aoi','Haruto','Yui','Riku','Mei','Hana'])[(gs % 15) + 1]
+        ELSE (ARRAY['Linh','Minh','An','Lan','Vy','Nam','Huong','Tuan','Mai','Dung','Thao','Khanh','Hoang','Trang','Phong'])[(gs % 15) + 1]
+    END,
+    CASE WHEN gs % 2 = 0
+        THEN (ARRAY['Tanaka','Suzuki','Yamamoto','Sato','Takahashi','Ito','Watanabe','Nakamura','Kobayashi','Kato','Yoshida','Yamada','Sasaki','Yamaguchi','Saito'])[(gs % 15) + 1]
+        ELSE (ARRAY['Nguyen','Tran','Le','Pham','Hoang','Vu','Vo','Phan','Huynh','Dang'])[(gs % 10) + 1]
+    END,
     DATE '1990-01-01' + ((gs % 4380) * INTERVAL '1 day'),
-    (ARRAY['Ha Noi','Ho Chi Minh City','Da Nang','Hue','Tokyo','Osaka','Kyoto','Yokohama','Fukuoka','Nagoya'])[(gs % 10) + 1],
-    'Seed profile ' || LPAD(gs::text, 3, '0') || ' for Tomoio demo data.',
-    'https://res.cloudinary.com/demo/image/upload/avatars/seed-' || LPAD(gs::text, 3, '0') || '.jpg',
+    (ARRAY['東京','大阪','ハノイ','ホーチミン','ダナン','横浜','京都','福岡','名古屋'])[(gs % 9) + 1],
+    (ARRAY[
+        'はじめまして！東京に住んでいる会社員です。ベトナム旅行が大好きで、ハノイやホーチミンに何度も行ったことがあります。もっとベトナム語を話せるようになりたいので、一緒に練習しましょう！日本のことについても何でも聞いてくださいね。',
+        'こんにちは。ダナン出身で、今は東京でITエンジニアとして働いています。日本語はN2ですが、もっと自然な会話ができるようになりたいです。趣味は写真とカフェ巡りです。よろしくお願いします！',
+        'ベトナム語を勉強し始めたばかりの初心者です。ベトナムの音楽や料理に興味があります。日本語を勉強しているベトナム人の方と、お互いの言語や文化について楽しくお話ししたいです！',
+        'ハノイ在住の学生です。将来日本に留学したいと思っています。JLPT N3の勉強中ですが、特にリスニング và スピーキング力を向上させたいです。アニメや漫画が大好きです！',
+        'こんにちは！ベトナム料理を作るのが趣味の日本人です。お互いの母国語を教え合える友達を探しています。週末にオンラインで話せる方、気軽にメッセージしてください。',
+        '日本に来て2年になります。日本の文化や歴史が大好きです。ベトナム語を学びたい日本人の方、私のベトナム語と交換で日本語の会話練習をしませんか？',
+        '写真と旅行が好きなバックパッカーです。ベトナムのローカルな観光地や美味しいカフェの情報交換をしたいです。日本語とベトナム語の両方で楽しく交流しましょう！',
+        'JLPT N1を目指して猛勉強中です！日常会話からビジネス会話まで、幅広いトピックで日本語を話せるようになりたいです。私もベトナム語の学習をサポートします。',
+        '週末の空いた時間にカフェで言語交換できる友人を探しています。言語だけでなく、お互いの国の生活や習慣についても話せたら嬉しいです！',
+        'プログラミングとガジェットが大好きなエンジニアです。日本語とベトナム語の技術用語や、業界の働き方について情報交換したいです。よろしくお願いします。'
+    ])[(gs % 10) + 1],
+    '/assets/images/avatars/avatar-' || (((gs - 1) % 10) + 1)::text || '.jpg',
     NOW() - ((60 - gs) * INTERVAL '1 day'),
     CASE WHEN gs % 10 = 0 THEN 'PENDING'::"UserStatus" ELSE 'VERIFIED'::"UserStatus" END
 FROM generate_series(1, 60) AS gs;
@@ -625,7 +653,7 @@ FROM generate_series(1, 50) AS gs;
 
 INSERT INTO "user_photos" ("url", "isMain", "user_id")
 SELECT
-    'https://res.cloudinary.com/demo/image/upload/profiles/seed-' || LPAD(photo_no::text, 3, '0') || '.jpg',
+    '/assets/images/recommendations/rec-' || ((((photo_no - 1) % 3) + 1)::text) || '.png',
     slot = 1,
     vu."user_id"
 FROM (
@@ -642,11 +670,17 @@ CROSS JOIN LATERAL (
 INSERT INTO "user_languages" ("language", "type", "level", "user_id")
 SELECT
     CASE slot
-        WHEN 1 THEN (ARRAY['Vietnamese','Japanese','English'])[(rn % 3) + 1]
-        ELSE (ARRAY['Vietnamese','Japanese','English'])[((rn + 1) % 3) + 1]
+        WHEN 1 THEN CASE WHEN rn % 2 = 0 THEN '日本' ELSE 'ベトナム' END
+        ELSE CASE WHEN rn % 2 = 0 THEN 'ベトナム' ELSE '日本' END
     END,
     CASE slot WHEN 1 THEN 'native' ELSE 'learning' END,
-    CASE slot WHEN 1 THEN NULL ELSE (ARRAY['N1','N2','N3','N4','N5'])[(rn % 5) + 1] END,
+    CASE slot
+        WHEN 1 THEN NULL
+        ELSE CASE WHEN rn % 2 = 0 
+            THEN (ARRAY['初級','中級','上級'])[(rn % 3) + 1]
+            ELSE (ARRAY['N1','N2','N3','N4','N5'])[(rn % 5) + 1]
+        END
+    END,
     "user_id"
 FROM (
     SELECT "user_id", ROW_NUMBER() OVER (ORDER BY "user_id") AS rn
@@ -657,7 +691,7 @@ CROSS JOIN generate_series(1, 2) AS slot;
 
 INSERT INTO "user_purposes" ("purpose", "user_id")
 SELECT
-    (ARRAY['Language exchange','Cultural exchange','Study abroad','Make friends','Career networking','Travel companion','JLPT practice','Vietnamese practice'])[((rn + offset_no) % 8) + 1],
+    (ARRAY['言語交換','文化交流','留学','友達作り','キャリア交流','旅行仲間','JLPT練習','ベトナム語練習'])[((rn + offset_no) % 8) + 1],
     "user_id"
 FROM (
     SELECT "user_id", ROW_NUMBER() OVER (ORDER BY "user_id") AS rn
@@ -668,7 +702,7 @@ CROSS JOIN generate_series(0, 1) AS offset_no;
 
 INSERT INTO "user_hobbies" ("hobby_name", "user_id")
 SELECT
-    (ARRAY['Anime','Manga','Cooking','Travel','Photography','Music','Coffee','Language exchange','Technology','Sports','Books','Movies'])[((rn + offset_no) % 12) + 1],
+    (ARRAY['アニメ','漫画','料理','旅行','写真','音楽','カフェ','言語交換','テクノロジー','スポーツ','読書','映画'])[((rn + offset_no) % 12) + 1],
     "user_id"
 FROM (
     SELECT "user_id", ROW_NUMBER() OVER (ORDER BY "user_id") AS rn
@@ -679,33 +713,55 @@ CROSS JOIN generate_series(0, 2) AS offset_no;
 
 INSERT INTO "groups" ("name", "created_at", "description", "group_avatar", "group_cover", "member_count")
 SELECT
-    'Seed Group ' || LPAD(gs::text, 3, '0') || ' - ' || (ARRAY['Anime','Manga','Cooking','Travel','Photography','Music','Coffee','Language exchange','Technology','Sports','Books','Movies'])[(gs % 12) + 1],
+    (ARRAY[
+        '日本語会話クラブ',
+        'ベトナム語初心者グループ',
+        'ハノイ生活情報交換',
+        '東京ベトナム交流会',
+        'JLPT N2勉強会',
+        '旅行好きコミュニティ',
+        'カフェで言語交換',
+        '日本文化研究会',
+        'ベトナム料理を楽しむ会',
+        'IT・エンジニア交流会'
+    ])[(gs % 10) + 1] || ' #' || LPAD(gs::text, 3, '0'),
     NOW() - ((50 - gs) * INTERVAL '1 day'),
-    'Community group ' || LPAD(gs::text, 3, '0') || ' for local Tomoio demo.',
-    'https://res.cloudinary.com/demo/image/upload/group-avatars/seed-' || LPAD(gs::text, 3, '0') || '.jpg',
-    'https://res.cloudinary.com/demo/image/upload/group-covers/seed-' || LPAD(gs::text, 3, '0') || '.jpg',
+    (ARRAY[
+        '日本語で気軽に日常会話を楽しむグループです。初心者から上級者まで大歓迎！',
+        'ベトナム語を学び始めたばかりの人のための勉強会です。基礎からゆっくり学びましょう。',
+        'ハノイでの生活情報、おすすめレストラン、家探しなどの役立つ情報をシェアするグループです。',
+        '東京近郊に住む日本人とベトナム人の交流コミュニティです。定期的にオフラインイベントを開催します。',
+        'JLPT N2合格を目指して、文法や語彙、読解を一緒に勉強するグループです。',
+        '日本とベトナムの旅行が大好きな人たちが集まるグループです。おすすめの観光スポットを共有しましょう。',
+        '週末にカフェに集まって、コーヒーを飲みながら楽しく日本語とベトナム語で話すグループです。',
+        '日本の伝統文化からポップカルチャー、アニメ、お祭りまで幅広く語り合うグループです。',
+        'フォー、生春巻き、バインセオなど、美味しいベトナム料理を食べに行ったり一緒に作ったりするグループです。',
+        '日本とベトナムのITエンジニア、プログラマーの技術交流・キャリア相談のためのグループです。'
+    ])[(gs % 10) + 1],
+    '/assets/images/groups/group-' || (((gs - 1) % 4) + 1)::text || '.jpg',
+    '/assets/images/groups/group-cover.png',
     0
 FROM generate_series(1, 50) AS gs;
 
 INSERT INTO "group_hobby_tags" ("group_id", "name")
 SELECT
     g."group_id",
-    (ARRAY['Anime','Manga','Cooking','Travel','Photography','Music','Coffee','Language exchange','Technology','Sports','Books','Movies'])[((g.rn + offset_no) % 12) + 1]
+    (ARRAY['言語交換','日本文化','旅行','文化交流','スポーツ','カフェ','アニメ','ベトナム料理','プログラミング'])[((g.rn + offset_no) % 9) + 1]
 FROM (
     SELECT "group_id", ROW_NUMBER() OVER (ORDER BY "group_id") AS rn
     FROM "groups"
-    WHERE "name" LIKE 'Seed Group %'
+    WHERE "name" LIKE '% #%'
 ) g
 CROSS JOIN generate_series(0, 1) AS offset_no;
 
 INSERT INTO "group_language_tags" ("group_id", "name")
 SELECT
     g."group_id",
-    (ARRAY['N1','N2','N3','N4','N5','Japanese','Vietnamese','English'])[((g.rn + offset_no) % 8) + 1]
+    (ARRAY['N1','N2','N3','N4','N5','日本語','ベトナム語','英語'])[((g.rn + offset_no) % 8) + 1]
 FROM (
     SELECT "group_id", ROW_NUMBER() OVER (ORDER BY "group_id") AS rn
     FROM "groups"
-    WHERE "name" LIKE 'Seed Group %'
+    WHERE "name" LIKE '% #%'
 ) g
 CROSS JOIN generate_series(0, 1) AS offset_no;
 
@@ -717,7 +773,7 @@ SELECT DISTINCT
 FROM (
     SELECT "group_id", ROW_NUMBER() OVER (ORDER BY "group_id") AS rn
     FROM "groups"
-    WHERE "name" LIKE 'Seed Group %'
+    WHERE "name" LIKE '% #%'
 ) g
 CROSS JOIN generate_series(0, 11) AS offset_no
 JOIN (
@@ -734,7 +790,7 @@ FROM (
     GROUP BY "group_id"
 ) c
 WHERE c."group_id" = g."group_id"
-  AND g."name" LIKE 'Seed Group %';
+  AND g."name" LIKE '% #%';
 
 -- =========================
 -- Posts, chat, events, moderation
@@ -742,15 +798,24 @@ WHERE c."group_id" = g."group_id"
 
 INSERT INTO "posts" ("content", "created_at", "group_id", "author_id", "image")
 SELECT
-    'Seed post ' || LPAD(((g.rn - 1) * 2 + slot)::text, 3, '0') || ': sharing a useful tip for ' || g."name" || '.',
+    (ARRAY[
+        'こんにちは！今週の勉強会用の資料をアップロードしました。参加する方は事前に目を通しておいてくださいね。',
+        '皆さん、日本語を勉強するときに一番効果的だと思う方法は何ですか？私は漢字の書き取りとニュースを読むことです。',
+        '今週末、東京で集まる予定のオフラインイベントについて、集合場所を変更しました。詳細はイベントページをご確認ください！',
+        'ベトナム料理のフォーの作り方を共有します！日本で手に入る材料だけで作れるレシピにアレンジしてみました。',
+        'JLPTの聴解テストで高得点を取るためのコツをまとめました。興味がある方はぜひ読んでみてください！',
+        '最近ベトナム語の日常会話フレーズを勉強しています。ネイティブの方が使う自然な表現を教えてもらえると嬉しいです！',
+        'ハノイのおすすめのカフェ情報をシェアします。静かでWi-Fiも早くて、勉強や作業にぴったりの場所です。',
+        '日本の伝統的なマナーについて質問です。お辞儀の角度やタイミングについて、詳しく教えていただけないでしょうか？'
+    ])[(((g.rn - 1) * 2 + slot - 1) % 8) + 1],
     NOW() - ((((g.rn - 1) * 2 + slot) % 45) * INTERVAL '1 day'),
     g."group_id",
     u."user_id",
-    CASE WHEN slot = 1 THEN 'https://res.cloudinary.com/demo/image/upload/posts/seed-' || LPAD(((g.rn - 1) * 2 + slot)::text, 3, '0') || '.jpg' ELSE NULL END
+    CASE WHEN slot = 1 THEN '/assets/images/recommendations/rec-' || ((((g.rn - 1) * 2 + slot - 1) % 3) + 1)::text || '.png' ELSE NULL END
 FROM (
     SELECT "group_id", "name", ROW_NUMBER() OVER (ORDER BY "group_id") AS rn
     FROM "groups"
-    WHERE "name" LIKE 'Seed Group %'
+    WHERE "name" LIKE '% #%'
 ) g
 CROSS JOIN generate_series(1, 2) AS slot
 JOIN (
@@ -761,14 +826,22 @@ JOIN (
 
 INSERT INTO "comments" ("content", "created_at", "post_id", "author_id")
 SELECT
-    'Seed comment ' || LPAD(((p.rn - 1) * 2 + slot)::text, 3, '0') || ' on post ' || LPAD(p."post_id"::text, 3, '0') || '.',
+    (ARRAY[
+        '有益な情報をありがとうございます！とても参考になりました。',
+        '私もその方法で勉強しています！一緒に頑張りましょう。',
+        '集合場所の変更了解しました。当日は楽しみにしています！',
+        '美味しそうですね！今週末にさっそく作ってみます。',
+        '詳細なまとめをありがとうございます。とても分かりやすいです！',
+        '私がよく使う日常会話表現を今度メッセージで送りますね。',
+        'そのカフェ、私も行ったことがあります！とても素敵な場所ですよね。',
+        'お辞儀のマナーについては、次の交流会で実演しながら教えますね！'
+    ])[(((p.rn - 1) * 2 + slot - 1) % 8) + 1],
     NOW() - (((p.rn + slot) % 30) * INTERVAL '1 day'),
     p."post_id",
     u."user_id"
 FROM (
     SELECT "post_id", ROW_NUMBER() OVER (ORDER BY "post_id") AS rn
     FROM "posts"
-    WHERE "content" LIKE 'Seed post %'
 ) p
 CROSS JOIN generate_series(1, 2) AS slot
 JOIN (
@@ -784,7 +857,6 @@ SELECT DISTINCT
 FROM (
     SELECT "post_id", ROW_NUMBER() OVER (ORDER BY "post_id") AS rn
     FROM "posts"
-    WHERE "content" LIKE 'Seed post %'
 ) p
 CROSS JOIN generate_series(1, 3) AS slot
 JOIN (
@@ -855,19 +927,105 @@ INSERT INTO "messages" (
     "translated_text"
 )
 SELECT
-    CASE WHEN slot = 3 AND ss.rn % 5 = 0 THEN NULL ELSE 'Seed message ' || LPAD(ss.rn::text, 3, '0') || '-' || slot END,
+    CASE WHEN slot = 3 AND ss.rn % 5 = 0 THEN NULL 
+         ELSE (ARRAY[
+             'はじめまして！マッチングありがとうございます。日本語を勉強されているんですね！',
+             'はじめまして！はい、今JLPT N2に向けて勉強しています。会話が苦手なので練習したいです。',
+             '素晴らしいですね！私はベトナム語を学び始めたばかりなので、お互いに教え合えたら嬉しいです。',
+             'ぜひ！週末に一度オンラインで話してみませんか？',
+             'こんにちは！プロフィール写真のハロン湾、すごく綺麗ですね。旅行で行かれたんですか？',
+             'ありがとうございます！はい、去年的夏に家族で行きました。ベトナム旅行は初めてでしたか？',
+             '実はまだ行ったことがなくて、ずっと行ってみたいと思っているんです。おすすめの場所はありますか？',
+             'ハノイの旧市街やホイアンが歴史情緒があっておすすめですよ！今度詳しくお話ししますね。',
+             'こんにちは！ベトナム料理が好きなんですね。私もフォーやバインミーが大好きです！',
+             'こんにちは！美味しいですよね。東京にもベトナム料理店がたくさんあって嬉しいです。',
+             'おすすめの店はありますか？今度一緒に行ってみたいです！',
+             '新宿にあるお店が本場の味に近くて美味しいですよ！今度一緒に行きましょう。',
+             'マッチありがとうございます！好きなアニメは何ですか？',
+             'こちらこそ！最近は『鬼滅の刃』や『進撃の巨人』をよく見ています。日本のアニメは最高ですね！',
+             '私もそれ大好きです！最新シーズンは見ましたか？',
+             'はい、もちろん見ました！語彙の勉強にもなるので、アニメはよく見ているんです。',
+             'こんにちは！JLPTの勉強はどうですか？順調ですか？',
+             'こんにちは。漢字の勉強が難しくて苦戦しています。おすすめの勉強法はありますか？',
+             '漢字は書いて覚えるのも良いですが、日常の文章をたくさん読むと自然に身につきますよ。',
+             'なるほど、参考になります！簡単なニュース記事から読んでみます。ありがとうございます！'
+         ])[(((ss.rn - 1) % 5) * 4) + slot]
+    END,
     NOW() - (((50 - ss.rn) + slot) * INTERVAL '1 day'),
     ss."session_id",
     CASE WHEN slot % 2 = 1 THEN p1."user_id" ELSE p2."user_id" END,
-    CASE WHEN slot = 3 AND ss.rn % 5 = 0 THEN 'https://res.cloudinary.com/demo/image/upload/chat/seed-' || LPAD(ss.rn::text, 3, '0') || '.jpg' ELSE NULL END,
+    CASE WHEN slot = 3 AND ss.rn % 5 = 0 THEN '/assets/images/recommendations/rec-' || (((ss.rn - 1) % 3) + 1)::text || '.png' ELSE NULL END,
     CASE WHEN slot = 4 AND ss.rn % 17 = 0 THEN NOW() - INTERVAL '1 day' ELSE NULL END,
     CASE WHEN slot = 2 AND ss.rn % 9 = 0 THEN NOW() - INTERVAL '1 day' ELSE NULL END,
     slot < 4,
     CASE WHEN slot = 3 AND ss.rn % 5 = 0 THEN 'IMAGE'::"MessageType" ELSE 'TEXT'::"MessageType" END,
     jsonb_build_object(
-        'en', 'Seed translated message ' || LPAD(ss.rn::text, 3, '0') || '-' || slot,
-        'vi', 'Tin nhan mau ' || LPAD(ss.rn::text, 3, '0') || '-' || slot,
-        'ja', 'Sample JP ' || LPAD(ss.rn::text, 3, '0') || '-' || slot
+        'en', (ARRAY[
+             'はじめまして！マッチングありがとうございます。日本語を勉強されているんですね！',
+             'はじめまして！はい、今JLPT N2に向けて勉強しています。会話が苦手ので練習したいです。',
+             '素晴らしいですね！私はベトナム語を学び始めたばかりなので、お互いに教え合えたら嬉しいです。',
+             'ぜひ！週末に一度オンラインで話してみませんか？',
+             'こんにちは！プロフィール写真のハロン湾、すごく綺麗ですね。旅行で行かれたんですか？',
+             'ありがとうございます！はい、去年的夏に家族で行きました。ベトナム旅行は初めてでしたか？',
+             '実はまだ行ったことがなくて、ずっと行ってみたいと思っているんです。おすすめの場所はありますか？',
+             'ハノイの旧市街やホイアンが歴史情緒があっておすすめですよ！今度詳しくお話ししますね。',
+             'こんにちは！ベトナム料理が好きなんですね。私もフォーやバインミーが大好きです！',
+             'こんにちは！美味しいですよね。東京にもベトナム料理店がたくさんあって嬉しいです。',
+             'おすすめの店はありますか？今度一緒に行ってみたいです！',
+             '新宿にあるお店が本場の味に近くて美味しいですよ！今度一緒に行きましょう。',
+             'マッチありがとうございます！好きなアニメは何ですか？',
+             'こちらこそ！最近は『鬼滅の刃』や『進撃の巨人』をよく見ています。日本のアニメは最高ですね！',
+             '私もそれ大好きです！最新シーズンは見ましたか？',
+             'はい、もちろん見ました！語彙の勉強にもなるので、アニメはよく見ているんです。',
+             'こんにちは！JLPTの勉強はどうですか？順調ですか？',
+             'こんにちは。漢字の勉強が難しくて苦戦しています。おすすめの勉強法はありますか？',
+             '漢字は書いて覚えるのも良いですが、日常の文章をたくさん読むと自然に身につきますよ。',
+             'なるほど、参考になります！簡単なニュース記事から読んでみます。ありがとうございます！'
+         ])[(((ss.rn - 1) % 5) * 4) + slot],
+        'vi', (ARRAY[
+             'Rất vui được làm quen với bạn! Cảm ơn bạn đã match với mình. Bạn đang học tiếng Nhật đúng không?',
+             'Chào bạn! Vâng, mình đang ôn thi JLPT N2. Mình giao tiếp chưa tốt nên rất muốn luyện tập thêm.',
+             'Tuyệt vời quá! Mình mới bắt đầu học tiếng Việt, hi vọng chúng ta có thể giúp đỡ lẫn nhau.',
+             'Nhất trí ạ! Cuối tuần này chúng mình gọi điện nói chuyện online thử nhé?',
+             'Chào bạn! Ảnh Vịnh Hạ Long trên trang cá nhân của bạn đẹp quá. Bạn đi du lịch ở đó à?',
+             'Cảm ơn bạn! Đúng vậy, mùa hè năm ngoái mình đi cùng gia đình. Đó là lần đầu tiên bạn đến Việt Nam à?',
+             'Thật ra mình chưa đi bao giờ, nhưng luôn muốn ghé thăm. Bạn có gợi ý địa điểm nào không?',
+             'Phố cổ Hà Nội hay Hội An có không khí cổ kính và rất đáng đi đó! Lần tới mình sẽ kể chi tiết hơn nhé.',
+             'Chào bạn! Bạn thích món ăn Việt Nam à. Mình cũng cực kỳ mê phở và bánh mì!',
+             'Chào bạn! Công nhận ngon thật. Mình rất vui vì ở Tokyo cũng có nhiều quán ăn Việt Nam.',
+             'Bạn có biết quán nào ngon không? Hôm nào chúng mình cùng đi ăn đi!',
+             'Có một quán ở Shinjuku vị rất chuẩn và ngon đó! Hôm nào đi cùng nhau nhé.',
+             'Cảm ơn bạn đã match! Bộ anime yêu thích của bạn là gì vậy?',
+             'Cảm ơn bạn! Dạo này mình hay xem Kimetsu no Yaiba và Attack on Titan. Anime Nhật Bản là đỉnh nhất!',
+             'Mình cũng thích mấy bộ đó lắm! Bạn đã xem mùa mới nhất chưa?',
+             'Vâng tất nhiên là xem rồi! Mình thường xem anime vừa giải trí vừa học thêm từ vựng.',
+             'Chào bạn! Việc học JLPT của bạn thế nào rồi? Có thuận lợi không?',
+             'Chào bạn. Học kanji khó quá nên mình đang hơi chật vật. Bạn có phương pháp nào hay không?',
+             'Kanji viết đi viết lại cũng tốt, nhưng nếu bạn đọc nhiều văn bản thực tế thì sẽ nhớ tự nhiên hơn đó.',
+             'À ra thế, bổ ích quá! Mình sẽ thử đọc các bài báo tin tức đơn giản. Cảm ơn bạn nhé!'
+         ])[(((ss.rn - 1) % 5) * 4) + slot],
+        'ja', (ARRAY[
+             'はじめまして！マッチングありがとうございます。日本語を勉強されているんですね！',
+             'はじめまして！はい、今JLPT N2に向けて勉強しています。会話が苦手なので練習したいです。',
+             '素晴らしいですね！私はベトナム語を学び始めたばかりなので、お互いに教え合えたら嬉しいです。',
+             'ぜひ！週末に一度オンラインで話してみませんか？',
+             'こんにちは！プロフィール写真のハロン湾、すごく綺麗ですね。旅行で行かれたんですか？',
+             'ありがとうございます！はい、去年的夏に家族で行きました。ベトナム旅行は初めてでしたか？',
+             '実はまだ行ったことがなくて、ずっと行ってみたいと思っているんです。おすすめの場所はありますか？',
+             'ハノイの旧市街やホイアンが歴史情緒があっておすすめですよ！今度詳しくお話ししますね。',
+             'こんにちは！ベトナム料理が好きなんですね。私もフォーやバインミーが大好きです！',
+             'こんにちは！美味しいですよね。東京にもベトナム料理店がたくさんあって嬉しいです。',
+             'おすすめの店はありますか？今度一緒に行ってみたいです！',
+             '新宿にあるお店が本場の味に近くて美味しいですよ！今度一緒に行きましょう。',
+             'マッチありがとうございます！好きなアニメは何ですか？',
+             'こちらこそ！最近は『鬼滅の刃』や『進撃の巨人』をよく見ています。日本のアニメは最高ですね！',
+             '私もそれ大好きです！最新シーズンは見ましたか？',
+             'はい、もちろん見ました！語彙の勉強にもなるので、アニメはよく見ているんです。',
+             'こんにちは！JLPTの勉強はどうですか？順調ですか？',
+             'こんにちは。漢字の勉強が難しくて苦戦しています。おすすめの勉強法はありますか？',
+             '漢字は書いて覚えるのも良いですが、日常の文章をたくさん読むと自然に身につきますよ。',
+             'なるほど、参考になります！簡単なニュース記事から読んでみます。ありがとうございます！'
+         ])[(((ss.rn - 1) % 5) * 4) + slot]
     )
 FROM seed_sessions ss
 CROSS JOIN generate_series(1, 4) AS slot
@@ -888,13 +1046,31 @@ INSERT INTO "events" (
     "status"
 )
 SELECT
-    'Seed Event ' || LPAD(gs::text, 3, '0') || ' - ' || (ARRAY['Language exchange','Cultural exchange','Study abroad','Make friends','Career networking','Travel companion','JLPT practice','Vietnamese practice'])[(gs % 8) + 1],
-    'Demo event ' || LPAD(gs::text, 3, '0') || ' for Tomoio local data.',
+    (ARRAY[
+        'ハノイ日本語交流会',
+        '東京ベトナム語カフェ会',
+        'JLPT N2 模擬会話練習',
+        'ベトナム料理体験イベント',
+        '日本文化オンライン交流会',
+        '留学経験シェア会',
+        '写真好きの散歩交流会',
+        'キャリア相談ミートアップ'
+    ])[((gs - 1) % 8) + 1] || ' #' || LPAD(gs::text, 3, '0'),
+    (ARRAY[
+        'ハノイのカフェで日本語のフリートークを楽しむ交流会です。ベトナム人と日本人の参加者をお待ちしています！',
+        '東京のカフェに集まって、美味しいコーヒーを飲みながらベトナム語と日本語で交流しましょう。初心者歓迎！',
+        'JLPT N2レベルの表現を使って、様々なトピックでディスカッションを行うオンラインの模擬会話練習会です。',
+        'みんなで一緒にベトナムの生春巻きやフォーを作る料理体験会です。料理の後は楽しく試食＆おしゃべりタイム！',
+        '自宅から参加できるオンラインの文化交流会です。日本のお祭りや四季のイベント、アニメについて楽しく語り合いましょう。',
+        '日本への留学やベトナムへの留学を経験した先輩たちが、リアルな体験談やアドバイスをシェアする相談会です。',
+        'カメラやスマホを持って街を散策しながら、素敵な写真を撮って交流する散歩イベントです。初心者も大歓迎！',
+        '日系企業で働きたいベトナム人の方や、ベトナムで働きたい日本人の方のための情報交換・キャリア相談会です。'
+    ])[((gs - 1) % 8) + 1],
     NOW() + (gs * INTERVAL '1 day'),
     (ARRAY['ONLINE','OFFLINE','HYBRID'])[(gs % 3) + 1],
-    (100 + gs)::text || ' Demo Street',
-    'https://tomoio.local/events/seed-' || LPAD(gs::text, 3, '0'),
-    'https://res.cloudinary.com/demo/image/upload/events/seed-' || LPAD(gs::text, 3, '0') || '.jpg',
+    CASE WHEN (ARRAY['ONLINE','OFFLINE','HYBRID'])[(gs % 3) + 1] = 'ONLINE' THEN NULL ELSE (100 + gs)::text || '番通り, ' || (ARRAY['東京','大阪','ハノイ','ホーチミン','ダナン'])[(gs % 5) + 1] END,
+    CASE WHEN (ARRAY['ONLINE','OFFLINE','HYBRID'])[(gs % 3) + 1] = 'ONLINE' THEN 'https://tomoio.local/events/seed-' || LPAD(gs::text, 3, '0') ELSE NULL END,
+    '/assets/images/events/event-' || (((gs - 1) % 4) + 1)::text || '.png',
     NOW() - (gs * INTERVAL '1 day'),
     u."user_id",
     a."admin_id",
@@ -931,8 +1107,8 @@ JOIN (
 
 INSERT INTO "kyc_requests" ("document_image_url", "reject_reason", "submitted_at", "reviewed_at", "user_id", "admin_id", "status")
 SELECT
-    'https://res.cloudinary.com/demo/image/upload/kyc/seed-' || LPAD(u.rn::text, 3, '0') || '.jpg',
-    CASE WHEN u.rn % 3 = 2 THEN 'Seed rejection reason: document is unclear.' ELSE NULL END,
+    '/assets/images/home/hero-bg.png',
+    CASE WHEN u.rn % 3 = 2 THEN '身分証明書の画像が不鮮明です。もう一度アップロードしてください。' ELSE NULL END,
     NOW() - ((60 - u.rn) * INTERVAL '1 day'),
     CASE WHEN u.rn % 3 = 0 THEN NULL ELSE NOW() - ((59 - u.rn) * INTERVAL '1 day') END,
     u."user_id",
@@ -951,8 +1127,8 @@ LEFT JOIN (
 
 INSERT INTO "report_cases" ("reason", "evidence_url", "created_at", "admin_id", "status")
 SELECT
-    'Seed report ' || LPAD(gs::text, 3, '0') || ': inappropriate behavior in chat or community interaction.',
-    'https://res.cloudinary.com/demo/image/upload/reports/seed-' || LPAD(gs::text, 3, '0') || '.jpg',
+    '不適切な表現が含まれている、またはスパム行為の可能性があります。',
+    '/assets/images/home/hero-bg.png',
     NOW() - ((50 - gs) * INTERVAL '1 day'),
     a."admin_id",
     ((ARRAY['PENDING','APPROVED','REJECTED'])[(gs % 3) + 1])::"ReportCaseStatus"
@@ -966,7 +1142,7 @@ JOIN (
 WITH reports AS (
     SELECT "case_id", ROW_NUMBER() OVER (ORDER BY "case_id") AS rn
     FROM "report_cases"
-    WHERE "evidence_url" LIKE 'https://res.cloudinary.com/demo/image/upload/reports/seed-%'
+    WHERE "evidence_url" = '/assets/images/home/hero-bg.png'
 ),
 users AS (
     SELECT "user_id", ROW_NUMBER() OVER (ORDER BY "user_id") AS rn
@@ -1021,7 +1197,13 @@ INSERT INTO "Notification" ("userId", "type", "message", "related_user_id", "ses
 SELECT
     recipient."user_id",
     (ARRAY['MATCH','MESSAGE','EVENT','GROUP','SYSTEM'])[(gs % 5) + 1],
-    'Seed notification ' || LPAD(gs::text, 3, '0') || ' for Tomoio user.',
+    (ARRAY[
+        '新しいマッチが成立しました！さっそくチャットを送ってみましょう。',
+        '新着メッセージが届いています。',
+        '参加予定のイベントが明日開催されます。',
+        '新しいコミュニティグループが作成されました。',
+        '身分証の確認が完了し、アカウントが承認されました。'
+    ])[(gs % 5) + 1],
     related_user."user_id",
     sessions."session_id",
     gs % 4 = 0,
@@ -1040,9 +1222,9 @@ WHERE "email" LIKE 'seed.user%@tomoio.local'
 UNION ALL
 SELECT 'administrators', COUNT(*) FROM "administrators" WHERE "username" LIKE 'seed_admin_%'
 UNION ALL
-SELECT 'groups', COUNT(*) FROM "groups" WHERE "name" LIKE 'Seed Group %'
+SELECT 'groups', COUNT(*) FROM "groups" WHERE "name" LIKE '% #%'
 UNION ALL
-SELECT 'posts', COUNT(*) FROM "posts" WHERE "content" LIKE 'Seed post %'
+SELECT 'posts', COUNT(*) FROM "posts" WHERE "content" LIKE '%！%' OR "content" LIKE '%？%' OR "content" LIKE '%。%'
 UNION ALL
 SELECT 'match_session', COUNT(*)
 FROM "match_session" ms
@@ -1056,7 +1238,7 @@ WHERE EXISTS (
 UNION ALL
 SELECT 'events', COUNT(*) FROM "events" WHERE "url_link" LIKE 'https://tomoio.local/events/seed-%'
 UNION ALL
-SELECT 'report_cases', COUNT(*) FROM "report_cases" WHERE "evidence_url" LIKE 'https://res.cloudinary.com/demo/image/upload/reports/seed-%'
+SELECT 'report_cases', COUNT(*) FROM "report_cases" WHERE "evidence_url" = '/assets/images/home/hero-bg.png'
 UNION ALL
 SELECT 'notifications', COUNT(*)
 FROM "Notification" n

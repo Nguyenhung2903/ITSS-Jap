@@ -22,7 +22,7 @@ export default async function StatsSection() {
     const displayAvatars =
         recentAvatars.length > 0
             ? recentAvatars.slice(0, 3).map((url) => resolveImageUrl(url))
-            : FALLBACK_AVATARS;
+            : FALLBACK_AVATARS.map((url) => resolveImageUrl(url));
     const extraUserCount = Math.max(activeUserCount - displayAvatars.length, 0);
 
     return (
