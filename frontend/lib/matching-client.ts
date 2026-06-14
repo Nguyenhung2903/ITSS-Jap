@@ -101,9 +101,30 @@ export type MatchingSearchResult = {
     hasMore: boolean;
 };
 
+function searchCacheKey(params: MatchingSearchParams) {
+    const parts = [
+        `p:${params.page ?? 1}`,
+        `s:${normalizeSearchQuery(params.search) ?? ""}`,
+        `h:${params.hobby ?? ""}`,
+        `l:${params.language ?? ""}`,
+        `pu:${params.purpose ?? ""}`,
+        `jl:${params.jlptLevel ?? ""}`
+    ];
+    return `matching:search:${parts.join(",")}`;
+}
+
 export async function searchMatchingUsers(
-    params: MatchingSearchParams = {}
+    params: MatchingSearchParams = {},
+    options?: { force?: boolean }
 ): Promise<MatchingSearchResult> {
+    const cacheKey = searchCacheKey(params);
+    if (!options?.force) {
+        const cached = readSessionCache<MatchingSearchResult>(cacheKey, MATCHING_HOME_CACHE_TTL_MS);
+        if (cached) {
+            return cached;
+        }
+    }
+
     const query = new URLSearchParams();
     if (params.page) query.set("page", String(params.page));
     const normalizedSearch = normalizeSearchQuery(params.search);
@@ -129,12 +150,14 @@ export async function searchMatchingUsers(
             return { success: false, message, data: [], hasMore: false };
         }
 
-        return {
+        const payload: MatchingSearchResult = {
             success: true,
             data: data?.data ?? [],
             total: data?.total,
             hasMore: data?.hasMore ?? false,
         };
+        writeSessionCache(cacheKey, payload);
+        return payload;
     } catch (error: unknown) {
         return {
             success: false,
