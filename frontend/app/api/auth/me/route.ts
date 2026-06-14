@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth-session";
 
-export async function GET() {
+export async function GET(request: Request) {
     console.log("Next.js Route /api/auth/me: checking session...");
+    console.log("Next.js Route /api/auth/me: incoming cookies header =", request.headers.get("cookie"));
     try {
         const user = await getSessionUser();
         console.log("Next.js Route /api/auth/me: session user found:", user);

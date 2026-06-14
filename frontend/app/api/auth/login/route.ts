@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getApiBaseUrl } from "@/lib/api";
-import { applyAuthCookies, toSessionUser } from "@/lib/auth-session";
+import { toSessionUser, AUTH_COOKIE_OPTIONS } from "@/lib/auth-session";
 
 export async function POST(request: Request) {
     try {
@@ -32,11 +33,14 @@ export async function POST(request: Request) {
 
         const { token, user } = data;
         const sessionUser = toSessionUser(user);
-        const response = NextResponse.json({ success: true, user: sessionUser });
-        applyAuthCookies(response, token, user);
 
-        console.log("Next.js Login Route: cookies applied successfully, returning success");
-        return response;
+        // Set cookies directly in next/headers cookie store
+        const cookieStore = await cookies();
+        cookieStore.set("tomoio_token", token, AUTH_COOKIE_OPTIONS);
+        cookieStore.set("tomoio_user", JSON.stringify(sessionUser), AUTH_COOKIE_OPTIONS);
+
+        console.log("Next.js Login Route: cookies set in next/headers, returning success");
+        return NextResponse.json({ success: true, user: sessionUser });
     } catch (error: unknown) {
         console.error("Next.js Login Route: caught exception:", error);
         const message = error instanceof Error ? error.message : "ログインに失敗しました。";
