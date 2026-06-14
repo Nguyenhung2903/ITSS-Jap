@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { use, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
@@ -10,11 +10,9 @@ export default function RegisterPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    // State cho các thẻ Chip (Chọn Quốc tịch & Mục đích)
     const [nationality, setNationality] = useState<"日本" | "ベトナム" | null>(null);
     const [purposes, setPurposes] = useState<string[]>([]);
 
-    // State xử lý File Upload
     const [file, setFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
 
@@ -22,7 +20,6 @@ export default function RegisterPage() {
     const [error, setError] = useState<string | null>(null);
     const [showSuccessToast, setShowSuccessToast] = useState(false)
 
-    // Hàm xử lý chọn/bỏ chọn mục đích (Cho phép chọn nhiều)
     const togglePurpose = (purpose: string) => {
         if (purposes.includes(purpose)) {
             setPurposes(purposes.filter(p => p !== purpose));
@@ -31,13 +28,12 @@ export default function RegisterPage() {
         }
     };
 
-    // Hàm xử lý khi người dùng chọn file
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedFile = e.target.files[0];
             
             if (selectedFile.size > 5 * 1024 * 1024) {
-                setError("ファイルサイズは5MB以下にしてください。(File phải dưới 5MB)");
+                setError("ファイルサイズは5MB以下にしてください。");
                 return;
             }
             
@@ -51,25 +47,20 @@ export default function RegisterPage() {
         e.preventDefault();
         setError(null);
 
-        // 1. Validation Frontend cơ bản
         if (!email || !password || !nationality || purposes.length === 0 || !file) {
-            setError("すべての項目を入力・選択してください。(Vui lòng điền đủ thông tin)");
+            setError("すべての項目を入力・選択してください。");
             return;
         }
 
         setIsLoading(true);
 
-        // 2. Khởi tạo FormData
         const formData = new FormData();
         formData.append("email", email);
         formData.append("password", password);
-        // Map nationality vào trường language theo như DB yêu cầu
         formData.append("language", nationality); 
-        // Nối các mục đích thành 1 chuỗi string (vd: "学習, 友達")
         formData.append("purpose", purposes.join(", ")); 
         formData.append("cccd", file);
 
-        // 3. Gọi Server Action
         const res = await fetch("/api/auth/register", {
             method: "POST",
             body: formData,
@@ -167,7 +158,7 @@ export default function RegisterPage() {
                                         <button
                                             key={nat}
                                             type="button"
-                                            onClick={() => setNationality(nat as any)}
+                                            onClick={() => setNationality(nat as "日本" | "ベトナム")}
                                             className={`h-10.5 px-6 rounded-full text-[14px] font-medium transition-all flex items-center justify-center ${
                                                 isActive 
                                                     ? "bg-[#A0F0F0] text-[#004F50] border border-[#005B5B]/10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]" 
@@ -213,7 +204,6 @@ export default function RegisterPage() {
                                 本人確認 (ID/パスポート)
                             </label>
                             <div className="relative w-full h-40 bg-footer border-2 border-dashed border-[#BEC9C8] rounded-2xl flex flex-col justify-center items-center gap-3 hover:bg-[#dfe4e1] transition-colors cursor-pointer group">
-                                {/* Input ẩn đè lên toàn bộ div */}
                                 <input 
                                     type="file" 
                                     onChange={handleFileChange}
@@ -257,7 +247,7 @@ export default function RegisterPage() {
                             disabled={isLoading}
                             className="w-full h-14 bg-linear-to-r from-[#005B5B] to-[#1B7575] text-white text-[18px] font-medium rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)] hover:opacity-90 transition-opacity flex justify-center items-center"
                         >
-                            {isLoading ? "登録中..." : "登録完了"}
+                            {isLoading ? "登録中…" : "登録完了"}
                         </button>
                     </form>
 
@@ -281,7 +271,7 @@ export default function RegisterPage() {
                     </div>
                     <div className="flex flex-col">
                         <span className="text-[15px] font-bold text-text-main">成功しました！</span>
-                        <span className="text-[13px] text-[#6E7979]">ログインページへ移動しています...</span>
+                        <span className="text-[13px] text-[#6E7979]">ログインページへ移動しています…</span>
                     </div>
                 </div>
             )}

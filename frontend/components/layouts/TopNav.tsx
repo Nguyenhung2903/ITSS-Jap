@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/lib/auth-context";
-import { resolveImageUrl } from "@/lib/image";
+import SearchInput from "@/components/ui/SearchInput";
+import UserAvatar from "@/components/ui/UserAvatar";
 
 interface TopNavProps {
     title?: string;
@@ -24,14 +24,16 @@ export default function TopNav({
     onSearch,
 }: TopNavProps) {
     const { user } = useAuth();
-    const avatarUrl = resolveImageUrl(user?.avatarUrl);
+    const profileHref = user?.id ? `/profile/${user.id}` : "/profile";
+    const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "ユーザー";
 
     return (
-        <header className="relative w-full h-18 bg-white/75 backdrop-blur-xl flex justify-between items-center px-8 top-0 z-40 border-b border-[#DFE3E1]/40 shadow-[0_4px_30px_rgba(0,0,0,0.015)]">
-            <div className="flex items-center gap-6">
+        <header className="relative top-0 z-40 flex h-18 w-full items-center justify-between border-b border-[#DFE3E1]/40 bg-white/80 px-4 shadow-[0_4px_30px_rgba(0,0,0,0.015)] backdrop-blur-xl md:px-8">
+            <div className="flex min-w-0 items-center gap-4 md:gap-6">
                 {backLink && (
                     <Link
                         href={backLink}
+                        aria-label="前のページへ戻る"
                         className="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-[#DFE3E1]/70 hover:bg-[#005B5B]/10 hover:border-[#005B5B]/25 active:scale-90 transition-all duration-300 shrink-0 shadow-xs group"
                     >
                         <svg className="transition-transform duration-300 group-hover:-translate-x-0.5" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -41,42 +43,31 @@ export default function TopNav({
                 )}
 
                 {showSearch ? (
-                    <div className="relative w-[340px] group">
-                        <svg className="absolute left-5 top-1/2 -translate-y-1/2 text-[#BEC9C8] transition-all duration-300 group-focus-within:text-[#005B5B] group-focus-within:scale-105" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13.8333 15L8.58333 9.75C8.16667 10.0833 7.6875 10.3472 7.14583 10.5417C6.60417 10.7361 6.02778 10.8333 5.41667 10.8333C3.90278 10.8333 2.62153 10.309 1.57292 9.26042C0.524305 8.21181 0 6.93056 0 5.41667C0 3.90278 0.524305 2.62153 1.57292 1.57292C2.62153 0.524305 3.90278 0 5.41667 0C6.93056 0 8.21181 0.524305 9.26042 1.57292C10.309 2.62153 10.8333 3.90278 10.8333 5.41667C10.8333 6.02778 10.7361 6.60417 10.5417 7.14583C10.3472 7.6875 10.0833 8.16667 9.75 8.58333L15 13.8333L13.8333 15ZM5.41667 9.16667C6.45833 9.16667 7.34375 8.80208 8.07292 8.07292C8.80208 7.34375 9.16667 6.45833 9.16667 5.41667C9.16667 4.375 8.80208 3.48958 8.07292 2.76042C7.34375 2.03125 6.45833 1.66667 5.41667 1.66667C4.375 1.66667 3.48958 2.03125 2.76042 2.76042C2.03125 3.48958 1.66667 4.375 1.66667 5.41667C1.66667 6.45833 2.03125 7.34375 2.76042 8.07292C3.48958 8.80208 4.375 9.16667 5.41667 9.16667Z" fill="currentColor" />
-                        </svg>
-                        <input
-                            type="text"
-                            value={searchValue}
-                            placeholder={searchPlaceholder}
-                            onChange={(e) => onSearch?.(e.target.value)}
-                            className="w-full h-[42px] bg-[#F0F5F2]/80 hover:bg-[#E5EAE7] focus:bg-white rounded-2xl pl-12 pr-6 text-[14px] text-[#181D1B] placeholder:text-[#BEC9C8] outline-none border border-transparent focus:border-[#005B5B]/25 focus:ring-4 focus:ring-[#005B5B]/8 transition-all duration-300 shadow-xs"
-                        />
-                    </div>
+                    <SearchInput
+                        value={searchValue}
+                        placeholder={searchPlaceholder || "検索"}
+                        onValueChange={(value) => onSearch?.(value)}
+                        className="w-[min(60vw,340px)]"
+                    />
                 ) : (
                     title && (
-                        <h2 className="text-[20px] font-extrabold text-[#005B5B] leading-7 tracking-tight">{title}</h2>
+                        <h2 className="truncate text-[18px] font-extrabold leading-7 tracking-tight text-[#005B5B] md:text-[20px]">{title}</h2>
                     )
                 )}
             </div>
-            <div className="flex flex-row items-center gap-6">
-                <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row items-center gap-4 md:gap-6">
+                <div className="flex flex-row items-center gap-3 md:gap-4">
                     <NotificationBell />
 
-                    <div className="w-px h-6 bg-[#DFE3E1]/70"></div>
+                    <div className="hidden h-6 w-px bg-[#DFE3E1]/70 sm:block"></div>
                 </div>
 
                 <Link
-                    href="/profile"
-                    className="w-9 h-9 rounded-full ring-2 ring-[#005B5B]/10 hover:ring-[#005B5B]/40 overflow-hidden relative hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-sm"
+                    href={profileHref}
+                    aria-label="プロフィールを開く"
+                    className="rounded-full ring-2 ring-[#005B5B]/10 transition-all duration-300 hover:scale-105 hover:ring-[#005B5B]/40 active:scale-95"
                 >
-                    <Image
-                        src={avatarUrl}
-                        alt="Profile"
-                        fill
-                        sizes="36px"
-                        className="object-cover"
-                    />
+                    <UserAvatar name={displayName} src={user?.avatarUrl} size={36} />
                 </Link>
             </div>
 

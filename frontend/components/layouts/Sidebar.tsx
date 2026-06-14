@@ -54,8 +54,38 @@ export default function Sidebar() {
         router.push("/");
     };
 
+    const navContent = navLinks.map((link) => {
+        const hrefPath = link.path === "/profile" && user?.id ? `/profile/${user.id}` : link.path;
+        const isActive = pathname.startsWith(link.path);
+
+        return (
+            <Link
+                key={link.name}
+                href={hrefPath}
+                onMouseEnter={() => prefetchForPath(hrefPath)}
+                onFocus={() => prefetchForPath(hrefPath)}
+                className={`group relative flex items-center gap-4.5 p-[14px_20px] rounded-2xl transition-all duration-300 ease-out active:scale-95 ${isActive
+                    ? "bg-white/12 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-white/10 text-white"
+                    : "text-white/60 hover:bg-white/5 hover:text-white hover:translate-x-1"
+                    }`}
+            >
+                <div className={`transition-colors duration-300 ${isActive ? "text-[#2DD4BF] drop-shadow-[0_0_5px_rgba(45,212,191,0.4)]" : "text-white/60 group-hover:text-white"}`}>
+                    {link.icon}
+                </div>
+                <span className={`text-[14px] transition-colors duration-300 ${isActive ? "font-bold text-white" : "font-medium text-white/60 group-hover:text-white"}`}>
+                    {link.name}
+                </span>
+
+                {isActive && (
+                    <div className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#2DD4BF] to-[#00F5D4] shadow-[0_0_12px_rgba(45,212,191,0.85)]"></div>
+                )}
+            </Link>
+        );
+    });
+
     return (
-        <aside className="w-64 h-screen sticky top-0 bg-gradient-to-b from-[#062926] via-[#0A3D39] to-[#0C4742] border-r border-white/5 flex flex-col justify-between py-10 px-6 z-50 shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.03),_6px_0_40px_rgba(0,0,0,0.2)]">
+        <>
+        <aside className="sticky top-0 z-50 hidden h-screen w-64 flex-col justify-between border-r border-white/5 bg-gradient-to-b from-[#062926] via-[#0A3D39] to-[#0C4742] px-6 py-10 shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.03),_6px_0_40px_rgba(0,0,0,0.2)] md:flex">
             <div>
                 <div className="mb-12 px-3">
                     <h1 className="text-[26px] font-black text-white leading-8 tracking-tight">
@@ -63,39 +93,13 @@ export default function Sidebar() {
                     </h1>
                 </div>
                 <nav className="flex flex-col gap-2.5">
-                    {navLinks.map((link) => {
-                        const hrefPath = link.path === "/profile" && user?.id ? `/profile/${user.id}` : link.path;
-                        const isActive = pathname.startsWith(link.path);
-
-                        return (
-                            <Link
-                                key={link.name}
-                                href={hrefPath}
-                                onMouseEnter={() => prefetchForPath(hrefPath)}
-                                onFocus={() => prefetchForPath(hrefPath)}
-                                className={`group relative flex items-center gap-4.5 p-[14px_20px] rounded-2xl transition-all duration-300 ease-out active:scale-95 ${isActive
-                                    ? "bg-white/12 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-white/10 text-white"
-                                    : "text-white/60 hover:bg-white/5 hover:text-white hover:translate-x-1"
-                                    }`}
-                            >
-                                <div className={`transition-colors duration-300 ${isActive ? "text-[#2DD4BF] drop-shadow-[0_0_5px_rgba(45,212,191,0.4)]" : "text-white/60 group-hover:text-white"}`}>
-                                    {link.icon}
-                                </div>
-                                <span className={`text-[14px] transition-colors duration-300 ${isActive ? "font-bold text-white" : "font-medium text-white/60 group-hover:text-white"}`}>
-                                    {link.name}
-                                </span>
-
-                                {isActive && (
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 bg-gradient-to-b from-[#2DD4BF] to-[#00F5D4] rounded-r-full shadow-[0_0_12px_rgba(45,212,191,0.85)]"></div>
-                                )}
-                            </Link>
-                        );
-                    })}
+                    {navContent}
                 </nav>
             </div>
             
             <div className="border-t border-white/5 pt-6">
                 <button
+                    type="button"
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/15 rounded-2xl text-white/70 hover:text-red-300 active:scale-95 transition-all duration-300 ease-out cursor-pointer shadow-sm group"
                 >
@@ -106,5 +110,25 @@ export default function Sidebar() {
                 </button>
             </div>
         </aside>
+        <nav className="fixed bottom-3 left-3 right-3 z-50 grid grid-cols-4 gap-1 rounded-[24px] border border-white/50 bg-[#062926]/92 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.25)] backdrop-blur-xl md:hidden">
+            {navLinks.map((link) => {
+                const hrefPath = link.path === "/profile" && user?.id ? `/profile/${user.id}` : link.path;
+                const isActive = pathname.startsWith(link.path);
+                return (
+                    <Link
+                        key={link.name}
+                        href={hrefPath}
+                        aria-label={link.name}
+                        className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-bold transition-all ${
+                            isActive ? "bg-white/12 text-white" : "text-white/60"
+                        }`}
+                    >
+                        <span className={isActive ? "text-[#2DD4BF]" : "text-white/60"}>{link.icon}</span>
+                        <span>{link.name}</span>
+                    </Link>
+                );
+            })}
+        </nav>
+        </>
     )
 }

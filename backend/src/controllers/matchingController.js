@@ -73,6 +73,7 @@ async function loadFilterOptionsPayload() {
         ]);
 
         const purposeSet = new Set();
+
         for (const row of purposeRows) {
             for (const value of splitPurposeValues(row.purpose)) {
                 purposeSet.add(value);
@@ -81,7 +82,9 @@ async function loadFilterOptionsPayload() {
 
         return {
             purposes: [...purposeSet].sort((a, b) => a.localeCompare(b, "ja")),
-            hobbies: hobbyRows.map((row) => row.hobbyName).sort((a, b) => a.localeCompare(b, "ja")),
+            hobbies: hobbyRows
+                .map((row) => row.hobbyName)
+                .sort((a, b) => a.localeCompare(b, "ja")),
         };
     });
 }
@@ -92,7 +95,7 @@ async function loadFilterOptionsPayload() {
  */
 async function searchUsersForUser(userId, query) {
     const page = Math.max(parseInt(query.page || "1", 10), 1);
-    const limit = 9;
+    const limit = 12;
     const skip = (page - 1) * limit;
 
     const { search, hobby, language, purpose, jlptLevel } = query;
@@ -104,8 +107,10 @@ async function searchUsersForUser(userId, query) {
     ];
 
     const normalizedSearch = normalizeSearchQuery(search);
+
     if (normalizedSearch) {
         const s = normalizedSearch;
+
         conditions.push({
             OR: [
                 { firstName: { contains: s, mode: "insensitive" } },
@@ -127,11 +132,18 @@ async function searchUsersForUser(userId, query) {
     if (language?.trim()) {
         const trimmed = language.trim();
         const nationalityValues = NATIONALITY_LANGUAGE_VALUES[trimmed];
+
         conditions.push({
             languages: {
                 some: nationalityValues
-                    ? { language: { in: nationalityValues } }
-                    : { language: relationExactMatch(trimmed) },
+                    ? {
+                        type: "native",
+                        language: { in: nationalityValues },
+                    }
+                    : {
+                        type: "native",
+                        language: relationExactMatch(trimmed),
+                    },
             },
         });
     }
@@ -147,7 +159,11 @@ async function searchUsersForUser(userId, query) {
     }
 
     if (jlptLevel?.trim()) {
-        const levels = jlptLevel.split(",").map((s) => s.trim()).filter(Boolean);
+        const levels = jlptLevel
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+
         conditions.push({
             languages: {
                 some: {
@@ -168,11 +184,13 @@ async function searchUsersForUser(userId, query) {
     });
 
     const hasMore = users.length > limit;
+
     if (hasMore) {
         users.pop();
     }
 
     let total;
+
     if (page > 1) {
         total = undefined;
     } else if (!hasMore) {
@@ -181,12 +199,12 @@ async function searchUsersForUser(userId, query) {
         total = await prisma.verifiedUser.count({ where });
     }
 
-    const data = users.map((u) => ({
-        ...u,
+    const data = users.map((user) => ({
+        ...user,
         score:
-            (u.hobbies.length ? 2 : 0) +
-            (u.languages.length ? 2 : 0) +
-            (u.purposes.length ? 1 : 0),
+            (user.hobbies.length ? 2 : 0) +
+            (user.languages.length ? 2 : 0) +
+            (user.purposes.length ? 1 : 0),
     }));
 
     return {
@@ -235,13 +253,13 @@ exports.createMatchSession = async (req, res) => {
 
         if (!targetUserId) {
             return res.status(400).json({
-                error: "Thiếu targetUserId",
+                error: "targetUserIdが必要です。",
             });
         }
 
         if (userId === targetUserId) {
             return res.status(400).json({
-                error: "Không thể tự chat với chính mình",
+                error: "自分自身とはチャットを開始できません。",
             });
         }
 
@@ -266,6 +284,7 @@ exports.createMatchSession = async (req, res) => {
         }
 
         const mutual = await hasMutualLike(userId, targetUserId);
+
         if (!mutual) {
             return res.status(403).json({
                 error: "お互いにいいねしてマッチングが成立するまで、チャットを開始できません。",
@@ -301,45 +320,37 @@ exports.createMatchSession = async (req, res) => {
             },
         });
 
-        const targetNotification =
-            await prisma.notification.create({
-                data: {
-                    userId: targetUserId,
+        const currentUserName = [currentUser?.firstName, currentUser?.lastName]
+            .filter(Boolean)
+            .join(" ") || "ユーザー";
 
-                    type: "MATCH_SUCCESS",
+        const targetUserName = [targetUser?.firstName, targetUser?.lastName]
+            .filter(Boolean)
+            .join(" ") || "ユーザー";
 
-                    message:
-                        `Bạn đã match với ${currentUser.firstName} ${currentUser.lastName}`,
+        const targetNotification = await prisma.notification.create({
+            data: {
+                userId: targetUserId,
+                type: "MATCH_SUCCESS",
+                message: `${currentUserName}さんとマッチングしました。`,
+                relatedUserId: userId,
+                sessionId: session.id,
+            },
+        });
 
-                    relatedUserId: userId,
+        global.io?.to(`user_${targetUserId}`).emit("newNotification", targetNotification);
 
-                    sessionId: session.id,
-                },
-            });
+        const myNotification = await prisma.notification.create({
+            data: {
+                userId,
+                type: "MATCH_SUCCESS",
+                message: `${targetUserName}さんとマッチングしました。`,
+                relatedUserId: targetUserId,
+                sessionId: session.id,
+            },
+        });
 
-        global.io
-            ?.to(`user_${targetUserId}`)
-            .emit("newNotification", targetNotification);
-
-        const myNotification =
-            await prisma.notification.create({
-                data: {
-                    userId,
-
-                    type: "MATCH_SUCCESS",
-
-                    message:
-                        `Bạn đã match với ${targetUser.firstName} ${targetUser.lastName}`,
-
-                    relatedUserId: targetUserId,
-
-                    sessionId: session.id,
-                },
-            });
-
-        global.io
-            ?.to(`user_${userId}`)
-            .emit("newNotification", myNotification);
+        global.io?.to(`user_${userId}`).emit("newNotification", myNotification);
 
         return res.status(201).json(session);
     } catch (err) {
