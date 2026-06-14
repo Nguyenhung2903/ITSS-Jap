@@ -48,8 +48,8 @@ else
 fi
 
 # 3. Start Backend in the background
-echo "Starting Express + WebSockets backend..."
-node src/server.js &
+echo "Starting Express + WebSockets backend on port 5001..."
+PORT=5001 node src/server.js &
 BACKEND_PID=$!
 
 # 4. Start Next.js Frontend in the background
