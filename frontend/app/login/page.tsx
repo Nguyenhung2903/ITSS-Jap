@@ -28,14 +28,23 @@ export default function LoginPage() {
             });
 
             const result = await response.json();
+            console.log("Login client: received response:", result);
 
             if (!result.success) {
+                console.warn("Login client: login failed:", result.message);
                 setErrorMsg(result.message || "ログインに失敗しました。");
                 return;
             }
 
             if (result.user.status === "VERIFIED") {
-                await refresh();
+                console.log("Login client: user verified, calling refresh()...");
+                try {
+                    await refresh();
+                    console.log("Login client: refresh completed successfully.");
+                } catch (refreshErr) {
+                    console.error("Login client: refresh threw an error:", refreshErr);
+                }
+                console.log("Login client: redirecting to /community...");
                 window.location.assign("/community");
                 return;
             }
