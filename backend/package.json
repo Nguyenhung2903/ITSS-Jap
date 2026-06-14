@@ -1,0 +1,58 @@
+{
+  "name": "36-be",
+  "version": "1.0.0",
+  "description": "ITSS 1",
+  "main": "index.js",
+  "types": "module",
+  "scripts": {
+    "build": "prisma generate",
+    "postinstall": "prisma generate",
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "seed": "node prisma/seed.js",
+    "dev:kill": "powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }\"",
+    "dev:restart": "npm run dev:kill && node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hthanggg0221/36-be.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hthanggg0221/36-be/issues"
+  },
+  "homepage": "https://github.com/hthanggg0221/36-be#readme",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.10.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "socket.io": "^4.8.3",
+    "streamifier": "^0.1.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
