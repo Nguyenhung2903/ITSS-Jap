@@ -1,12 +1,13 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { getApiBaseUrl } from "@/lib/api";
 import { GROUP_LANGUAGE_LEVEL_OPTIONS, sortJlptLevels } from "@/lib/groupFilters";
 import { normalizeSearchQuery } from "@/lib/search";
 
 export async function getGroupFilterOptionsAction() {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/filter-options`, {
+        const res = await fetch(`${getApiBaseUrl()}/groups/filter-options`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
@@ -51,7 +52,7 @@ export async function getMyGroupsAction() {
             return { success: false, message: "ログインしてください。", data: [] }
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/my-groups`, {
+        const res = await fetch(`${getApiBaseUrl()}/groups/my-groups`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -81,7 +82,7 @@ export async function getSuggestedGroupsAction() {
             return { success: false, message: "ログインしてください。", data: [] }
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/suggested`, {
+        const res = await fetch(`${getApiBaseUrl()}/groups/suggested`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -121,7 +122,7 @@ export async function searchGroupsAction(params: {
         query.set("limit", "50");
 
         const qs = query.toString();
-        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/groups${qs ? `?${qs}` : ""}`;
+        const url = `${getApiBaseUrl()}/groups${qs ? `?${qs}` : ""}`;
 
         const res = await fetch(url, {
             method: "GET",
@@ -143,7 +144,7 @@ export async function getGroupCardAction(groupId: number) {
         const token = cookieStore.get("tomoio_token")?.value;
         if (!token) return { success: false };
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/card/${groupId}`, {
+        const res = await fetch(`${getApiBaseUrl()}/groups/card/${groupId}`, {
             headers: { "Authorization": `Bearer ${token}` },
             cache: "no-store"
         });
@@ -159,7 +160,7 @@ export async function joinGroupAction(groupId: number) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("tomoio_token")?.value;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/join`, {
+        const res = await fetch(`${getApiBaseUrl()}/groups/join`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify({ groupId })
@@ -175,7 +176,7 @@ export async function leaveGroupAction(groupId: number) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("tomoio_token")?.value;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/leave`, {
+        const res = await fetch(`${getApiBaseUrl()}/groups/leave`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify({ groupId })

@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { apiPost } from "@/lib/api";
+import { apiPost, getApiBaseUrl } from "@/lib/api";
 import { normalizeSearchQuery } from "@/lib/search";
 
 export type MatchingSearchParams = {
@@ -27,7 +27,7 @@ export async function getMatchingFilterOptionsAction() {
             };
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/matchings/filter-options`, {
+        const res = await fetch(`${getApiBaseUrl()}/matchings/filter-options`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export async function searchMatchingUsersAction(params: MatchingSearchParams = {
         if (params.jlptLevel?.trim()) query.set("jlptLevel", params.jlptLevel.trim());
 
         const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/matchings/search?${query.toString()}`,
+            `${getApiBaseUrl()}/matchings/search?${query.toString()}`,
             {
                 method: "GET",
                 headers: {
@@ -221,7 +221,7 @@ export async function reportUserAction(
             formData.append("evidence", evidence);
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/matchings/report`, {
+        const res = await fetch(`${getApiBaseUrl()}/matchings/report`, {
             method: "POST",
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,
