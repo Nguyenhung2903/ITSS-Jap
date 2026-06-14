@@ -19,6 +19,12 @@ if [ -z "$DIRECT_URL" ]; then
     export DIRECT_URL="$DATABASE_URL"
 fi
 
+# Fallback JWT_SECRET if not set to prevent login crashes
+if [ -z "$JWT_SECRET" ]; then
+    echo "JWT_SECRET is not set. Using default fallback secret."
+    export JWT_SECRET="tomoio-default-secret-key-change-me-in-production"
+fi
+
 # 1. Run Prisma Migration
 echo "Applying Prisma migrations to the Neon.tech database..."
 cd /app/backend
