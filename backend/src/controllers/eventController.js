@@ -54,17 +54,14 @@ exports.createEvent = async (req, res) => {
             return res.status(400).json({ error: "Không thể tạo sự kiện trong quá khứ" });
         }
 
-        let imageUrl = selectSystemCover(`${trimmedTitle}:${parsedTime.toISOString()}`);
-        if (req.file) {
-            try {
-                const uploaded = await uploadToCloudinary(req.file, `events/event-${Date.now()}`, {
-                    imagesOnly: true,
-                });
-                imageUrl = uploaded.secure_url;
-            } catch (err) {
-                console.error("Event image upload failed:", err);
-            }
+        if (!req.file) {
+            return res.status(400).json({ error: "Yêu cầu tải lên ảnh bìa sự kiện" });
         }
+
+        const uploaded = await uploadToCloudinary(req.file, `events/event-${Date.now()}`, {
+            imagesOnly: true,
+        });
+        const imageUrl = uploaded.secure_url;
 
         const event = await prisma.event.create({
             data: {

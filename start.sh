@@ -141,6 +141,10 @@ else
     echo "Database has $USER_COUNT users. Skipping seed."
 fi
 
+# Always check and migrate local assets to R2 if configured
+echo "Synchronizing database assets with Cloudflare R2..."
+node scripts/migrateToR2.js || true
+
 # 4. Start Backend in the background
 echo "Starting Express + WebSockets backend on port 5001..."
 PORT=5001 node src/server.js &

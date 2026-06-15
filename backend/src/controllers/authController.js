@@ -42,19 +42,14 @@ exports.register = async (req, res) => {
             });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
-        let avatarUrl = selectSystemAvatar(normalizedEmail);
-        
-        let documentImageUrl = avatarUrl;
-        if (req.file) {
-            try {
-                const uploaded = await uploadToCloudinary(req.file, `kyc/user-${normalizedEmail}`);
-                documentImageUrl = uploaded.secure_url;
-                avatarUrl = uploaded.secure_url;
-            } catch (err) {
-                console.error("KYC upload failed:", err);
-            }
+        if (!req.file) {
+            return res.status(400).json({ error: "Yêu cầu tải lên ảnh đại diện tham khảo" });
         }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const uploaded = await uploadToCloudinary(req.file, `kyc/user-${normalizedEmail}`);
+        const avatarUrl = uploaded.secure_url;
+        const documentImageUrl = uploaded.secure_url;
 
         const parts = username.trim().split(/\s+/).filter(Boolean);
         const firstName = parts[0] ?? "";

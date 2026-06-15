@@ -78,8 +78,8 @@ export default function RegisterPage() {
         event.preventDefault();
         setError(null);
 
-        if (!username.trim() || !email.trim() || !password.trim() || !nationality || purposes.length === 0) {
-            setError("すべての項目を入力・選択してください。");
+        if (!username.trim() || !email.trim() || !password.trim() || !nationality || purposes.length === 0 || !file) {
+            setError("すべての項目を入力・選択し、参考写真をアップロードしてください。");
             return;
         }
 

@@ -254,6 +254,11 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
             return;
         }
 
+        if (!coverFile) {
+            setError("参考画像をアップロードしてください。");
+            return;
+        }
+
         if (format === "online") {
             try {
                 new URL(trimmedLocation);
