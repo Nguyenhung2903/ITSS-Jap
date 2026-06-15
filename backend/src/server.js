@@ -32,6 +32,21 @@ app.get("/health", async (req, res) => {
     }
 });
 
+app.get("/api/debug-env", (req, res) => {
+    const { hasR2Config } = require("./utils/r2");
+    res.json({
+        r2Configured: hasR2Config(),
+        keysPresent: {
+            ACCOUNT_ID: !!process.env.CLOUDFLARE_R2_ACCOUNT_ID,
+            ACCESS_KEY_ID: !!process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+            SECRET_ACCESS_KEY: !!process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+            BUCKET: !!process.env.CLOUDFLARE_R2_BUCKET,
+            PUBLIC_URL: !!process.env.CLOUDFLARE_R2_PUBLIC_URL,
+            DATABASE_URL: !!process.env.DATABASE_URL
+        }
+    });
+});
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/posts", require("./routes/post"));
 app.use("/api/groups", require("./routes/group"));
