@@ -9,6 +9,7 @@ import TopNav from "@/components/layouts/TopNav";
 import ProfileEditModal from "@/components/profile/ProfileEditModal";
 import { resolveImageUrl } from "@/lib/image";
 import type { UserProfile } from "@/app/actions/profile";
+import { useAuth } from "@/lib/auth-context";
 import {
     blockUserAction,
     createMatchSessionAction,
@@ -701,7 +702,8 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
 
     const [profile, setProfile] = useState(initialProfile);
     const [editOpen, setEditOpen] = useState(false);
-    const isOwn = profile.viewType === "own";
+    const { user } = useAuth();
+    const isOwn = profile.viewType === "own" || (user && user.id === profile.id);
 
     const [activeIndex, setActiveIndex] = useState(0);
     const [isLiked, setIsLiked] = useState(initialProfile.isLiked ?? false);
