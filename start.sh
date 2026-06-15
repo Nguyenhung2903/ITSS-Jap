@@ -86,7 +86,13 @@ async function main() {
     select: { id: true, email: true, avatarUrl: true },
   });
   const avatarUpdates = existingUsers
-    .filter(user => !user.avatarUrl || (!user.avatarUrl.startsWith('/api/backend-assets/avatar/') && !user.avatarUrl.startsWith('http')))
+    .filter(user => {
+      const url = user.avatarUrl?.trim();
+      if (!url) return true;
+      if (url.startsWith('http://') || url.startsWith('https://')) return false;
+      if (url.startsWith('/api/backend-assets/avatar/')) return false;
+      return true;
+    })
     .map(user => prisma.verifiedUser.update({
       where: { id: user.id },
       data: { avatarUrl: selectSystemAvatar(user.email || user.id) },

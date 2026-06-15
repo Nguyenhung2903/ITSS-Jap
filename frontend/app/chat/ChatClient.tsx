@@ -27,6 +27,7 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 import { resolveTranslatedText } from "@/lib/chat-translation";
 import { useAuth } from "@/lib/auth-context";
 import ChatImagePreview from "@/components/chat/ChatImagePreview";
+import RemoteAvatar from "@/components/ui/RemoteAvatar";
 import { resolveImageUrl } from "@/lib/image";
 
 const DEFAULT_AVATAR = "/assets/images/avatars/avatar-1.jpg";
@@ -862,18 +863,14 @@ export default function ChatClient({
                                 )}
 
                                 <div className="relative h-12 w-12 shrink-0">
-                                    {!target?.avatarUrl || target.avatarUrl.includes("avatar_") ? (
-                                        <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[18px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.14)]">
-                                            {getDisplayName(target)?.trim()?.[0] || "T"}
-                                        </div>
-                                    ) : (
-                                        <Image
-                                            src={getAvatarUrl(target?.avatarUrl)}
-                                            alt={getDisplayName(target)}
-                                            fill
-                                            className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.14)]"
-                                        />
-                                    )}
+                                    <RemoteAvatar
+                                        name={getDisplayName(target)}
+                                        src={target?.avatarUrl}
+                                        className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_8px_18px_rgba(79,55,30,0.14)]"
+                                        imageClassName="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.14)]"
+                                        fallbackClassName="text-[18px]"
+                                        sizes="48px"
+                                    />
 
                                     {target?.isOnline && (
                                         <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#FFFDF7] bg-[#22C55E]" />
@@ -947,18 +944,14 @@ export default function ChatClient({
                                         className="flex items-center gap-3 transition-opacity hover:opacity-80"
                                     >
                                         <div className="relative h-11 w-11 shrink-0">
-                                            {!selectedChat.targetUser?.avatarUrl || selectedChat.targetUser.avatarUrl.includes("avatar_") ? (
-                                                <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[16px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.12)]">
-                                                    {getDisplayName(selectedChat.targetUser)?.trim()?.[0] || "T"}
-                                                </div>
-                                            ) : (
-                                                <Image
-                                                    src={getAvatarUrl(selectedChat.targetUser?.avatarUrl)}
-                                                    alt={getDisplayName(selectedChat.targetUser)}
-                                                    fill
-                                                    className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
-                                                />
-                                            )}
+                                            <RemoteAvatar
+                                                name={getDisplayName(selectedChat.targetUser)}
+                                                src={selectedChat.targetUser?.avatarUrl}
+                                                className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
+                                                imageClassName="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
+                                                fallbackClassName="text-[16px]"
+                                                sizes="44px"
+                                            />
 
                                             {selectedChat.targetUser?.isOnline && (
                                                 <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#FFFDF7] bg-[#22C55E]" />
@@ -1135,20 +1128,14 @@ export default function ChatClient({
                                             </div>
                                         ) : (
                                             <div className="mt-5 flex w-full items-start gap-3">
-                                                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-[#EFE3D0] shadow-[0_4px_10px_rgba(79,55,30,0.14)]">
-                                                    {!message.sender?.avatarUrl || message.sender.avatarUrl.includes("avatar_") ? (
-                                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[12px] uppercase select-none">
-                                                            {getDisplayName(message.sender)?.trim()?.[0] || "T"}
-                                                        </div>
-                                                    ) : (
-                                                        <Image
-                                                            src={getAvatarUrl(message.sender.avatarUrl)}
-                                                            alt={getDisplayName(message.sender)}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                    )}
-                                                </div>
+                                                <RemoteAvatar
+                                                    name={getDisplayName(message.sender)}
+                                                    src={message.sender?.avatarUrl}
+                                                    className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-[#EFE3D0] shadow-[0_4px_10px_rgba(79,55,30,0.14)]"
+                                                    imageClassName="object-cover"
+                                                    fallbackClassName="text-[12px]"
+                                                    sizes="32px"
+                                                />
 
                                                 <div className="flex max-w-[80%] flex-col items-start gap-1">
                                                     {hasText && hasImage ? (

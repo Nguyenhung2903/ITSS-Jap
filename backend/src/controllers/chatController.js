@@ -3,6 +3,7 @@ const { isUserOnline } = require("../socket");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 const { scheduleMessageTranslation } = require("../utils/messageTranslation");
 const { loadBlockStatusMap, assertChatNotBlocked } = require("../utils/chatBlockHelper");
+const { withResolvedAvatar } = require("../utils/avatarUrl");
 
 const CHAT_SESSION_LIMIT = 80;
 
@@ -119,10 +120,13 @@ async function loadChatsForUser(userId) {
             id: session.id,
             createdAt: session.createdAt,
             targetUser: targetUser?.user
-                ? {
-                      ...targetUser.user,
-                      isOnline: isUserOnline(targetUser.user.id),
-                  }
+                ? withResolvedAvatar(
+                      {
+                          ...targetUser.user,
+                          isOnline: isUserOnline(targetUser.user.id),
+                      },
+                      `chat:${targetUser.user.id}`
+                  )
                 : null,
             lastMessage: lastMessageBySession.get(session.id) ?? null,
             unreadCount: unreadMap[session.id] || 0,
@@ -211,7 +215,12 @@ async function loadMessagesForSession(userId, sessionId, page, limit) {
         markSessionMessagesSeen(userId, sessionId);
     }
 
-    return messages.reverse();
+    return messages.reverse().map((message) => ({
+        ...message,
+        sender: message.sender
+            ? withResolvedAvatar(message.sender, `message-sender:${message.sender.id}`)
+            : message.sender,
+    }));
 }
 
 exports.loadMessagesForSession = loadMessagesForSession;

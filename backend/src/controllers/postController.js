@@ -1,5 +1,6 @@
 const prisma = require("../prismaClient");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
+const { mapPostsWithAuthor, withResolvedAuthor } = require("../utils/avatarUrl");
 
 const POST_AUTHOR_SELECT = {
     id: true,
@@ -181,10 +182,13 @@ async function loadGroupPosts(groupIdNum, userId, pageNum, limitNum) {
 
     const likedSet = new Set(likedPostIds.map((l) => l.postId));
 
-    const data = posts.map((p) => ({
-        ...p,
-        isLiked: likedSet.has(p.id),
-    }));
+    const data = mapPostsWithAuthor(
+        posts.map((p) => ({
+            ...p,
+            isLiked: likedSet.has(p.id),
+        })),
+        "group-post"
+    );
 
     return { data, hasMore: pageNum * limitNum < total };
 }
@@ -399,7 +403,7 @@ exports.getCommentsByPost = async (req, res) => {
         ]);
 
         res.json({
-            data: comments,
+            data: mapPostsWithAuthor(comments, "comment"),
             pagination: {
                 page,
                 limit,

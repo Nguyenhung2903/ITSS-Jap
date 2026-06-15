@@ -8,6 +8,7 @@ import TopNav from "@/components/layouts/TopNav";
 import { joinGroupAction, leaveGroupAction } from "@/app/actions/group";
 import { useAuth } from "@/lib/auth-context";
 import { resolveImageUrl } from "@/lib/image";
+import RemoteAvatar from "@/components/ui/RemoteAvatar";
 import {
     createPostAction,
     likePostAction,
@@ -552,20 +553,15 @@ export default function GroupDetailClient({
                                                         ) : (
                                                             comments.map((comment) => (
                                                                 <div key={comment.id} className="flex gap-3">
-                                                                    <Link href={`/profile/${comment.author?.id}`} className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0] transition-all hover:scale-105 active:scale-[0.98]">
-                                                                        {!comment.author?.avatarUrl || comment.author?.avatarUrl?.includes("avatar_") ? (
-                                                                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[11px] uppercase">
-                                                                                {getFullName(comment.author)?.trim()?.[0] || "T"}
-                                                                            </div>
-                                                                        ) : (
-                                                                            <Image
-                                                                                src={getAvatar(comment.author)}
-                                                                                alt={getFullName(comment.author)}
-                                                                                fill
-                                                                                sizes="32px"
-                                                                                className="object-cover"
-                                                                            />
-                                                                        )}
+                                                                    <Link href={`/profile/${comment.author?.id}`} className="transition-all hover:scale-105 active:scale-[0.98]">
+                                                                        <RemoteAvatar
+                                                                            name={getFullName(comment.author)}
+                                                                            src={comment.author?.avatarUrl}
+                                                                            className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0]"
+                                                                            imageClassName="object-cover"
+                                                                            fallbackClassName="text-[11px]"
+                                                                            sizes="32px"
+                                                                        />
                                                                     </Link>
                                                                     <div className="flex-1 rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] p-3 shadow-sm">
                                                                         <div className="flex justify-between items-center mb-1">
@@ -660,26 +656,20 @@ function PostAuthor({
     getAvatar: (user: any) => string;
     formatTime: (date: string) => string;
 }) {
-    const isUploaded = !post.author?.avatarUrl || post.author?.avatarUrl?.includes("avatar_");
     return (
         <div className="flex items-center gap-3">
             <Link
                 href={`/profile/${post.author?.id}`}
-                className="relative h-10 w-10 overflow-hidden rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_8px_18px_rgba(79,55,30,0.12)] transition-all hover:scale-105 active:scale-[0.98]"
+                className="transition-all hover:scale-105 active:scale-[0.98]"
             >
-                {isUploaded ? (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[14px] uppercase">
-                        {getFullName(post.author)?.trim()?.[0] || "T"}
-                    </div>
-                ) : (
-                    <Image
-                        src={getAvatar(post.author)}
-                        alt={getFullName(post.author)}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                    />
-                )}
+                <RemoteAvatar
+                    name={getFullName(post.author)}
+                    src={post.author?.avatarUrl}
+                    className="relative h-10 w-10 overflow-hidden rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
+                    imageClassName="object-cover"
+                    fallbackClassName="text-[14px]"
+                    sizes="40px"
+                />
             </Link>
             <div className="flex flex-col">
                 <Link
@@ -712,19 +702,19 @@ function CommentAvatar({
     currentUser: any;
     getAvatar: (user: any) => string;
 }) {
-    const isUploaded = !currentUser?.avatarUrl || currentUser?.avatarUrl?.includes("avatar_");
     return (
         <Link
             href={`/profile/${currentUser?.id}`}
-            className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0] transition-all hover:scale-105 active:scale-[0.98]"
+            className="transition-all hover:scale-105 active:scale-[0.98]"
         >
-            {isUploaded ? (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[11px] uppercase">
-                    {currentUser?.firstName?.trim()?.[0] || currentUser?.email?.trim()?.[0] || "T"}
-                </div>
-            ) : (
-                <Image src={getAvatar(currentUser)} alt="You" fill sizes="32px" className="object-cover" />
-            )}
+            <RemoteAvatar
+                name={currentUser?.firstName || currentUser?.email}
+                src={currentUser?.avatarUrl}
+                className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#F6EAD5] bg-[#EFE3D0]"
+                imageClassName="object-cover"
+                fallbackClassName="text-[11px]"
+                sizes="32px"
+            />
         </Link>
     );
 }

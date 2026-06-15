@@ -137,4 +137,5 @@ async function uploadToR2(fileOrBuffer, folder = "uploads", options = {}) {
 module.exports = {
     hasR2Config,
     uploadToR2,
+    publicUrlForKey,
 };

@@ -1,6 +1,7 @@
 const prisma = require("../prismaClient");
 const { KycStatus, UserStatus } = require("@prisma/client");
 const { splitPurposeValues } = require("./purposeUtils");
+const { resolveAvatarUrl } = require("./avatarUrl");
 
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return null;
@@ -65,8 +66,11 @@ function getPurposeEmoji(purpose) {
 }
 
 function buildGallery(user) {
+    const seed = user.email || user.id;
     const photos = [];
-    if (user.avatarUrl) photos.push(user.avatarUrl);
+    const avatar = resolveAvatarUrl(user.avatarUrl, seed, `profile-gallery:${user.id}`);
+    photos.push(avatar);
+
     for (const photo of user.userPhotos || []) {
         if (photo.url && !photos.includes(photo.url)) {
             photos.push(photo.url);
@@ -83,7 +87,8 @@ function buildGallery(user) {
             photos.push(image);
         }
     }
-    return photos.length > 0 ? photos : ["/assets/images/avatars/avatar.jpg"];
+
+    return photos;
 }
 
 async function getIsVerified(userId) {
@@ -304,7 +309,7 @@ async function formatProfile(user, options = {}) {
         age: calculateAge(user.dateOfBirth),
         location: user.location || "—",
         bio: user.bio || "",
-        avatarUrl: user.avatarUrl || gallery[0],
+        avatarUrl: resolveAvatarUrl(user.avatarUrl, user.email || user.id, `profile:${user.id}`),
         gallery,
         isVerified,
         isOnline: false,

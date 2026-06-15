@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { resolveImageUrl } from "@/lib/image";
+import { normalizeAvatarUrl, resolveImageUrl } from "@/lib/image";
 
 type UserAvatarProps = {
     name?: string | null;
@@ -25,9 +25,8 @@ export default function UserAvatar({
     priority = false,
 }: UserAvatarProps) {
     const [failed, setFailed] = useState(false);
-    const isUploaded = src?.includes("avatar_");
-    const hasImage = src && !isUploaded && !failed;
-    const imageSrc = hasImage ? resolveImageUrl(src) : null;
+    const normalizedSrc = normalizeAvatarUrl(src);
+    const imageSrc = normalizedSrc && !failed ? resolveImageUrl(normalizedSrc, "") : null;
 
     useEffect(() => {
         setFailed(false);
@@ -41,7 +40,7 @@ export default function UserAvatar({
             ].join(" ")}
             style={{ width: size, height: size }}
         >
-            {hasImage && imageSrc ? (
+            {imageSrc && !failed ? (
                 <Image
                     src={imageSrc}
                     alt={name || "ユーザー"}
@@ -49,7 +48,10 @@ export default function UserAvatar({
                     sizes={`${size}px`}
                     priority={priority}
                     className="object-cover"
-                    onError={() => setFailed(true)}
+                    onError={() => {
+                        console.warn("[UserAvatar] Failed to load avatar:", src);
+                        setFailed(true);
+                    }}
                 />
             ) : (
                 <span style={{ fontSize: `${Math.max(10, Math.floor(size * 0.38))}px` }}>

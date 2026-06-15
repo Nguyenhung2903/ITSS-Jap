@@ -1,5 +1,6 @@
 const prisma = require("../prismaClient");
 const { verifyToken } = require("../utils/jwt");
+const { withResolvedAvatar } = require("../utils/avatarUrl");
 
 module.exports = async (req, res, next) => {
     const header = req.headers.authorization;
@@ -28,7 +29,7 @@ module.exports = async (req, res, next) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        req.user = user;
+        req.user = withResolvedAvatar(user, `auth-middleware:${user.id}`);
         next();
     } catch (err) {
         res.status(401).json({ error: "Invalid token" });

@@ -1,6 +1,7 @@
 const prisma = require("../prismaClient");
 const { UserStatus } = require("@prisma/client");
 const { cachedQuery, setPublicCacheHeaders } = require("../utils/queryCache");
+const { resolveAvatarUrl } = require("../utils/avatarUrl");
 
 const PUBLIC_STATS_CACHE_KEY = "stats:public";
 const PUBLIC_STATS_TTL_MS = 60 * 1000;
@@ -24,7 +25,9 @@ async function loadPublicStatsPayload() {
     return {
         activeUserCount,
         recentAvatars: recentUsers
-            .map((user) => user.avatarUrl)
+            .map((user, index) =>
+                resolveAvatarUrl(user.avatarUrl, user.id || index, `stats:${index}`)
+            )
             .filter((url) => typeof url === "string" && url.trim()),
     };
 }

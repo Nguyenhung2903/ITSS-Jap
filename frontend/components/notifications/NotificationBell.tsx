@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
     getNotificationsAction,
@@ -9,7 +8,7 @@ import {
     markAllNotificationsReadAction,
     type AppNotification,
 } from "@/app/actions/notification";
-import { resolveImageUrl } from "@/lib/image";
+import UserAvatar from "@/components/ui/UserAvatar";
 
 function getNotificationLink(notification: AppNotification): string | null {
     const type = notification.type;
@@ -190,25 +189,12 @@ export default function NotificationBell() {
                                     onClick={() => handleNotificationClick(notification)}
                                     className={`flex w-full items-start gap-3 border-b border-[#D9C7A5]/45 px-5 py-4 text-left transition-colors hover:bg-[#F8EEDB]/70 ${!notification.isRead ? "bg-[#DDEDEA]/55" : ""}`}
                                 >
-                                    <span className="relative mt-0.5 h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#D9C7A5]/70 bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white flex items-center justify-center font-black select-none uppercase">
-                                        {notification.relatedUser?.avatarUrl && !notification.relatedUser.avatarUrl.includes("avatar_") ? (
-                                             <Image
-                                                 src={resolveImageUrl(notification.relatedUser.avatarUrl)}
-                                                 alt=""
-                                                 fill
-                                                 sizes="36px"
-                                                 className="object-cover"
-                                             />
-                                         ) : (
-                                             <span className="text-[12px] font-black">
-                                                 {notification.relatedUser?.name ? (
-                                                     notification.relatedUser.name.trim()[0]?.toUpperCase()
-                                                 ) : (
-                                                     getNotificationTypeLabel(notification.type).slice(0, 1)
-                                                 )}
-                                             </span>
-                                         )}
-                                     </span>
+                                    <UserAvatar
+                                        name={notification.relatedUser?.name}
+                                        src={notification.relatedUser?.avatarUrl}
+                                        size={36}
+                                        className="mt-0.5 border border-[#D9C7A5]/70"
+                                    />
 
                                     <span className="min-w-0 flex-1">
                                         <span className="mb-1 inline-flex rounded-full border border-[#005B5B]/15 bg-[#E8F4F2] px-2 py-0.5 text-[10px] font-black text-[#005B5B]">

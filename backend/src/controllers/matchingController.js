@@ -4,6 +4,7 @@ const { cachedQuery, setPublicCacheHeaders } = require("../utils/queryCache");
 const { splitPurposeValues } = require("../utils/purposeUtils");
 const { normalizeSearchQuery } = require("../utils/searchUtils");
 const { hasMutualLike } = require("../utils/matchSessionHelper");
+const { mapUsersWithAvatar } = require("../utils/avatarUrl");
 
 const USER_LIST_SELECT = {
     id: true,
@@ -275,7 +276,7 @@ async function searchUsersForUser(userId, query) {
     const hasMore = skip + limit < total;
 
     return {
-        data: paginatedUsers,
+        data: mapUsersWithAvatar(paginatedUsers, "matching"),
         total,
         hasMore,
     };

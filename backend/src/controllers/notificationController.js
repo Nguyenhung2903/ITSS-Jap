@@ -1,4 +1,5 @@
 const prisma = require("../prismaClient");
+const { resolveAvatarUrl } = require("../utils/avatarUrl");
 
 exports.getNotifications = async (req, res) => {
     try {
@@ -39,7 +40,11 @@ exports.getNotifications = async (req, res) => {
                                   [relatedUser.firstName, relatedUser.lastName]
                                       .filter(Boolean)
                                       .join(" ") || "ユーザー",
-                              avatarUrl: relatedUser.avatarUrl,
+                              avatarUrl: resolveAvatarUrl(
+                                  relatedUser.avatarUrl,
+                                  relatedUser.id,
+                                  `notification:${relatedUser.id}`
+                              ),
                           }
                         : null,
                 };

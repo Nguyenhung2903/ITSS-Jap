@@ -1,7 +1,25 @@
 const prisma = require("../prismaClient");
 const { normalizeSearchQuery } = require("../utils/searchUtils");
 const { selectSystemCover } = require("../utils/systemAssets");
+const { withResolvedAvatar } = require("../utils/avatarUrl");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
+
+function formatEventUsers(event) {
+    if (!event) return event;
+
+    return {
+        ...event,
+        admin: event.admin
+            ? withResolvedAvatar(event.admin, `event-admin:${event.admin.id}`)
+            : event.admin,
+        engagements: (event.engagements || []).map((engagement) => ({
+            ...engagement,
+            user: engagement.user
+                ? withResolvedAvatar(engagement.user, `event-user:${engagement.user.id}`)
+                : engagement.user,
+        })),
+    };
+}
 
 exports.createEvent = async (req, res) => {
     try {
@@ -124,7 +142,7 @@ exports.getEventDetail = async (req, res) => {
             urlLink: (event.format === "online" && !isParticipant) ? null : event.urlLink,
         };
 
-        return res.json(response);
+        return res.json(formatEventUsers(response));
     } catch (err) {
         console.error("[getEventDetail]", err);
         return res.status(500).json({ error: err.message });
@@ -319,14 +337,14 @@ exports.getEvents = async (req, res) => {
         const formatted = events.map((event) => {
             const isJoined = joinedSet.has(event.id);
             const isInterested = interestedSet.has(event.id);
-            return {
+            return formatEventUsers({
                 ...event,
                 isJoined,
                 isInterested,
                 urlLink:
                     event.format === "online" && !isJoined ? null : event.urlLink,
                 participantCount: event._count.engagements,
-            };
+            });
         });
 
         return res.json({
@@ -389,19 +407,21 @@ exports.getPublicEvents = async (req, res) => {
             prisma.event.count({ where }),
         ]);
 
-        const formatted = events.map((event) => ({
-            id: event.id,
-            title: event.title,
-            description: event.description,
-            eventTime: event.eventTime,
-            format: event.format,
-            address: event.format === "offline" ? event.address : null,
-            imageUrl: event.imageUrl,
-            createdAt: event.createdAt,
-            urlLink: null,
-            participantCount: event._count.engagements,
-            engagements: event.engagements,
-        }));
+        const formatted = events.map((event) =>
+            formatEventUsers({
+                id: event.id,
+                title: event.title,
+                description: event.description,
+                eventTime: event.eventTime,
+                format: event.format,
+                address: event.format === "offline" ? event.address : null,
+                imageUrl: event.imageUrl,
+                createdAt: event.createdAt,
+                urlLink: null,
+                participantCount: event._count.engagements,
+                engagements: event.engagements,
+            })
+        );
 
         return res.json({
             data: formatted,

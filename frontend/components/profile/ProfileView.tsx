@@ -8,6 +8,7 @@ import Sidebar from "@/components/layouts/Sidebar";
 import TopNav from "@/components/layouts/TopNav";
 import ProfileEditModal from "@/components/profile/ProfileEditModal";
 import { resolveImageUrl } from "@/lib/image";
+import RemoteAvatar from "@/components/ui/RemoteAvatar";
 import type { UserProfile } from "@/app/actions/profile";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -939,7 +940,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                     : [];
         const unique = [...new Set(raw.filter(Boolean))];
 
-        return unique.length > 0 ? unique : ["/assets/images/avatars/avatar.jpg"];
+        return unique.length > 0 ? unique : [];
     }, [profile.gallery, profile.avatarUrl]);
 
     useEffect(() => {
@@ -972,19 +973,15 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
 
                                 <div className="relative overflow-hidden rounded-[24px] border border-[#F1E5CF] bg-[#F5EBD8] p-3 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">
                                     <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-[8px] border-[#FFFDF7] bg-white shadow-inner">
-                                    {!activeImage || activeImage.includes("avatar_") || activeImage.includes("avatar.jpg") ? (
-                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[72px] uppercase select-none">
-                                            {profile.name?.trim()?.[0] || "T"}
-                                        </div>
-                                    ) : (
-                                        <Image
-                                            src={resolveImageUrl(activeImage)}
-                                            alt={profile.name}
-                                            fill
-                                            className="object-cover"
-                                            priority
-                                        />
-                                    )}
+                                    <RemoteAvatar
+                                        name={profile.name}
+                                        src={activeImage || profile.avatarUrl}
+                                        className="relative aspect-square h-full w-full overflow-hidden rounded-2xl"
+                                        imageClassName="object-cover"
+                                        fallbackClassName="text-[72px]"
+                                        sizes="(max-width: 768px) 100vw, 328px"
+                                        priority
+                                    />
 
                                     {!isOwn && swipeExit && <ActionSwipeOverlay direction={swipeExit} />}
 
@@ -1011,19 +1008,14 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                                         : "border-[#F1E5CF] opacity-75 hover:opacity-100"
                                                     }`}
                                             >
-                                                {!image || image.includes("avatar_") || image.includes("avatar.jpg") ? (
-                                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[18px] uppercase select-none">
-                                                        {profile.name?.trim()?.[0] || "T"}
-                                                    </div>
-                                                ) : (
-                                                    <Image
-                                                        src={resolveImageUrl(image)}
-                                                        alt={`ギャラリー ${index + 1}`}
-                                                        fill
-                                                        className="object-cover"
-                                                        sizes="80px"
-                                                    />
-                                                )}
+                                                <RemoteAvatar
+                                                    name={profile.name}
+                                                    src={image}
+                                                    className="relative h-full w-full overflow-hidden rounded-xl"
+                                                    imageClassName="object-cover"
+                                                    fallbackClassName="text-[18px]"
+                                                    sizes="80px"
+                                                />
                                             </button>
                                         ))}
                                     </div>

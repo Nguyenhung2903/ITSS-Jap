@@ -2,6 +2,7 @@ const prisma = require("../prismaClient");
 const { invalidateCache } = require("../utils/queryCache");
 const { UserStatus } = require("@prisma/client");
 const { formatProfile } = require("../utils/profileFormatter");
+const { withResolvedAvatar } = require("../utils/avatarUrl");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 const profileInclude = {
@@ -111,7 +112,7 @@ exports.updateBasicProfile = async (req, res) => {
             data: { firstName, lastName, location, bio, dateOfBirth },
         });
         const { password: _, ...safeUser } = updated;
-        res.json(safeUser);
+        res.json(withResolvedAvatar(safeUser, `profile:${safeUser.id}`));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -194,7 +195,7 @@ exports.updateMainPhoto = async (req, res) => {
             data: { avatarUrl: url },
         });
         const { password: _, ...safeUser } = user;
-        res.json(safeUser);
+        res.json(withResolvedAvatar(safeUser, `profile:${safeUser.id}`));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

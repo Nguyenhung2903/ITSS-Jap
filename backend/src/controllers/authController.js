@@ -5,6 +5,7 @@ const { splitPurposeValues } = require("../utils/purposeUtils");
 
 const { signToken } = require("../utils/jwt");
 const { selectSystemAvatar } = require("../utils/systemAssets");
+const { withResolvedAvatar } = require("../utils/avatarUrl");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 exports.register = async (req, res) => {
@@ -167,7 +168,7 @@ exports.login = async (req, res) => {
 
         res.json({
             token,
-            user: safeUser,
+            user: withResolvedAvatar(safeUser, `auth:${safeUser.id}`),
         });
     } catch (error) {
 
@@ -203,7 +204,7 @@ exports.me = async (req, res) => {
         const { password: _, ...safeUser } = user;
 
         res.json({
-            user: safeUser,
+            user: withResolvedAvatar(safeUser, `auth:${safeUser.id}`),
         });
     } catch (error) {
 

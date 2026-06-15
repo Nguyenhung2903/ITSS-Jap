@@ -3,6 +3,7 @@ const { UserStatus } = require("@prisma/client");
 const { cachedQuery, setPublicCacheHeaders } = require("../utils/queryCache");
 const { normalizeSearchQuery } = require("../utils/searchUtils");
 const { selectSystemCover } = require("../utils/systemAssets");
+const { withResolvedAvatar } = require("../utils/avatarUrl");
 
 const DEFAULT_LANGUAGE_LEVELS = ["N1", "N2", "N3", "N4", "N5"];
 
@@ -369,6 +370,12 @@ async function buildSuggestedGroups(user, joinedIdSet) {
             return {
                 ...group,
                 memberCount: group.memberCount,
+                members: (group.members || []).map((member, index) => ({
+                    ...member,
+                    user: member.user
+                        ? withResolvedAvatar(member.user, `group-member:${group.groupId}:${index}`)
+                        : member.user,
+                })),
                 _count: { members: group.memberCount },
                 recommendScore: score,
                 isJoined: joinedIdSet.has(group.groupId),
