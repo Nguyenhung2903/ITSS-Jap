@@ -106,6 +106,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
     const [location, setLocation] = useState("");
     const [details, setDetails] = useState("");
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
+    const [coverFile, setCoverFile] = useState<File | null>(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -119,6 +120,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
         setLocation("");
         setDetails("");
         setCoverPreview(null);
+        setCoverFile(null);
         setError(null);
 
         if (fileInputRef.current) {
@@ -186,6 +188,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
         }
 
         setCoverPreview(URL.createObjectURL(file));
+        setCoverFile(file);
         setError(null);
     };
 
@@ -262,20 +265,23 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
 
         const description = buildDescription(trimmedCategory, trimmedTitle, trimmedDetails);
 
-        const payload: CreateEventPayload = {
-            title: trimmedTitle,
-            description,
-            eventTime: eventTime.toISOString(),
-            format,
-            imageUrl: selectSystemEventCover(trimmedTitle, eventTime.toISOString()),
-            ...(format === "offline"
-                ? { address: trimmedLocation }
-                : { urlLink: trimmedLocation }),
-        };
+        const formData = new FormData();
+        formData.append("title", trimmedTitle);
+        formData.append("description", description);
+        formData.append("eventTime", eventTime.toISOString());
+        formData.append("format", format);
+        if (format === "offline") {
+            formData.append("address", trimmedLocation);
+        } else {
+            formData.append("urlLink", trimmedLocation);
+        }
+        if (coverFile) {
+            formData.append("image", coverFile);
+        }
 
         setSaving(true);
 
-        const result = await createEventAction(payload);
+        const result = await createEventAction(formData);
 
         setSaving(false);
 

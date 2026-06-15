@@ -5,6 +5,7 @@ const { splitPurposeValues } = require("../utils/purposeUtils");
 
 const { signToken } = require("../utils/jwt");
 const { selectSystemAvatar } = require("../utils/systemAssets");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 exports.register = async (req, res) => {
     try {
@@ -43,7 +44,16 @@ exports.register = async (req, res) => {
 
         const normalizedEmail = email.trim().toLowerCase();
         const avatarUrl = selectSystemAvatar(normalizedEmail);
-        const documentImageUrl = avatarUrl;
+        
+        let documentImageUrl = avatarUrl;
+        if (req.file) {
+            try {
+                const uploaded = await uploadToCloudinary(req.file, `kyc/user-${normalizedEmail}`);
+                documentImageUrl = uploaded.secure_url;
+            } catch (err) {
+                console.error("KYC upload failed:", err);
+            }
+        }
 
         const parts = username.trim().split(/\s+/).filter(Boolean);
         const firstName = parts[0] ?? "";

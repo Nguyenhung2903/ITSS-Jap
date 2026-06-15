@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const authMiddleware = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
 const {
     createEvent,
@@ -43,7 +44,7 @@ const {
  *       201:
  *         description: Tạo thành công
  */
-router.post("/", authMiddleware, createEvent);
+router.post("/", authMiddleware, upload.single("image"), createEvent);
 
 /**
  * @swagger

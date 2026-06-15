@@ -88,7 +88,7 @@ export type CreateEventPayload = {
     imageUrl?: string;
 };
 
-export async function createEventAction(payload: CreateEventPayload) {
+export async function createEventAction(formData: FormData) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("tomoio_token")?.value;
@@ -100,10 +100,9 @@ export async function createEventAction(payload: CreateEventPayload) {
         const res = await fetch(`${getApiBaseUrl()}/events`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(payload),
+            body: formData,
         });
 
         const data = await res.json();
