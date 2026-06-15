@@ -2,7 +2,7 @@ const prisma = require("../prismaClient");
 const { UserStatus } = require("@prisma/client");
 const { cachedQuery, setPublicCacheHeaders } = require("../utils/queryCache");
 const { normalizeSearchQuery } = require("../utils/searchUtils");
-const { selectSystemCover } = require("../utils/systemAssets");
+const { selectSystemGroupCover } = require("../utils/systemAssets");
 const { withResolvedAvatar } = require("../utils/avatarUrl");
 
 const DEFAULT_LANGUAGE_LEVELS = ["N1", "N2", "N3", "N4", "N5"];
@@ -16,7 +16,7 @@ function getGroupAssetSeed(group) {
 
 function withSystemGroupCover(group) {
     if (!group) return group;
-    const cover = selectSystemCover(getGroupAssetSeed(group));
+    const cover = group.groupCover || selectSystemGroupCover(getGroupAssetSeed(group));
     return {
         ...group,
         groupCover: cover,

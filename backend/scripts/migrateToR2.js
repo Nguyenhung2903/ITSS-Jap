@@ -4,51 +4,13 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
-const { ListObjectsV2Command, S3Client } = require("@aws-sdk/client-s3");
-const { uploadToR2, hasR2Config } = require("../src/utils/r2.js");
+const { hasR2Config, publicUrlForKey, uploadToR2 } = require("../src/utils/r2.js");
 
 const prisma = new PrismaClient();
 
-const AVATAR_DIR = path.join(__dirname, "../assets/avatar");
-const COVER_DIR = path.join(__dirname, "../assets/group_bia");
-
-// Helper to get configuration
-function getR2Config() {
-    const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID?.trim();
-    const endpoint =
-        process.env.CLOUDFLARE_R2_ENDPOINT?.trim() ||
-        (accountId ? `https://${accountId}.r2.cloudflarestorage.com` : "");
-
-    return {
-        accountId,
-        endpoint,
-        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim(),
-        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim(),
-        bucket: process.env.CLOUDFLARE_R2_BUCKET?.trim(),
-        publicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL?.replace(/\/+$/, ""),
-    };
-}
-
-let client = null;
-function getClient() {
-    if (client) return client;
-    const config = getR2Config();
-    client = new S3Client({
-        region: "auto",
-        endpoint: config.endpoint,
-        forcePathStyle: true,
-        credentials: {
-            accessKeyId: config.accessKeyId,
-            secretAccessKey: config.secretAccessKey,
-        },
-    });
-    return client;
-}
-
-function publicUrlForKey(key) {
-    const { publicUrl } = getR2Config();
-    return `${publicUrl}/${key.split("/").map(encodeURIComponent).join("/")}`;
-}
+const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"]);
+const ASSET_ROOT = path.join(__dirname, "../../frontend/public/assets/images");
+const STATIC_PREFIX = "static/assets/images";
 
 function hashSeed(seed) {
     const text = String(seed || "");
@@ -59,180 +21,181 @@ function hashSeed(seed) {
     return hash;
 }
 
-async function listR2Files(prefix) {
-    try {
-        const { bucket } = getR2Config();
-        const command = new ListObjectsV2Command({
-            Bucket: bucket,
-            Prefix: prefix
-        });
-        const response = await getClient().send(command);
-        return (response.Contents || [])
-            .map(item => publicUrlForKey(item.Key))
-            .filter(url => !url.endsWith("/")); // filter out directory placeholders
-    } catch (err) {
-        console.warn(`Could not list R2 files for prefix ${prefix}:`, err.message);
-        return [];
-    }
+function contentTypeFor(filename) {
+    const ext = path.extname(filename).toLowerCase();
+    if (ext === ".png") return "image/png";
+    if (ext === ".webp") return "image/webp";
+    if (ext === ".avif") return "image/avif";
+    if (ext === ".gif") return "image/gif";
+    return "image/jpeg";
 }
 
-function getFiles(dir) {
+function walkImages(dir, base = dir) {
     if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir)
-        .filter(file => !file.startsWith("."))
-        .map(file => path.join(dir, file));
+
+    return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        if (entry.name.startsWith(".")) return [];
+
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) return walkImages(fullPath, base);
+        if (!entry.isFile()) return [];
+        if (!IMAGE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) return [];
+
+        const relativePath = path.relative(base, fullPath).split(path.sep).join("/");
+        return [{ fullPath, relativePath }];
+    });
+}
+
+function isExternalUrl(url) {
+    return /^https?:\/\//i.test(String(url || "").trim());
+}
+
+function shouldReplaceUrl(url) {
+    const trimmed = String(url || "").trim();
+    if (!trimmed) return true;
+    if (trimmed.startsWith("/api/backend-assets/")) return true;
+    if (trimmed.startsWith("/assets/")) return true;
+    return false;
+}
+
+function pick(pool, seed) {
+    if (pool.length === 0) return null;
+    return pool[hashSeed(seed) % pool.length];
+}
+
+async function uploadStaticAssets() {
+    const files = walkImages(ASSET_ROOT);
+    const pools = {
+        avatars: [],
+        events: [],
+        groups: [],
+        all: [],
+    };
+
+    console.log(`Found ${files.length} frontend image assets.`);
+
+    for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        const key = `${STATIC_PREFIX}/${file.relativePath}`;
+        const url = publicUrlForKey(key);
+        const topFolder = file.relativePath.split("/")[0];
+
+        try {
+            await uploadToR2(
+                {
+                    buffer: fs.readFileSync(file.fullPath),
+                    mimetype: contentTypeFor(file.relativePath),
+                    originalname: path.basename(file.relativePath),
+                },
+                "static",
+                {
+                    key,
+                    imagesOnly: true,
+                }
+            );
+            console.log(`[${index + 1}/${files.length}] uploaded ${file.relativePath}`);
+        } catch (error) {
+            console.warn(`[${index + 1}/${files.length}] failed ${file.relativePath}: ${error.message}`);
+        }
+
+        if (topFolder === "avatars") pools.avatars.push(url);
+        if (topFolder === "events") pools.events.push(url);
+        if (topFolder === "groups") pools.groups.push(url);
+        pools.all.push(url);
+    }
+
+    return pools;
+}
+
+async function updateDatabase(pools) {
+    if (pools.avatars.length === 0) {
+        throw new Error("No avatar assets available for DB migration");
+    }
+    if (pools.events.length === 0 && pools.groups.length === 0) {
+        throw new Error("No cover assets available for DB migration");
+    }
+
+    const coverPool = pools.events.length > 0 ? pools.events : pools.groups;
+    const groupPool = pools.groups.length > 0 ? pools.groups : coverPool;
+
+    const users = await prisma.verifiedUser.findMany({
+        select: { id: true, email: true, avatarUrl: true },
+    });
+    let userUpdates = 0;
+
+    for (const user of users) {
+        if (!shouldReplaceUrl(user.avatarUrl)) continue;
+
+        const avatarUrl = pick(pools.avatars, user.email || user.id);
+        if (!avatarUrl || user.avatarUrl === avatarUrl) continue;
+
+        await prisma.verifiedUser.update({
+            where: { id: user.id },
+            data: { avatarUrl },
+        });
+        userUpdates += 1;
+    }
+
+    const groups = await prisma.group.findMany({
+        select: { groupId: true, name: true, groupAvatar: true, groupCover: true },
+    });
+    let groupUpdates = 0;
+
+    for (const group of groups) {
+        const data = {};
+        if (shouldReplaceUrl(group.groupAvatar)) {
+            data.groupAvatar = pick(groupPool, `${group.name || group.groupId}:avatar`);
+        }
+        if (shouldReplaceUrl(group.groupCover)) {
+            data.groupCover = pick(groupPool, `${group.name || group.groupId}:cover`);
+        }
+
+        if (Object.keys(data).length === 0) continue;
+
+        await prisma.group.update({
+            where: { groupId: group.groupId },
+            data,
+        });
+        groupUpdates += 1;
+    }
+
+    const events = await prisma.event.findMany({
+        select: { id: true, title: true, imageUrl: true },
+    });
+    let eventUpdates = 0;
+
+    for (const event of events) {
+        if (isExternalUrl(event.imageUrl) && !shouldReplaceUrl(event.imageUrl)) continue;
+        if (!shouldReplaceUrl(event.imageUrl)) continue;
+
+        const imageUrl = pick(coverPool, event.title || event.id);
+        if (!imageUrl || event.imageUrl === imageUrl) continue;
+
+        await prisma.event.update({
+            where: { id: event.id },
+            data: { imageUrl },
+        });
+        eventUpdates += 1;
+    }
+
+    console.log(JSON.stringify({ userUpdates, groupUpdates, eventUpdates }, null, 2));
 }
 
 async function main() {
     try {
         if (!hasR2Config()) {
-            console.error("R2 is not configured in backend/.env!");
-            process.exit(1);
+            throw new Error("Cloudflare R2 env vars are incomplete");
         }
 
-        console.log("Checking existing files in R2 storage...");
-        let r2Avatars = await listR2Files("avatars/");
-        let r2Covers = await listR2Files("group_bia/");
-
-        console.log(`Found ${r2Avatars.length} avatars and ${r2Covers.length} covers already in R2.`);
-
-        const localAvatars = getFiles(AVATAR_DIR);
-        const localCovers = getFiles(COVER_DIR);
-
-        // Upload avatars if R2 is empty
-        if (r2Avatars.length < 10) {
-            console.log("\n=== Uploading Avatars to R2 ===");
-            r2Avatars = [];
-            for (let i = 0; i < localAvatars.length; i++) {
-                const filePath = localAvatars[i];
-                const filename = path.basename(filePath);
-                const buffer = fs.readFileSync(filePath);
-                
-                let mimeType = "image/jpeg";
-                if (filename.endsWith(".png")) mimeType = "image/png";
-                else if (filename.endsWith(".webp")) mimeType = "image/webp";
-                else if (filename.endsWith(".avif")) mimeType = "image/avif";
-                else if (filename.endsWith(".gif")) mimeType = "image/gif";
-
-                try {
-                    console.log(`[${i+1}/${localAvatars.length}] Uploading ${filename}...`);
-                    const result = await uploadToR2(buffer, "avatars", {
-                        contentType: mimeType,
-                        originalName: filename
-                    });
-                    r2Avatars.push(result.secure_url);
-                } catch (err) {
-                    console.error(`Failed to upload avatar ${filename}:`, err.message);
-                }
-            }
-        } else {
-            console.log("Using existing avatars from R2 (skipping uploads).");
-        }
-
-        // Upload covers if R2 is empty
-        if (r2Covers.length < 10) {
-            console.log("\n=== Uploading Covers to R2 ===");
-            r2Covers = [];
-            for (let i = 0; i < localCovers.length; i++) {
-                const filePath = localCovers[i];
-                const filename = path.basename(filePath);
-                const buffer = fs.readFileSync(filePath);
-                
-                let mimeType = "image/jpeg";
-                if (filename.endsWith(".png")) mimeType = "image/png";
-                else if (filename.endsWith(".webp")) mimeType = "image/webp";
-                else if (filename.endsWith(".avif")) mimeType = "image/avif";
-                else if (filename.endsWith(".gif")) mimeType = "image/gif";
-
-                try {
-                    console.log(`[${i+1}/${localCovers.length}] Uploading ${filename}...`);
-                    const result = await uploadToR2(buffer, "group_bia", {
-                        contentType: mimeType,
-                        originalName: filename
-                    });
-                    r2Covers.push(result.secure_url);
-                } catch (err) {
-                    console.error(`Failed to upload cover ${filename}:`, err.message);
-                }
-            }
-        } else {
-            console.log("Using existing covers from R2 (skipping uploads).");
-        }
-
-        if (r2Avatars.length === 0 || r2Covers.length === 0) {
-            console.error("No images available. Aborting DB update.");
-            process.exit(1);
-        }
-
-        // 3. Update Database Users
-        console.log("\n=== Updating Users in Database ===");
-        const users = await prisma.verifiedUser.findMany({ select: { id: true, email: true, avatarUrl: true } });
-        console.log(`Checking/Updating ${users.length} users...`);
-        let updatedUsersCount = 0;
-        for (const user of users) {
-            const isSeedUser = user.email && (user.email.endsWith("@tomoio.local") || user.email.includes("seed.user"));
-            if (user.avatarUrl && (user.avatarUrl.startsWith("http://") || user.avatarUrl.startsWith("https://")) && !isSeedUser) {
-                continue; // Do not overwrite custom avatars of real users
-            }
-            const deterministicAvatar = r2Avatars[hashSeed(user.email || user.id) % r2Avatars.length];
-            // Only update if it actually changed to save DB write operations
-            if (user.avatarUrl !== deterministicAvatar) {
-                await prisma.verifiedUser.update({
-                    where: { id: user.id },
-                    data: { avatarUrl: deterministicAvatar }
-                });
-                updatedUsersCount++;
-            }
-        }
-        console.log(`Users updated successfully. (${updatedUsersCount} changes made)`);
-
-        // 4. Update Database Groups
-        console.log("\n=== Updating Groups in Database ===");
-        const groups = await prisma.group.findMany({ select: { groupId: true, name: true, groupAvatar: true, groupCover: true } });
-        console.log(`Checking/Updating ${groups.length} groups...`);
-        let updatedGroupsCount = 0;
-        for (const group of groups) {
-            const updateData = {};
-            if (!group.groupAvatar || (!group.groupAvatar.startsWith("http://") && !group.groupAvatar.startsWith("https://"))) {
-                updateData.groupAvatar = r2Covers[hashSeed(group.name + "-avatar") % r2Covers.length];
-            }
-            if (!group.groupCover || (!group.groupCover.startsWith("http://") && !group.groupCover.startsWith("https://"))) {
-                updateData.groupCover = r2Covers[hashSeed(group.name + "-cover") % r2Covers.length];
-            }
-            if (Object.keys(updateData).length > 0) {
-                await prisma.group.update({
-                    where: { groupId: group.groupId },
-                    data: updateData
-                });
-                updatedGroupsCount++;
-            }
-        }
-        console.log(`Groups updated successfully. (${updatedGroupsCount} changes made)`);
-
-        // 5. Update Database Events
-        console.log("\n=== Updating Events in Database ===");
-        const events = await prisma.event.findMany({ select: { id: true, title: true, imageUrl: true } });
-        console.log(`Checking/Updating ${events.length} events...`);
-        let updatedEventsCount = 0;
-        for (const event of events) {
-            if (event.imageUrl && (event.imageUrl.startsWith("http://") || event.imageUrl.startsWith("https://"))) {
-                continue; // Do not overwrite existing R2/Cloud URLs
-            }
-            const deterministicCover = r2Covers[hashSeed(event.title || event.id) % r2Covers.length];
-            await prisma.event.update({
-                where: { id: event.id },
-                data: { imageUrl: deterministicCover }
-            });
-            updatedEventsCount++;
-        }
-        console.log("Events updated successfully.");
-
-        console.log("\n=== Migration Completed Successfully! ===");
-    } catch (err) {
-        console.error("Migration script failed:", err);
+        const pools = await uploadStaticAssets();
+        await updateDatabase(pools);
+        console.log("R2 migration completed.");
     } finally {
         await prisma.$disconnect();
     }
 }
 
-main();
+main().catch((error) => {
+    console.error("R2 migration failed:", error);
+    process.exit(1);
+});

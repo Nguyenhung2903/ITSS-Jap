@@ -54,8 +54,15 @@ fi
 echo "Auto-approving records that require admin review..."
 node -e "
 const { PrismaClient, UserStatus, KycStatus, EventStatus, ReportCaseStatus } = require('@prisma/client');
-const { selectSystemAvatar, selectSystemCover } = require('./src/utils/systemAssets');
+const { selectSystemAvatar, selectSystemEventCover } = require('./src/utils/systemAssets');
 const prisma = new PrismaClient();
+function shouldReplaceAssetUrl(url) {
+  const value = url?.trim();
+  if (!value) return true;
+  if (value.startsWith('/api/backend-assets/')) return true;
+  if (value.startsWith('/assets/')) return true;
+  return false;
+}
 async function main() {
   const [users, kyc, events, reports] = await prisma.\$transaction([
     prisma.verifiedUser.updateMany({
@@ -86,13 +93,7 @@ async function main() {
     select: { id: true, email: true, avatarUrl: true },
   });
   const avatarUpdates = existingUsers
-    .filter(user => {
-      const url = user.avatarUrl?.trim();
-      if (!url) return true;
-      if (url.startsWith('http://') || url.startsWith('https://')) return false;
-      if (url.startsWith('/api/backend-assets/avatar/')) return false;
-      return true;
-    })
+    .filter(user => shouldReplaceAssetUrl(user.avatarUrl))
     .map(user => prisma.verifiedUser.update({
       where: { id: user.id },
       data: { avatarUrl: selectSystemAvatar(user.email || user.id) },
@@ -106,10 +107,10 @@ async function main() {
     select: { id: true, title: true, eventTime: true, imageUrl: true },
   });
   const eventImageUpdates = existingEvents
-    .filter(event => !event.imageUrl || (!event.imageUrl.startsWith('/api/backend-assets/group_bia/') && !event.imageUrl.startsWith('http')))
+    .filter(event => shouldReplaceAssetUrl(event.imageUrl))
     .map(event => prisma.event.update({
       where: { id: event.id },
-      data: { imageUrl: selectSystemCover((event.title || event.id) + ':' + (event.eventTime?.toISOString?.() || '')) },
+      data: { imageUrl: selectSystemEventCover((event.title || event.id) + ':' + (event.eventTime?.toISOString?.() || '')) },
     }));
   if (eventImageUpdates.length > 0) {
     await prisma.\$transaction(eventImageUpdates);

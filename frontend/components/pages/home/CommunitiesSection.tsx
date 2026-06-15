@@ -4,19 +4,19 @@ const COMMUNITIES = [
     {
         name: "日越カルチャー交流",
         description: "日本とベトナムの暮らし、行事、写真を共有するコミュニティ。",
-        image: "/api/backend-assets/group_bia/Culture-and-arts-of-Vietnam.jpg",
+        image: "/assets/images/events/Culture-and-arts-of-Vietnam.jpg",
         tags: ["文化", "写真", "交流"],
     },
     {
         name: "日本語・ベトナム語会話",
         description: "短い会話練習や質問を気軽に投稿できる語学グループ。",
-        image: "/api/backend-assets/group_bia/japan-banner.jpg",
+        image: "/assets/images/groups/japan-banner.jpg",
         tags: ["言語交換", "日本語", "ベトナム語"],
     },
     {
         name: "週末フードクラブ",
         description: "おすすめのお店、家庭料理、週末の食事会を見つける場所。",
-        image: "/api/backend-assets/group_bia/Am-Thuc-Viet-Nam.jpeg",
+        image: "/assets/images/events/Am-Thuc-Viet-Nam.jpeg",
         tags: ["料理", "友達作り", "週末"],
     },
 ];

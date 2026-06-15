@@ -18,10 +18,10 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
 ];
 
 const SYSTEM_EVENT_COVERS = [
-    "/api/backend-assets/group_bia/1000050306-17601494681661528944354.webp",
-    "/api/backend-assets/group_bia/24-01-2023-doc-dao-van-hoa-am-thuc-viet-ngay-tet-4CBDB0B0.jpg",
-    "/api/backend-assets/group_bia/623_shrines_large.jpg",
-    "/api/backend-assets/group_bia/japan-banner.jpg",
+    "/assets/images/events/1000050306-17601494681661528944354.webp",
+    "/assets/images/events/24-01-2023-doc-dao-van-hoa-am-thuc-viet-ngay-tet-4CBDB0B0.jpg",
+    "/assets/images/events/623_shrines_large.jpg",
+    "/assets/images/events/event-1.png",
 ];
 
 type CreateEventModalProps = {

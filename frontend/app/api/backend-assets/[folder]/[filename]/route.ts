@@ -3,6 +3,10 @@ import path from "path";
 import { NextResponse } from "next/server";
 
 const ALLOWED_FOLDERS = new Set(["avatar", "group_bia"]);
+const FOLDER_ALIASES: Record<string, string[]> = {
+    avatar: ["avatars"],
+    group_bia: ["events", "groups"],
+};
 const CONTENT_TYPES: Record<string, string> = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -28,11 +32,12 @@ export async function GET(_request: Request, context: RouteContext) {
         return new NextResponse("Not found", { status: 404 });
     }
 
-    const candidates = [
-        path.join(process.cwd(), "../backend/assets", cleanFolder, cleanFilename),
-        path.join(process.cwd(), "backend/assets", cleanFolder, cleanFilename),
-        path.join("/app/backend/assets", cleanFolder, cleanFilename),
-    ];
+    const mappedFolders = FOLDER_ALIASES[cleanFolder] ?? [cleanFolder];
+    const candidates = mappedFolders.flatMap((mappedFolder) => [
+        path.join(process.cwd(), "public/assets/images", mappedFolder, cleanFilename),
+        path.join(process.cwd(), "frontend/public/assets/images", mappedFolder, cleanFilename),
+        path.join("/app/frontend/public/assets/images", mappedFolder, cleanFilename),
+    ]);
 
     for (const filePath of candidates) {
         try {

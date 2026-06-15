@@ -73,6 +73,16 @@ function normalizeFolder(folder) {
         .join("/") || "uploads";
 }
 
+function normalizeKey(key) {
+    const parts = String(key || "")
+        .split("/")
+        .map((segment) => segment.trim())
+        .filter((segment) => segment && segment !== "." && segment !== "..");
+
+    if (parts.length === 0) return "";
+    return parts.join("/");
+}
+
 function extensionForFile(file) {
     if (file?.mimetype && MIME_EXTENSIONS[file.mimetype]) {
         return MIME_EXTENSIONS[file.mimetype];
@@ -109,10 +119,11 @@ async function uploadToR2(fileOrBuffer, folder = "uploads", options = {}) {
         throw error;
     }
 
+    const explicitKey = normalizeKey(options.key);
     const cleanFolder = normalizeFolder(folder);
     const ext = extensionForFile(file);
     const filename = `${Date.now()}-${crypto.randomUUID()}${ext}`;
-    const key = `${cleanFolder}/${filename}`;
+    const key = explicitKey || `${cleanFolder}/${filename}`;
 
     await getClient().send(
         new PutObjectCommand({
