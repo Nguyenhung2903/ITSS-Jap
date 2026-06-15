@@ -844,14 +844,11 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
         setActionBusy(true);
         setActionError(null);
 
-        await waitSwipe("right");
-
         const result = await likeUserAction(profile.id);
 
         setActionBusy(false);
 
         if (!result.success) {
-            setSwipeExit(null);
             setPendingAction(null);
             setActionError(result.message ?? "操作に失敗しました。");
             return;
@@ -873,7 +870,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
             kind: "like",
             message: "いいねを送りました。相手に通知されました。",
         });
-    }, [profile.id, actionBusy, isLiked, waitSwipe, showSuccessToast]);
+    }, [profile.id, actionBusy, isLiked, showSuccessToast]);
 
     const handleBlock = useCallback(async () => {
         const ok = await runAction(async () => {
@@ -961,18 +958,10 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
             <Sidebar />
 
             <div className="relative flex flex-1 flex-col overflow-hidden">
-                <TopNav backLink={isOwn ? undefined : "/matching"} />
+                <TopNav title="プロフィール" backLink={isOwn ? undefined : "/matching"} />
 
                 <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                     <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
-                        <div className="flex flex-col gap-1.5">
-                            <h2 className="text-[30px] leading-[38px] font-extrabold tracking-[-0.8px] text-[#005B5B]">
-                                プロフィール
-                            </h2>
-                            <p className="text-[14px] font-medium text-[#6E7979]">
-                                交流相手の言語、興味、目的を確認しましょう。
-                            </p>
-                        </div>
 
                         <div
                             className={`flex w-full flex-col items-start gap-8 transition-all duration-[400ms] ease-in-out will-change-transform lg:flex-row ${!isOwn ? cardSwipeClass : ""
