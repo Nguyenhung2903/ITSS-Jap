@@ -86,7 +86,7 @@ async function main() {
     select: { id: true, email: true, avatarUrl: true },
   });
   const avatarUpdates = existingUsers
-    .filter(user => !user.avatarUrl || !user.avatarUrl.startsWith('/api/backend-assets/avatar/'))
+    .filter(user => !user.avatarUrl || (!user.avatarUrl.startsWith('/api/backend-assets/avatar/') && !user.avatarUrl.startsWith('http')))
     .map(user => prisma.verifiedUser.update({
       where: { id: user.id },
       data: { avatarUrl: selectSystemAvatar(user.email || user.id) },
@@ -100,7 +100,7 @@ async function main() {
     select: { id: true, title: true, eventTime: true, imageUrl: true },
   });
   const eventImageUpdates = existingEvents
-    .filter(event => !event.imageUrl || !event.imageUrl.startsWith('/api/backend-assets/group_bia/'))
+    .filter(event => !event.imageUrl || (!event.imageUrl.startsWith('/api/backend-assets/group_bia/') && !event.imageUrl.startsWith('http')))
     .map(event => prisma.event.update({
       where: { id: event.id },
       data: { imageUrl: selectSystemCover((event.title || event.id) + ':' + (event.eventTime?.toISOString?.() || '')) },

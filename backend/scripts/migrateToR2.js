@@ -50,6 +50,15 @@ function publicUrlForKey(key) {
     return `${publicUrl}/${key.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+function hashSeed(seed) {
+    const text = String(seed || "");
+    let hash = 0;
+    for (let i = 0; i < text.length; i += 1) {
+        hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+    }
+    return hash;
+}
+
 async function listR2Files(prefix) {
     try {
         const { bucket } = getR2Config();
@@ -157,44 +166,64 @@ async function main() {
 
         // 3. Update Database Users
         console.log("\n=== Updating Users in Database ===");
-        const users = await prisma.verifiedUser.findMany({ select: { id: true, email: true } });
-        console.log(`Updating ${users.length} users...`);
+        const users = await prisma.verifiedUser.findMany({ select: { id: true, email: true, avatarUrl: true } });
+        console.log(`Checking/Updating ${users.length} users...`);
+        let updatedUsersCount = 0;
         for (const user of users) {
-            const randomAvatar = r2Avatars[Math.floor(Math.random() * r2Avatars.length)];
-            await prisma.verifiedUser.update({
-                where: { id: user.id },
-                data: { avatarUrl: randomAvatar }
-            });
+            const isSeedUser = user.email && (user.email.endsWith("@tomoio.local") || user.email.includes("seed.user"));
+            if (user.avatarUrl && (user.avatarUrl.startsWith("http://") || user.avatarUrl.startsWith("https://")) && !isSeedUser) {
+                continue; // Do not overwrite custom avatars of real users
+            }
+            const deterministicAvatar = r2Avatars[hashSeed(user.email || user.id) % r2Avatars.length];
+            // Only update if it actually changed to save DB write operations
+            if (user.avatarUrl !== deterministicAvatar) {
+                await prisma.verifiedUser.update({
+                    where: { id: user.id },
+                    data: { avatarUrl: deterministicAvatar }
+                });
+                updatedUsersCount++;
+            }
         }
-        console.log("Users updated successfully.");
+        console.log(`Users updated successfully. (${updatedUsersCount} changes made)`);
 
         // 4. Update Database Groups
         console.log("\n=== Updating Groups in Database ===");
-        const groups = await prisma.group.findMany({ select: { groupId: true, name: true } });
-        console.log(`Updating ${groups.length} groups...`);
+        const groups = await prisma.group.findMany({ select: { groupId: true, name: true, groupAvatar: true, groupCover: true } });
+        console.log(`Checking/Updating ${groups.length} groups...`);
+        let updatedGroupsCount = 0;
         for (const group of groups) {
-            const randomAvatar = r2Covers[Math.floor(Math.random() * r2Covers.length)];
-            const randomCover = r2Covers[Math.floor(Math.random() * r2Covers.length)];
-            await prisma.group.update({
-                where: { groupId: group.groupId },
-                data: {
-                    groupAvatar: randomAvatar,
-                    groupCover: randomCover
-                }
-            });
+            const updateData = {};
+            if (!group.groupAvatar || (!group.groupAvatar.startsWith("http://") && !group.groupAvatar.startsWith("https://"))) {
+                updateData.groupAvatar = r2Covers[hashSeed(group.name + "-avatar") % r2Covers.length];
+            }
+            if (!group.groupCover || (!group.groupCover.startsWith("http://") && !group.groupCover.startsWith("https://"))) {
+                updateData.groupCover = r2Covers[hashSeed(group.name + "-cover") % r2Covers.length];
+            }
+            if (Object.keys(updateData).length > 0) {
+                await prisma.group.update({
+                    where: { groupId: group.groupId },
+                    data: updateData
+                });
+                updatedGroupsCount++;
+            }
         }
-        console.log("Groups updated successfully.");
+        console.log(`Groups updated successfully. (${updatedGroupsCount} changes made)`);
 
         // 5. Update Database Events
         console.log("\n=== Updating Events in Database ===");
-        const events = await prisma.event.findMany({ select: { id: true, title: true } });
-        console.log(`Updating ${events.length} events...`);
+        const events = await prisma.event.findMany({ select: { id: true, title: true, imageUrl: true } });
+        console.log(`Checking/Updating ${events.length} events...`);
+        let updatedEventsCount = 0;
         for (const event of events) {
-            const randomCover = r2Covers[Math.floor(Math.random() * r2Covers.length)];
+            if (event.imageUrl && (event.imageUrl.startsWith("http://") || event.imageUrl.startsWith("https://"))) {
+                continue; // Do not overwrite existing R2/Cloud URLs
+            }
+            const deterministicCover = r2Covers[hashSeed(event.title || event.id) % r2Covers.length];
             await prisma.event.update({
                 where: { id: event.id },
-                data: { imageUrl: randomCover }
+                data: { imageUrl: deterministicCover }
             });
+            updatedEventsCount++;
         }
         console.log("Events updated successfully.");
 
