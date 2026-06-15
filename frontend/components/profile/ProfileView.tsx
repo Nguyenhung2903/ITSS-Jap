@@ -257,14 +257,12 @@ function ActionButtonSpinner() {
 
 type OtherProfileActionsProps = {
     isLiked: boolean;
-    hasPassed: boolean;
     isMutualMatch: boolean;
     chatSessionId: number | null;
     isBusy: boolean;
     isAnimating: boolean;
     pendingAction: PendingAction;
     onStartChat: () => void;
-    onPass: () => void;
     onLike: () => void;
     onOpenReport: () => void;
     onOpenBlock: () => void;
@@ -272,19 +270,16 @@ type OtherProfileActionsProps = {
 
 function OtherProfileActions({
     isLiked,
-    hasPassed,
     isMutualMatch,
     chatSessionId,
     isBusy,
     isAnimating,
     pendingAction,
     onStartChat,
-    onPass,
     onLike,
     onOpenReport,
     onOpenBlock,
 }: OtherProfileActionsProps) {
-    const passActive = pendingAction === "pass" && isAnimating;
     const likeActive = pendingAction === "like" && isAnimating;
     const canChat = Boolean(chatSessionId) || isMutualMatch;
     const chatLabel = chatSessionId ? "チャットを開く" : "チャットを始める";
@@ -298,28 +293,32 @@ function OtherProfileActions({
 
     return (
         <div className="flex w-full flex-col gap-4 pt-6">
-            <div className="rounded-2xl border border-[#E4D1B2]/80 bg-[#F8EEDB] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
-                <p className="mb-2 text-[12px] font-black tracking-[1px] text-[#8B5E34] uppercase">
-                    アクションについて
-                </p>
-
-                <div className="flex flex-col gap-1.5 text-[13px] leading-relaxed text-[#6E7979]">
-                    <p>
-                        <span className="font-bold text-[#005B5B]">いいね</span>
-                        {" — 相手に通知されます。お互いにいいねするとマッチング成立です。"}
-                    </p>
-                    <p>
-                        <span className="font-bold text-[#8B5E34]">見送る</span>
-                        {" — 候補リストから非表示になります。相手には通知されません。"}
-                    </p>
-                    <p>
-                        <span className="font-bold text-[#005B5B]">チャット</span>
-                        {" — マッチング成立後のみ利用できます。"}
-                    </p>
-                </div>
-            </div>
-
             <div className="flex w-full flex-col gap-3">
+                <button
+                    type="button"
+                    onClick={onLike}
+                    disabled={isBusy || isLiked || isAnimating}
+                    title="相手にいいねを送ります。"
+                    className={`flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-bold transition-all duration-200 disabled:cursor-not-allowed ${isLiked
+                            ? "border border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B] opacity-80"
+                            : likeActive
+                                ? "scale-95 bg-[#005B5B] text-white shadow-lg"
+                                : "border border-[#005B5B]/25 bg-[#FFFDF7] text-[#005B5B] hover:border-[#005B5B]/45 hover:bg-[#DDEDEA] disabled:opacity-60"
+                        }`}
+                >
+                    {likeActive ? (
+                        <ActionButtonSpinner />
+                    ) : (
+                        <svg width="17" height="15" viewBox="0 0 17 15" fill="none" aria-hidden>
+                            <path
+                                d="M8.5 14.25L7.2875 13.1625C3.65 9.9125 1.5 7.9875 1.5 5.625C1.5 3.7125 3.0125 2.25 5 2.25C6.0875 2.25 7.1375 2.71875 8 3.58125C8.8625 2.71875 9.9125 2.25 11 2.25C12.9875 2.25 14.5 3.7125 14.5 5.625C14.5 7.9875 12.35 9.9125 8.7125 13.1625L8.5 14.25Z"
+                                fill="currentColor"
+                            />
+                        </svg>
+                    )}
+                    {isLiked ? "いいね済み" : likeActive ? "送信中..." : "いいね"}
+                </button>
+
                 <button
                     type="button"
                     onClick={onStartChat}
@@ -335,60 +334,6 @@ function OtherProfileActions({
                     </svg>
                     {chatLabel}
                 </button>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        type="button"
-                        onClick={onPass}
-                        disabled={isBusy || hasPassed || isAnimating}
-                        title="この相手を候補リストから非表示にします。"
-                        className={`flex h-14 items-center justify-center gap-2 rounded-2xl text-[14px] font-bold transition-all duration-200 disabled:cursor-not-allowed ${hasPassed
-                                ? "border border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118] opacity-70"
-                                : passActive
-                                    ? "scale-95 bg-[#8B5E34] text-white shadow-lg"
-                                    : "border border-[#D9C7A5]/80 bg-[#FFFDF7] text-[#8B5E34] hover:border-[#8B5E34]/35 hover:bg-[#F8EEDB] disabled:opacity-60"
-                            }`}
-                    >
-                        {passActive ? (
-                            <ActionButtonSpinner />
-                        ) : (
-                            <svg width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden>
-                                <path
-                                    d="M1 1L11 11M11 1L1 11"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                        )}
-                        {hasPassed ? "見送り済み" : passActive ? "見送り中..." : "見送る"}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={onLike}
-                        disabled={isBusy || isLiked || isAnimating}
-                        title="相手にいいねを送ります。"
-                        className={`flex h-14 items-center justify-center gap-2 rounded-2xl text-[14px] font-bold transition-all duration-200 disabled:cursor-not-allowed ${isLiked
-                                ? "border border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B] opacity-80"
-                                : likeActive
-                                    ? "scale-95 bg-[#005B5B] text-white shadow-lg"
-                                    : "border border-[#005B5B]/25 bg-[#FFFDF7] text-[#005B5B] hover:border-[#005B5B]/45 hover:bg-[#DDEDEA] disabled:opacity-60"
-                            }`}
-                    >
-                        {likeActive ? (
-                            <ActionButtonSpinner />
-                        ) : (
-                            <svg width="17" height="15" viewBox="0 0 17 15" fill="none" aria-hidden>
-                                <path
-                                    d="M8.5 14.25L7.2875 13.1625C3.65 9.9125 1.5 7.9875 1.5 5.625C1.5 3.7125 3.0125 2.25 5 2.25C6.0875 2.25 7.1375 2.71875 8 3.58125C8.8625 2.71875 9.9125 2.25 11 2.25C12.9875 2.25 14.5 3.7125 14.5 5.625C14.5 7.9875 12.35 9.9125 8.7125 13.1625L8.5 14.25Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        )}
-                        {isLiked ? "いいね済み" : likeActive ? "送信中..." : "いいね"}
-                    </button>
-                </div>
 
                 <div className="flex gap-2">
                     <button
@@ -1321,6 +1266,35 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                     </section>
                                 )}
 
+                                {isOwn ? (
+                                    <ProfileActions isOwn onEdit={() => setEditOpen(true)} />
+                                ) : (
+                                    <OtherProfileActions
+                                        isLiked={isLiked}
+                                        isMutualMatch={isMutualMatch}
+                                        chatSessionId={chatSessionId}
+                                        isBusy={actionBusy}
+                                        isAnimating={swipeExit !== null}
+                                        pendingAction={pendingAction}
+                                        onStartChat={handleStartChat}
+                                        onLike={handleLike}
+                                        onOpenReport={() => {
+                                            setReportError(null);
+                                            setReportReason("");
+                                            setReportEvidence(null);
+                                            setReportSuccess(false);
+                                            setReportOpen(true);
+                                        }}
+                                        onOpenBlock={() => setBlockOpen(true)}
+                                    />
+                                )}
+
+                                {actionError && (
+                                    <p className="rounded-2xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-4 py-3 text-[14px] font-medium text-[#923118]">
+                                        {actionError}
+                                    </p>
+                                )}
+
                                 {profile.joinedGroups && profile.joinedGroups.length > 0 && (
                                     <section className="flex flex-col gap-4">
                                         <SectionTitle>参加中のコミュニティ</SectionTitle>
@@ -1409,37 +1383,6 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                         </div>
                                     </section>
                                 )}
-
-                                {isOwn ? (
-                                    <ProfileActions isOwn onEdit={() => setEditOpen(true)} />
-                                ) : (
-                                    <OtherProfileActions
-                                        isLiked={isLiked}
-                                        hasPassed={hasPassed}
-                                        isMutualMatch={isMutualMatch}
-                                        chatSessionId={chatSessionId}
-                                        isBusy={actionBusy}
-                                        isAnimating={swipeExit !== null}
-                                        pendingAction={pendingAction}
-                                        onStartChat={handleStartChat}
-                                        onPass={handlePassRequest}
-                                        onLike={handleLike}
-                                        onOpenReport={() => {
-                                            setReportError(null);
-                                            setReportReason("");
-                                            setReportEvidence(null);
-                                            setReportSuccess(false);
-                                            setReportOpen(true);
-                                        }}
-                                        onOpenBlock={() => setBlockOpen(true)}
-                                    />
-                                )}
-
-                                {actionError && (
-                                    <p className="rounded-2xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-4 py-3 text-[14px] font-medium text-[#923118]">
-                                        {actionError}
-                                    </p>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -1465,14 +1408,6 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                 isBusy={actionBusy}
                 onConfirm={handleBlock}
                 onCancel={() => setBlockOpen(false)}
-            />
-
-            <PassConfirmDialog
-                open={passOpen}
-                profileName={profile.name}
-                isBusy={actionBusy}
-                onConfirm={executePass}
-                onCancel={() => setPassOpen(false)}
             />
 
             <ActionResultToast toast={actionToast} />
