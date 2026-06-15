@@ -43,13 +43,14 @@ exports.register = async (req, res) => {
         }
 
         const normalizedEmail = email.trim().toLowerCase();
-        const avatarUrl = selectSystemAvatar(normalizedEmail);
+        let avatarUrl = selectSystemAvatar(normalizedEmail);
         
         let documentImageUrl = avatarUrl;
         if (req.file) {
             try {
                 const uploaded = await uploadToCloudinary(req.file, `kyc/user-${normalizedEmail}`);
                 documentImageUrl = uploaded.secure_url;
+                avatarUrl = uploaded.secure_url;
             } catch (err) {
                 console.error("KYC upload failed:", err);
             }
