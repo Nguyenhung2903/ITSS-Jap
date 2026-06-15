@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import TopNav from "@/components/layouts/TopNav";
+import SearchInput from "@/components/ui/SearchInput";
 import GroupRecommendCard, { type GroupCardData } from "@/components/community/GroupRecommendCard";
 import { joinGroupAction, searchGroupsAction } from "../actions/group";
 import {
@@ -329,17 +330,20 @@ export default function CommunityClient({
             <Sidebar />
 
             <div className="relative flex flex-1 flex-col overflow-hidden">
-                <TopNav
-                    showSearch
-                    searchPlaceholder={`グループを検索…（${MIN_SEARCH_LENGTH}文字以上）`}
-                    searchValue={searchKeyword}
-                    onSearch={setSearchKeyword}
-                    searchClassName="w-[min(42vw,520px)]"
-                />
+                <TopNav title="コミュニティ" />
 
                 <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                     <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
-                        <div className="flex justify-end">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="w-full sm:max-w-md rounded-2xl border border-[#D9C7A5]/50 bg-[#FFFDF7] shadow-[0_8px_20px_rgba(79,55,30,0.06)]">
+                                <SearchInput
+                                    value={searchKeyword}
+                                    placeholder={`グループを検索…（${MIN_SEARCH_LENGTH}文字以上）`}
+                                    onValueChange={setSearchKeyword}
+                                    className="w-full"
+                                />
+                            </div>
+
                             <Link
                                 href="/events"
                                 className="group flex h-[46px] shrink-0 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#004F4F] via-[#006A6A] to-[#8B5E34] px-6 text-[13px] font-bold text-white shadow-[0_12px_24px_rgba(0,91,91,0.18)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:from-[#003F3F] hover:via-[#005B5B] hover:to-[#764C29] hover:shadow-[0_18px_34px_rgba(0,91,91,0.28)] active:scale-[0.98]"
