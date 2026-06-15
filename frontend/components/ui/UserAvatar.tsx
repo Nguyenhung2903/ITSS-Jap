@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { resolveImageUrl } from "@/lib/image";
 
 type UserAvatarProps = {
@@ -28,6 +28,10 @@ export default function UserAvatar({
     const isUploaded = src?.includes("avatar_");
     const hasImage = src && !isUploaded && !failed;
     const imageSrc = hasImage ? resolveImageUrl(src) : null;
+
+    useEffect(() => {
+        setFailed(false);
+    }, [src]);
 
     return (
         <div

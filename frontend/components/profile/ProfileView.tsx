@@ -981,7 +981,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                             src={resolveImageUrl(activeImage)}
                                             alt={profile.name}
                                             fill
-                                            className="object-contain"
+                                            className="object-cover"
                                             priority
                                         />
                                     )}
@@ -1020,7 +1020,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                                         src={resolveImageUrl(image)}
                                                         alt={`ギャラリー ${index + 1}`}
                                                         fill
-                                                        className={index === 0 ? "object-contain p-1" : "object-cover"}
+                                                        className="object-cover"
                                                         sizes="80px"
                                                     />
                                                 )}

@@ -385,7 +385,7 @@ export default function ProfileEditModal({
                                     src={resolveImageUrl(activeImage)}
                                     alt={profile.name}
                                     fill
-                                    className="object-contain"
+                                    className="object-cover"
                                     sizes="160px"
                                 />
                             </div>
@@ -410,7 +410,7 @@ export default function ProfileEditModal({
                                                 src={resolveImageUrl(image)}
                                                 alt={`プロフィール写真 ${index + 1}`}
                                                 fill
-                                                className={index === 0 ? "object-contain p-1" : "object-cover"}
+                                                className="object-cover"
                                                 sizes="72px"
                                             />
                                         </button>
