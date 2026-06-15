@@ -258,16 +258,7 @@ export default function EventsClient({
 
                 <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                     <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
-                        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                            <div className="flex flex-col gap-1.5">
-                                <h1 className="text-[30px] leading-[38px] font-extrabold tracking-[-0.8px] text-[#005B5B]">
-                                    コミュニティイベント
-                                </h1>
-                                <p className="text-[14px] font-medium text-[#6E7979]">
-                                    言語と文化をつなぐ、特別な体験に参加しましょう。
-                                </p>
-                            </div>
-
+                        <header className="flex justify-end">
                             <button
                                 type="button"
                                 onClick={() => setCreateModalOpen(true)}

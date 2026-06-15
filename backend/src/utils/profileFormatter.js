@@ -189,7 +189,7 @@ async function getViewerInteraction(viewerId, targetId) {
                 action: "LIKE",
             },
         },
-        select: { id: true },
+        select: { action: true },
     });
     const likedMe = !!likedMeAction;
 
