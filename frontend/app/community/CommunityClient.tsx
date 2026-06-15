@@ -199,7 +199,6 @@ export default function CommunityClient({
     const [searchKeyword, setSearchKeyword] = useState("");
     const debouncedSearchKeyword = useDebouncedValue(searchKeyword, SEARCH_DEBOUNCE_MS);
     const [hobbyFilter, setHobbyFilter] = useState(ALL_FILTER);
-    const [levelFilter, setLevelFilter] = useState(ALL_FILTER);
     const [hobbyTagOptions, setHobbyTagOptions] = useState(
         cachedHome?.filterOptions?.hobbyTags ?? initialHobbyTagOptions
     );
@@ -214,7 +213,7 @@ export default function CommunityClient({
 
     const hasSearchFilter = normalizeSearchQuery(debouncedSearchKeyword) !== undefined;
     const isFiltering =
-        hasSearchFilter || hobbyFilter !== ALL_FILTER || levelFilter !== ALL_FILTER;
+        hasSearchFilter || hobbyFilter !== ALL_FILTER;
 
     const hasPendingSearch =
         searchKeyword.trim().length > 0 &&
@@ -268,7 +267,6 @@ export default function CommunityClient({
             const result = await searchGroupsAction({
                 search: normalizeSearchQuery(debouncedSearchKeyword),
                 hobbyTag: hobbyFilter !== ALL_FILTER ? hobbyFilter : undefined,
-                languageTag: levelFilter !== ALL_FILTER ? levelFilter : undefined,
             });
 
             if (requestId !== searchRequestIdRef.current) return;
@@ -285,7 +283,7 @@ export default function CommunityClient({
 
             setIsSearching(false);
         })();
-    }, [debouncedSearchKeyword, hobbyFilter, levelFilter, isFiltering, joinedIds]);
+    }, [debouncedSearchKeyword, hobbyFilter, isFiltering, joinedIds]);
 
     const displayedGroups = isFiltering ? searchResults : suggestedGroups;
     const isListLoading = isBootstrapping || (isFiltering && isSearching);
@@ -293,7 +291,6 @@ export default function CommunityClient({
     const resetFilters = useCallback(() => {
         setSearchKeyword("");
         setHobbyFilter(ALL_FILTER);
-        setLevelFilter(ALL_FILTER);
     }, []);
 
     const handleJoin = useCallback(async (groupId: number) => {
@@ -338,43 +335,7 @@ export default function CommunityClient({
                     searchValue={searchKeyword}
                     onSearch={setSearchKeyword}
                     searchClassName="w-[min(42vw,520px)]"
-                >
-                    <div className="hidden min-w-0 flex-wrap items-center gap-3 xl:flex">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
-                                興味:
-                            </span>
-                            <FilterDropdown
-                                value={hobbyFilter}
-                                options={hobbyTagOptions}
-                                customPlaceholder="興味を入力"
-                                onChange={setHobbyFilter}
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
-                                レベル:
-                            </span>
-                            <FilterDropdown
-                                value={levelFilter}
-                                options={GROUP_LANGUAGE_LEVEL_OPTIONS}
-                                customPlaceholder="レベルを入力"
-                                onChange={setLevelFilter}
-                            />
-                        </div>
-
-                        {isFiltering && (
-                            <button
-                                type="button"
-                                onClick={resetFilters}
-                                className="flex h-[52px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-[#B86B4B]/25 bg-[#F8E0D5] px-4 text-[13px] font-bold text-[#923118] shadow-[0_8px_18px_rgba(79,55,30,0.04)] transition-all duration-300 hover:bg-[#F3D0C0] active:scale-95"
-                            >
-                                クリア
-                            </button>
-                        )}
-                    </div>
-                </TopNav>
+                />
 
                 <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                     <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
@@ -458,7 +419,7 @@ export default function CommunityClient({
                             </div>
                         </section>
 
-                        <section className="relative z-40 flex w-full flex-col gap-3 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 p-5 shadow-[0_18px_45px_rgba(79,55,30,0.10)] backdrop-blur-sm xl:hidden">
+                        <section className="relative z-40 flex w-full flex-col gap-3 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 p-5 shadow-[0_18px_45px_rgba(79,55,30,0.10)] backdrop-blur-sm">
                             <div className="flex flex-wrap items-center gap-3">
                                 <div className="flex items-center gap-2">
                                     <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
@@ -469,18 +430,6 @@ export default function CommunityClient({
                                         options={hobbyTagOptions}
                                         customPlaceholder="興味を入力"
                                         onChange={setHobbyFilter}
-                                    />
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-black tracking-wider text-[#005B5B] uppercase">
-                                        レベル:
-                                    </span>
-                                    <FilterDropdown
-                                        value={levelFilter}
-                                        options={GROUP_LANGUAGE_LEVEL_OPTIONS}
-                                        customPlaceholder="レベルを入力"
-                                        onChange={setLevelFilter}
                                     />
                                 </div>
 
