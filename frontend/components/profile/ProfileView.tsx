@@ -960,18 +960,18 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
             <div className="relative flex flex-1 flex-col overflow-hidden">
                 <TopNav title="プロフィール" backLink={isOwn ? undefined : "/matching"} />
 
-                <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
-                    <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
+                <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-5 pt-5 pb-28 md:px-8 lg:pb-12">
+                    <div className="mx-auto flex max-w-[1280px] flex-col gap-6">
 
                         <div
-                            className={`flex w-full flex-col items-start gap-8 transition-all duration-[400ms] ease-in-out will-change-transform lg:flex-row ${!isOwn ? cardSwipeClass : ""
+                            className={`flex w-full flex-col items-start gap-6 transition-all duration-[400ms] ease-in-out will-change-transform lg:flex-row ${!isOwn ? cardSwipeClass : ""
                                 }`}
                         >
-                            <aside className="relative overflow-hidden flex w-full shrink-0 flex-col gap-5 rounded-[32px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-5 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 lg:sticky lg:top-[104px] lg:w-[340px]">
+                            <aside className="relative overflow-hidden flex w-full shrink-0 flex-col gap-4 rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-4 shadow-[0_16px_36px_rgba(79,55,30,0.10)] ring-1 ring-white/70 lg:sticky lg:top-5 lg:w-[328px]">
                                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-[32px] bg-gradient-to-r from-[#8B5E34] via-[#E76F51] to-[#005B5B]" />
 
-                                <div className="relative overflow-hidden rounded-[28px] border border-[#F1E5CF] bg-[#F5EBD8] p-4 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">
-                                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-[10px] border-[#FFFDF7] bg-white shadow-inner">
+                                <div className="relative overflow-hidden rounded-[24px] border border-[#F1E5CF] bg-[#F5EBD8] p-3 shadow-[0_14px_30px_rgba(79,55,30,0.14)]">
+                                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-[8px] border-[#FFFDF7] bg-white shadow-inner">
                                     {!activeImage || activeImage.includes("avatar_") || activeImage.includes("avatar.jpg") ? (
                                         <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[72px] uppercase select-none">
                                             {profile.name?.trim()?.[0] || "T"}
@@ -1000,13 +1000,13 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                 </div>
 
                                 {images.length > 0 && (
-                                    <div className="grid w-full grid-cols-4 gap-2">
+                                    <div className="grid w-full grid-cols-4 gap-1.5">
                                         {images.slice(0, 8).map((image, index) => (
                                             <button
                                                 key={`${image}-${index}`}
                                                 type="button"
                                                 onClick={() => setActiveIndex(index)}
-                                                className={`relative aspect-square overflow-hidden rounded-2xl border bg-white transition-all ${index === activeIndex
+                                                className={`relative aspect-square overflow-hidden rounded-xl border bg-white transition-all ${index === activeIndex
                                                         ? "border-[#005B5B] shadow-[0_0_0_3px_rgba(0,91,91,0.15)]"
                                                         : "border-[#F1E5CF] opacity-75 hover:opacity-100"
                                                     }`}
@@ -1031,7 +1031,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
 
                                 <div className="flex flex-col gap-4">
                                     <div className="flex flex-wrap items-center gap-2.5">
-                                        <h1 className="text-[24px] leading-[30px] font-extrabold tracking-[-0.5px] text-[#181D1B]">
+                                        <h1 className="text-[22px] leading-[28px] font-extrabold tracking-[-0.5px] text-[#181D1B]">
                                             {profile.name}
                                         </h1>
                                         {likedMe && (
