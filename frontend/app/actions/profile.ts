@@ -40,6 +40,21 @@ export type ProfileEvent = {
     statusLabel: string;
 };
 
+export type ProfileGroup = {
+    id: number;
+    name: string;
+    avatarUrl?: string | null;
+    memberCount: number;
+};
+
+export type ProfileEngagedEvent = {
+    id: number;
+    title: string;
+    imageUrl?: string | null;
+    eventTime: string;
+    engagementType: "interested" | "joined";
+};
+
 export type UserProfile = {
     id: number;
     name: string;
@@ -63,6 +78,8 @@ export type UserProfile = {
     isMutualMatch?: boolean;
     chatSessionId?: number | null;
     likedMe?: boolean;
+    joinedGroups?: ProfileGroup[];
+    engagedEvents?: ProfileEngagedEvent[];
 };
 
 export async function getMyProfileAction(): Promise<{

@@ -941,39 +941,46 @@ export default function ChatClient({
                                         <polyline points="15 18 9 12 15 6" />
                                     </svg>
                                 </button>
-                                <div className="relative h-11 w-11 shrink-0">
-                                    {!selectedChat.targetUser?.avatarUrl || selectedChat.targetUser.avatarUrl.includes("avatar_") ? (
-                                        <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[16px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.12)]">
-                                            {getDisplayName(selectedChat.targetUser)?.trim()?.[0] || "T"}
-                                        </div>
-                                    ) : (
-                                        <Image
-                                            src={getAvatarUrl(selectedChat.targetUser?.avatarUrl)}
-                                            alt={getDisplayName(selectedChat.targetUser)}
-                                            fill
-                                            className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
-                                        />
-                                    )}
-
-                                    {selectedChat.targetUser?.isOnline && (
-                                        <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#FFFDF7] bg-[#22C55E]" />
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col">
-                                    <span className="text-[15px] leading-5 font-extrabold text-[#181D1B]">
-                                        {getDisplayName(selectedChat.targetUser)}
-                                    </span>
-
-                                    <span
-                                        className={`text-[11px] leading-tight font-bold ${selectedChat.targetUser?.isOnline
-                                                ? "text-[#16A34A]"
-                                                : "text-[#8B5E34]"
-                                            }`}
+                                {selectedChat.targetUser && (
+                                    <Link
+                                        href={`/profile/${selectedChat.targetUser.id}`}
+                                        className="flex items-center gap-3 transition-opacity hover:opacity-80"
                                     >
-                                        {selectedChat.targetUser?.isOnline ? "オンライン" : "オフライン"}
-                                    </span>
-                                </div>
+                                        <div className="relative h-11 w-11 shrink-0">
+                                            {!selectedChat.targetUser?.avatarUrl || selectedChat.targetUser.avatarUrl.includes("avatar_") ? (
+                                                <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[16px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.12)]">
+                                                    {getDisplayName(selectedChat.targetUser)?.trim()?.[0] || "T"}
+                                                </div>
+                                            ) : (
+                                                <Image
+                                                    src={getAvatarUrl(selectedChat.targetUser?.avatarUrl)}
+                                                    alt={getDisplayName(selectedChat.targetUser)}
+                                                    fill
+                                                    className="rounded-2xl border-2 border-[#F6EAD5] bg-[#EFE3D0] object-cover shadow-[0_8px_18px_rgba(79,55,30,0.12)]"
+                                                />
+                                            )}
+
+                                            {selectedChat.targetUser?.isOnline && (
+                                                <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#FFFDF7] bg-[#22C55E]" />
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="text-[15px] leading-5 font-extrabold text-[#181D1B]">
+                                                {getDisplayName(selectedChat.targetUser)}
+                                            </span>
+
+                                            <span
+                                                className={`text-[11px] leading-tight font-bold ${selectedChat.targetUser?.isOnline
+                                                        ? "text-[#16A34A]"
+                                                        : "text-[#8B5E34]"
+                                                    }`}
+                                            >
+                                                {selectedChat.targetUser?.isOnline ? "オンライン" : "オフライン"}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-2">

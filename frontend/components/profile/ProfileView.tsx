@@ -1321,6 +1321,95 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                     </section>
                                 )}
 
+                                {profile.joinedGroups && profile.joinedGroups.length > 0 && (
+                                    <section className="flex flex-col gap-4">
+                                        <SectionTitle>参加中のコミュニティ</SectionTitle>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            {profile.joinedGroups.map((group) => (
+                                                <Link
+                                                    key={group.id}
+                                                    href={`/community/${group.id}`}
+                                                    className="group flex items-center gap-4 rounded-[22px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-4 shadow-[0_8px_24px_rgba(79,55,30,0.06)] ring-1 ring-white/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#005B5B]/35 hover:shadow-[0_12px_32px_rgba(0,91,91,0.08)]"
+                                                >
+                                                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-[#EFE3D0] border border-[#D9C7A5]/40">
+                                                        <Image
+                                                            src={resolveImageUrl(group.avatarUrl, "/assets/images/groups/group-1.jpg")}
+                                                            alt={group.name}
+                                                            fill
+                                                            sizes="56px"
+                                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="truncate text-[15px] font-extrabold text-[#181D1B] group-hover:text-[#005B5B] transition-colors duration-300">
+                                                            {group.name}
+                                                        </h4>
+                                                        <p className="mt-1 text-[12px] font-bold text-[#8B5E34]">
+                                                            {group.memberCount.toLocaleString("ja-JP")} メンバー
+                                                        </p>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {profile.engagedEvents && profile.engagedEvents.length > 0 && (
+                                    <section className="flex flex-col gap-4">
+                                        <SectionTitle>興味・参加予定のイベント</SectionTitle>
+                                        <div className="flex flex-col gap-4">
+                                            {profile.engagedEvents.map((event) => {
+                                                const eventDate = new Date(event.eventTime);
+                                                const dateLabel = `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
+                                                const timeLabel = eventDate.toLocaleTimeString("ja-JP", {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                });
+                                                const isJoined = event.engagementType === "joined";
+
+                                                return (
+                                                    <Link
+                                                        key={event.id}
+                                                        href={`/events?search=${encodeURIComponent(event.title)}`}
+                                                        className="group flex w-full items-center justify-between rounded-[28px] border border-[#D9C7A5]/75 bg-[#FFFDF7] p-5 shadow-[0_16px_36px_rgba(79,55,30,0.06)] ring-1 ring-white/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#005B5B]/35 hover:shadow-[0_20px_45px_rgba(0,91,91,0.08)]"
+                                                    >
+                                                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                                                            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-[#EFE3D0] border border-[#D9C7A5]/40">
+                                                                <Image
+                                                                    src={resolveImageUrl(event.imageUrl, "/assets/images/events/event-1.png")}
+                                                                    alt={event.title}
+                                                                    fill
+                                                                    sizes="56px"
+                                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                                />
+                                                            </div>
+
+                                                            <div className="min-w-0 flex-1">
+                                                                <h4 className="truncate text-[15px] font-extrabold text-[#181D1B] group-hover:text-[#005B5B] transition-colors duration-300">
+                                                                    {event.title}
+                                                                </h4>
+                                                                <p className="mt-1 text-[12px] text-[#6E7979] font-medium">
+                                                                    {dateLabel} {timeLabel}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <span
+                                                            className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide transition-all ${
+                                                                isJoined
+                                                                    ? "border-[#005B5B]/20 bg-[#DDEDEA] text-[#005B5B]"
+                                                                    : "border-[#B86B4B]/25 bg-[#F8E0D5] text-[#923118]"
+                                                            }`}
+                                                        >
+                                                            {isJoined ? "参加予定" : "興味あり"}
+                                                        </span>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </section>
+                                )}
+
                                 {isOwn ? (
                                     <ProfileActions isOwn onEdit={() => setEditOpen(true)} />
                                 ) : (

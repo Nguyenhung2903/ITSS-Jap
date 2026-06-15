@@ -207,10 +207,51 @@ async function getViewerInteraction(viewerId, targetId) {
     };
 }
 
+async function getJoinedGroups(userId) {
+    try {
+        const memberships = await prisma.groupMember.findMany({
+            where: { userId },
+            include: { group: true },
+            orderBy: { joinedAt: "desc" },
+        });
+        return memberships.map((m) => ({
+            id: m.group.groupId,
+            name: m.group.name,
+            avatarUrl: m.group.groupAvatar || null,
+            memberCount: m.group.memberCount || 0,
+        }));
+    } catch (e) {
+        console.error("Error in getJoinedGroups:", e);
+        return [];
+    }
+}
+
+async function getEngagedEvents(userId) {
+    try {
+        const engagements = await prisma.eventEngagement.findMany({
+            where: { userId },
+            include: { event: true },
+            orderBy: { engagedAt: "desc" },
+        });
+        return engagements
+            .filter((e) => e.event)
+            .map((e) => ({
+                id: e.event.id,
+                title: e.event.title,
+                imageUrl: e.event.imageUrl || null,
+                eventTime: e.event.eventTime.toISOString(),
+                engagementType: e.engagementType,
+            }));
+    } catch (e) {
+        console.error("Error in getEngagedEvents:", e);
+        return [];
+    }
+}
+
 async function formatProfile(user, options = {}) {
     const { viewerId = null, viewType = "own" } = options;
 
-    const [isVerified, mutualFriendsCount, upcomingEvent, interaction] =
+    const [isVerified, mutualFriendsCount, upcomingEvent, interaction, joinedGroups, engagedEvents] =
         await Promise.all([
             getIsVerified(user.id),
             viewType === "other" && viewerId
@@ -228,6 +269,8 @@ async function formatProfile(user, options = {}) {
                       chatSessionId: null,
                       likedMe: false,
                   }),
+            getJoinedGroups(user.id),
+            getEngagedEvents(user.id),
         ]);
 
     const purposeLabels = [];
@@ -276,6 +319,8 @@ async function formatProfile(user, options = {}) {
         isMutualMatch: interaction.isMutualMatch,
         chatSessionId: interaction.chatSessionId,
         likedMe: interaction.likedMe || false,
+        joinedGroups,
+        engagedEvents,
     };
 }
 
