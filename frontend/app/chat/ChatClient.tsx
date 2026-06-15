@@ -642,12 +642,14 @@ export default function ChatClient({
         return () => URL.revokeObjectURL(url);
     }, [pendingAttachment]);
 
-    const handleSelectChat = (sessionId: number) => {
+    const handleSelectChat = (sessionId: number | null) => {
         setSelectedSessionId(sessionId);
-        setChats((prev) =>
-            prev.map((chat) => (chat.id === sessionId ? { ...chat, unreadCount: 0 } : chat))
-        );
-        patchChatInboxCacheAfterRead(sessionId);
+        if (sessionId !== null) {
+            setChats((prev) =>
+                prev.map((chat) => (chat.id === sessionId ? { ...chat, unreadCount: 0 } : chat))
+            );
+            patchChatInboxCacheAfterRead(sessionId);
+        }
     };
 
     const clearPendingAttachment = () => {
@@ -781,9 +783,9 @@ export default function ChatClient({
                 fontFamily: "'Plus Jakarta Sans', 'Manrope', 'Noto Sans JP', sans-serif",
             }}
         >
-            <Sidebar />
+            <Sidebar hideBottomNav={Boolean(selectedSessionId)} />
 
-            <aside className="flex w-[340px] shrink-0 flex-col border-r border-[#D9C7A5]/55 bg-[#FFFDF7]/95 shadow-[8px_0_28px_rgba(79,55,30,0.08)]">
+            <aside className={`flex w-full shrink-0 flex-col border-r border-[#D9C7A5]/55 bg-[#FFFDF7]/95 shadow-[8px_0_28px_rgba(79,55,30,0.08)] lg:w-[340px] ${selectedSessionId ? "hidden lg:flex" : "flex"}`}>
                 <div className="flex shrink-0 flex-col gap-4 border-b border-[#D9C7A5]/55 p-6">
                     <div className="flex items-end justify-between">
                         <div>
@@ -907,7 +909,7 @@ export default function ChatClient({
                 </div>
             </aside>
 
-            <main className="relative flex flex-1 flex-col bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)]">
+            <main className={`relative flex-1 flex-col bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] ${selectedSessionId ? "flex" : "hidden lg:flex"}`}>
                 {!selectedChat ? (
                     <div className="flex flex-1 items-center justify-center p-8">
                         <div className="rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] px-8 py-10 text-center shadow-[0_16px_40px_rgba(79,55,30,0.08)]">
@@ -920,6 +922,25 @@ export default function ChatClient({
                     <>
                         <header className="z-10 flex h-[76px] w-full shrink-0 items-center justify-between border-b border-[#D9C7A5]/55 bg-[#FFFDF7]/88 px-6 shadow-[0_10px_32px_rgba(79,55,30,0.08)] backdrop-blur-xl">
                             <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleSelectChat(null)}
+                                    className="mr-1 flex h-10 w-10 items-center justify-center rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] text-[#8B5E34] transition-all hover:bg-[#F8EEDB] active:scale-95 lg:hidden"
+                                    aria-label="戻る"
+                                >
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <polyline points="15 18 9 12 15 6" />
+                                    </svg>
+                                </button>
                                 <div className="relative h-11 w-11 shrink-0">
                                     {!selectedChat.targetUser?.avatarUrl || selectedChat.targetUser.avatarUrl.includes("avatar_") ? (
                                         <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-[#F6EAD5] bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[16px] uppercase select-none shadow-[0_8px_18px_rgba(79,55,30,0.12)]">

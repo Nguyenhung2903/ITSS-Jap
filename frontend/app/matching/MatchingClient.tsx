@@ -466,7 +466,7 @@ export default function MatchingClient({
                 />
 
                 <div className="flex flex-1 overflow-hidden">
-                    <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] p-8 lg:p-12">
+                    <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                         <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                                 <div className="flex flex-col gap-1.5">

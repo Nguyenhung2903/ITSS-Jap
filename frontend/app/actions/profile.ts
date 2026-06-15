@@ -62,6 +62,7 @@ export type UserProfile = {
     hasPassed?: boolean;
     isMutualMatch?: boolean;
     chatSessionId?: number | null;
+    likedMe?: boolean;
 };
 
 export async function getMyProfileAction(): Promise<{

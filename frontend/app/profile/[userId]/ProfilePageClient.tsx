@@ -55,7 +55,7 @@ export default function ProfilePageClient({ userId }: { userId: string }) {
                 <div className="relative flex flex-1 flex-col overflow-hidden">
                     <TopNav backLink={Number(userId) === user?.id ? undefined : "/matching"} />
 
-                    <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] p-8 lg:p-12">
+                    <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                         <div className="mx-auto flex max-w-[1280px] flex-col gap-8 animate-pulse">
                             <div className="flex flex-col gap-3">
                                 <div className="h-9 w-48 rounded-2xl bg-[#D9C7A5]/50" />

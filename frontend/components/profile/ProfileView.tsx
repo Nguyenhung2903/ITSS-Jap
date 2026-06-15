@@ -765,6 +765,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
     const [chatSessionId, setChatSessionId] = useState<number | null>(
         initialProfile.chatSessionId ?? null
     );
+    const [likedMe, setLikedMe] = useState(initialProfile.likedMe ?? false);
     const [actionBusy, setActionBusy] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -784,6 +785,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
         setHasPassed(initialProfile.hasPassed ?? false);
         setIsMutualMatch(initialProfile.isMutualMatch ?? false);
         setChatSessionId(initialProfile.chatSessionId ?? null);
+        setLikedMe(initialProfile.likedMe ?? false);
         setActionError(null);
         setPendingAction(null);
         setActionToast(null);
@@ -915,9 +917,8 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
             setChatSessionId(result.sessionId);
             await showSuccessToast({
                 kind: "match",
-                message: "マッチング成立！チャットへ移動します。",
+                message: "マッチング成立！チャットを開くことができます。",
             });
-            router.push(`/chat?session=${result.sessionId}`);
             return;
         }
 
@@ -925,8 +926,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
             kind: "like",
             message: "いいねを送りました。相手に通知されました。",
         });
-        router.push("/matching");
-    }, [profile.id, router, actionBusy, isLiked, waitSwipe, showSuccessToast]);
+    }, [profile.id, actionBusy, isLiked, waitSwipe, showSuccessToast]);
 
     const handleBlock = useCallback(async () => {
         const ok = await runAction(async () => {
@@ -1016,7 +1016,7 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
             <div className="relative flex flex-1 flex-col overflow-hidden">
                 <TopNav backLink={isOwn ? undefined : "/matching"} />
 
-                <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] p-8 lg:p-12">
+                <main className="hide-scrollbar flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.10),transparent_32%),linear-gradient(180deg,#F8F4EA_0%,#F3EFE4_45%,#EEF5F2_100%)] px-8 pt-8 pb-28 lg:pb-12">
                     <div className="mx-auto flex max-w-[1280px] flex-col gap-8">
                         <div className="flex flex-col gap-1.5">
                             <h2 className="text-[30px] leading-[38px] font-extrabold tracking-[-0.8px] text-[#005B5B]">
@@ -1094,13 +1094,16 @@ export default function ProfileView({ profile: initialProfile }: ProfileViewProp
                                 )}
 
                                 <div className="flex flex-col gap-4">
-                                    <div className="flex items-end gap-2.5">
+                                    <div className="flex flex-wrap items-center gap-2.5">
                                         <h1 className="text-[24px] leading-[30px] font-extrabold tracking-[-0.5px] text-[#181D1B]">
                                             {profile.name}
                                         </h1>
-                                        {profile.age != null && (
-                                            <span className="pb-0.5 text-[18px] leading-[24px] font-light text-[#6E7979]">
-                                                {profile.age}
+                                        {likedMe && (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E76F51]/20 bg-[#FDF0EC] px-3 py-1 text-[11px] font-extrabold text-[#E76F51] shadow-sm animate-pulse select-none">
+                                                <svg className="h-3 w-3 fill-current" viewBox="0 0 24 24">
+                                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                                </svg>
+                                                あなたにいいね！されました
                                             </span>
                                         )}
                                     </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { prefetchForPath } from "@/lib/navigation-prefetch";
 import { useAuth } from "@/lib/auth-context";
 
@@ -11,10 +12,21 @@ type NavLink = {
     icon: React.ReactNode;
 };
 
-export default function Sidebar() {
+type SidebarProps = {
+    hideBottomNav?: boolean;
+};
+
+export default function Sidebar({ hideBottomNav = false }: SidebarProps = {}) {
     const pathname = usePathname();
     const router = useRouter();
     const { user } = useAuth();
+
+    useEffect(() => {
+        prefetchForPath("/matching");
+        prefetchForPath("/community");
+        prefetchForPath("/events");
+        prefetchForPath("/chat");
+    }, []);
 
     const navLinks: NavLink[] = [
         {
@@ -154,7 +166,7 @@ export default function Sidebar() {
 
     return (
         <>
-            <aside className="sticky top-0 z-50 hidden h-screen w-64 flex-col justify-between overflow-hidden border-r border-[#D9C7A5]/10 bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.12),transparent_34%),linear-gradient(180deg,#062926_0%,#073B36_48%,#0A4A43_100%)] px-6 py-10 shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.04),6px_0_40px_rgba(0,0,0,0.22)] md:flex">
+            <aside className="sticky top-0 z-50 hidden h-screen w-64 flex-col justify-between overflow-hidden border-r border-[#D9C7A5]/10 bg-[radial-gradient(circle_at_top_left,rgba(231,111,81,0.12),transparent_34%),linear-gradient(180deg,#062926_0%,#073B36_48%,#0A4A43_100%)] px-6 py-10 shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.04),6px_0_40px_rgba(0,0,0,0.22)] lg:flex">
                 <div className="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-[#2DD4BF]/10 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-[#E76F51]/10 blur-3xl" />
 
@@ -199,7 +211,7 @@ export default function Sidebar() {
                 </div>
             </aside>
 
-            <nav className="fixed right-3 bottom-3 left-3 z-50 grid grid-cols-4 gap-1 rounded-[24px] border border-[#D9C7A5]/20 bg-[#062926]/94 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-xl md:hidden">
+            <nav className={`fixed right-3 bottom-3 left-3 z-50 grid grid-cols-4 gap-1 rounded-[24px] border border-[#D9C7A5]/20 bg-[#062926]/94 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden ${hideBottomNav ? "hidden" : ""}`}>
                 {navLinks.map((link) => {
                     const hrefPath =
                         link.path === "/profile" && user?.id ? `/profile/${user.id}` : link.path;

@@ -164,6 +164,7 @@ async function getViewerInteraction(viewerId, targetId) {
             hasPassed: false,
             isMutualMatch: false,
             chatSessionId: null,
+            likedMe: false,
         };
     }
 
@@ -180,6 +181,18 @@ async function getViewerInteraction(viewerId, targetId) {
     const isLiked = actionSet.has("LIKE");
     const hasPassed = actionSet.has("PASS");
 
+    const likedMeAction = await prisma.userProfileAction.findUnique({
+        where: {
+            actorId_targetId_action: {
+                actorId: targetId,
+                targetId: viewerId,
+                action: "LIKE",
+            },
+        },
+        select: { id: true },
+    });
+    const likedMe = !!likedMeAction;
+
     const [isMutualMatch, chatSessionId] = await Promise.all([
         isLiked ? hasMutualLike(viewerId, targetId) : Promise.resolve(false),
         findMatchSessionId(viewerId, targetId),
@@ -190,6 +203,7 @@ async function getViewerInteraction(viewerId, targetId) {
         hasPassed,
         isMutualMatch,
         chatSessionId,
+        likedMe,
     };
 }
 
@@ -212,6 +226,7 @@ async function formatProfile(user, options = {}) {
                       hasPassed: false,
                       isMutualMatch: false,
                       chatSessionId: null,
+                      likedMe: false,
                   }),
         ]);
 
@@ -260,6 +275,7 @@ async function formatProfile(user, options = {}) {
         hasPassed: interaction.hasPassed,
         isMutualMatch: interaction.isMutualMatch,
         chatSessionId: interaction.chatSessionId,
+        likedMe: interaction.likedMe || false,
     };
 }
 
