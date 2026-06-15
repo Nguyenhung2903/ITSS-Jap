@@ -111,8 +111,10 @@ export async function createEventAction(payload: CreateEventPayload) {
         if (!res.ok) {
             const raw = (data.error as string) || "イベントの作成に失敗しました。";
             const message =
-                raw.includes("5–50") || raw.includes("5-50")
-                    ? "イベント名は5〜50文字で入力してください。"
+                raw.includes("5–500") || raw.includes("5-500")
+                    ? "イベント名は5〜500文字で入力してください。"
+                    : raw.includes("5–50") || raw.includes("5-50")
+                      ? "イベント名は5〜500文字で入力してください。"
                     : raw.includes("10 ký tự") || raw.includes("10")
                       ? "説明は10文字以上必要です。"
                       : raw.includes("online") && raw.includes("URL")

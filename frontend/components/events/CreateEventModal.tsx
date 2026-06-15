@@ -17,6 +17,17 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
     { label: "ワークショップ", icon: "workshop" },
 ];
 
+const SYSTEM_EVENT_COVERS = [
+    "/assets/images/events/event-1.png",
+    "/assets/images/events/event-2.png",
+    "/assets/images/events/event-3.png",
+    "/assets/images/events/event-4.png",
+    "/assets/images/seed-covers/cover-001.webp",
+    "/assets/images/seed-covers/cover-002.jpg",
+    "/assets/images/seed-covers/cover-003.jpg",
+    "/assets/images/seed-covers/cover-004.jpg",
+];
+
 type CreateEventModalProps = {
     open: boolean;
     onClose: () => void;
@@ -28,6 +39,15 @@ function buildDescription(category: string, title: string, location: string) {
     const body = location.trim() || title.trim();
 
     return `${prefix} ${body}`.trim();
+}
+
+function selectSystemEventCover(title: string, eventTime: string) {
+    const seed = `${title}:${eventTime}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i += 1) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    }
+    return SYSTEM_EVENT_COVERS[hash % SYSTEM_EVENT_COVERS.length];
 }
 
 function FieldLabel({ children }: { children: ReactNode }) {
@@ -196,8 +216,8 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
             return;
         }
 
-        if (trimmedTitle.length < 5 || trimmedTitle.length > 50) {
-            setError("イベント名は5〜50文字で入力してください。");
+        if (trimmedTitle.length < 5 || trimmedTitle.length > 500) {
+            setError("イベント名は5〜500文字で入力してください。");
             return;
         }
 
@@ -248,6 +268,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
             description,
             eventTime: eventTime.toISOString(),
             format,
+            imageUrl: selectSystemEventCover(trimmedTitle, eventTime.toISOString()),
             ...(format === "offline"
                 ? { address: trimmedLocation }
                 : { urlLink: trimmedLocation }),
@@ -332,7 +353,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
 
                     <div className="grid gap-6 md:grid-cols-2">
                         <section className="flex flex-col gap-6 rounded-[28px] border border-[#D9C7A5]/70 bg-[#FFFDF7] p-6 shadow-[0_14px_32px_rgba(79,55,30,0.08)]">
-                            <SectionTitle number="1" title="ビジュアルとタイトル" />
+                            <SectionTitle number="1" title="参考画像とタイトル" />
 
                             <div className="flex flex-col gap-4">
                                 <input
@@ -358,7 +379,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
                                             />
                                             <div className="absolute inset-0 bg-[#181D1B]/25" />
                                             <span className="relative z-10 rounded-full bg-white/90 px-4 py-2 text-[12px] font-bold text-[#005B5B] shadow-sm backdrop-blur-md">
-                                                画像を変更
+                                                参考画像を変更
                                             </span>
                                         </>
                                     ) : (
@@ -382,28 +403,52 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
                                             </span>
 
                                             <span className="text-[14px] font-extrabold text-[#181D1B]">
-                                                カバー画像をアップロード
+                                                参考画像をアップロード
                                             </span>
                                             <span className="mt-1 text-[12px] font-medium text-[#6E7979]">
-                                                JPEG, PNG / 最大5MB / 1200×600px 推奨
+                                                JPEG, PNG / 最大5MB / 実際のイベント画像はシステムが自動選択します
                                             </span>
                                         </>
                                     )}
                                 </button>
 
+                                <div className="rounded-2xl border border-[#005B5B]/15 bg-[#DDEDEA]/45 p-4">
+                                    <div className="mb-3 flex items-center justify-between gap-3">
+                                        <span className="text-[11px] font-black tracking-[1.1px] text-[#005B5B] uppercase">
+                                            自動カバー
+                                        </span>
+                                        <span className="text-[11px] font-medium text-[#6E7979]">
+                                            作成時に1枚を自動選択
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {SYSTEM_EVENT_COVERS.slice(0, 4).map((cover) => (
+                                            <div
+                                                key={cover}
+                                                className="relative aspect-video overflow-hidden rounded-xl border border-[#005B5B]/15 bg-[#FFFDF7]"
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={cover} alt="" className="h-full w-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 <div className="flex flex-col gap-2">
                                     <FieldLabel>イベント名</FieldLabel>
-                                    <input
+                                    <textarea
                                         id="event-title"
-                                        type="text"
                                         value={title}
                                         onChange={(event) => setTitle(event.target.value)}
+                                        maxLength={500}
+                                        rows={4}
                                         placeholder="例：東京・代々木公園でのピクニック言語交換会"
-                                        className="h-12 w-full rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 text-[15px] font-medium text-[#181D1B] outline-none transition-all placeholder:text-[#6E7979]/45 focus:border-[#005B5B]/40 focus:ring-4 focus:ring-[#005B5B]/10"
+                                        className="min-h-[132px] w-full resize-y rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-3.5 text-[15px] leading-6 font-medium text-[#181D1B] outline-none transition-all placeholder:text-[#6E7979]/45 focus:border-[#005B5B]/40 focus:ring-4 focus:ring-[#005B5B]/10"
                                     />
-                                    <p className="text-[12px] text-[#A99B87]">
-                                        5〜50文字で入力してください。
-                                    </p>
+                                    <div className="flex items-center justify-between gap-3 text-[12px] text-[#A99B87]">
+                                        <span>5〜500文字で入力してください。改行できます。</span>
+                                        <span className="shrink-0 font-bold">{title.length}/500</span>
+                                    </div>
                                 </div>
                             </div>
                         </section>
