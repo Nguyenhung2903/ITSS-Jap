@@ -267,7 +267,7 @@ exports.reportUser = async (req, res) => {
 
         let evidenceUrl = null;
         if (req.file) {
-            const uploaded = await uploadToCloudinary(req.file.buffer, "reports");
+            const uploaded = await uploadToCloudinary(req.file, `reports/user-${actorId}`);
             evidenceUrl = uploaded.secure_url;
         }
 

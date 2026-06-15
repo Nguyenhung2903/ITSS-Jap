@@ -344,7 +344,7 @@ exports.sendMessage = async (req, res) => {
         let messageType = requestedType;
 
         if (req.file) {
-            const result = await uploadToCloudinary(req.file.buffer, "chat");
+            const result = await uploadToCloudinary(req.file, `chat/session-${sessionId}`);
             attachmentUrl = result.secure_url;
             messageType = req.file.mimetype.startsWith("image/") ? "IMAGE" : "FILE";
         }

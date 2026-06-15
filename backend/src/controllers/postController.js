@@ -58,7 +58,9 @@ exports.createPost = async (req, res) => {
         const room = `group_${groupIdNum}`;
 
         if (req.file) {
-            const result = await uploadToCloudinary(req.file.buffer);
+            const result = await uploadToCloudinary(req.file, `posts/group-${groupIdNum}`, {
+                imagesOnly: true,
+            });
             image = result.secure_url;
         }
 

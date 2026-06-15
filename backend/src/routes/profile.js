@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const authMiddleware = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
 const {
     getProfile,
@@ -149,7 +150,7 @@ router.put("/purposes", authMiddleware, updatePurposes);
  *       200:
  *         description: Thành công
  */
-router.put("/photo/main", authMiddleware, updateMainPhoto);
+router.put("/photo/main", authMiddleware, upload.single("photo"), updateMainPhoto);
 
 /**
  * @swagger
@@ -173,7 +174,7 @@ router.put("/photo/main", authMiddleware, updateMainPhoto);
  *       200:
  *         description: Upload thành công
  */
-router.post("/photo", authMiddleware, addPhoto);
+router.post("/photo", authMiddleware, upload.single("photo"), addPhoto);
 
 /**
  * @swagger

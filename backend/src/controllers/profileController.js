@@ -2,6 +2,7 @@ const prisma = require("../prismaClient");
 const { invalidateCache } = require("../utils/queryCache");
 const { UserStatus } = require("@prisma/client");
 const { formatProfile } = require("../utils/profileFormatter");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 const profileInclude = {
     hobbies: true,
@@ -180,7 +181,13 @@ exports.updateLanguages = async (req, res) => {
 
 exports.updateMainPhoto = async (req, res) => {
     try {
-        const { url } = req.body;
+        let { url } = req.body;
+        if (req.file) {
+            const uploaded = await uploadToCloudinary(req.file, `avatars/user-${req.user.id}`, {
+                imagesOnly: true,
+            });
+            url = uploaded.secure_url;
+        }
         if (!url) return res.status(400).json({ error: "url là bắt buộc" });
         const user = await prisma.verifiedUser.update({
             where: { id: req.user.id },
@@ -195,7 +202,13 @@ exports.updateMainPhoto = async (req, res) => {
 
 exports.addPhoto = async (req, res) => {
     try {
-        const { url } = req.body;
+        let { url } = req.body;
+        if (req.file) {
+            const uploaded = await uploadToCloudinary(req.file, `profiles/user-${req.user.id}`, {
+                imagesOnly: true,
+            });
+            url = uploaded.secure_url;
+        }
         if (!url) return res.status(400).json({ error: "url là bắt buộc" });
         const count = await prisma.userPhoto.count({ where: { userId: req.user.id } });
         if (count >= 4) return res.status(400).json({ message: "Max 4 photos" });

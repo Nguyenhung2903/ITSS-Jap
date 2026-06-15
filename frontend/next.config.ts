@@ -30,6 +30,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '*.r2.dev',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'i.pravatar.cc',
         pathname: '/**',
       },
