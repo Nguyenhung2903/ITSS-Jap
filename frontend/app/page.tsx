@@ -3,6 +3,7 @@ import Footer from "@/components/layouts/Footer";
 import HeroSection from "@/components/pages/home/HeroSection";
 import MissionSection from "@/components/pages/home/MissionSection";
 import EventsSection from "@/components/pages/home/EventsSection";
+import CommunitiesSection from "@/components/pages/home/CommunitiesSection";
 import StatsSection from "@/components/pages/home/StatsSection";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ export default function Home() {
         <HeroSection />
         <MissionSection />
         <EventsSection />
+        <CommunitiesSection />
         <StatsSection />
       </main>
       <Footer />

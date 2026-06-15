@@ -18,7 +18,7 @@ export default function Header() {
                             ホーム
                         </Link>
                         <Link
-                            href="/community"
+                            href="/#communities"
                             className="text-sm font-bold leading-5 text-[#3E4948] transition-colors hover:text-[#005B5B]"
                         >
                             コミュニティ

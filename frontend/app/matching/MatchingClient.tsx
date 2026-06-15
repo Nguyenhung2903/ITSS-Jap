@@ -1,16 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import TopNav from "@/components/layouts/TopNav";
+import UserAvatar from "@/components/ui/UserAvatar";
 import {
     fetchMatchingHomeClient,
     readMatchingHomeCache,
     searchMatchingUsers,
 } from "@/lib/matching-client";
-import { resolveImageUrl } from "@/lib/image";
 import { MIN_SEARCH_LENGTH, normalizeSearchQuery, SEARCH_DEBOUNCE_MS } from "@/lib/search";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
@@ -626,23 +625,12 @@ export default function MatchingClient({
 
                                                     <div className="mb-3.5 flex items-start justify-between pt-2">
                                                         <div className="relative">
-                                                            <div className="relative h-[82px] w-[82px] overflow-hidden rounded-2xl border-[3px] border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_10px_22px_rgba(79,55,30,0.16)] ring-2 ring-[#8B5E34]/10 transition-all duration-300 group-hover/card:scale-105 group-hover/card:border-[#005B5B]/25 group-hover/card:ring-[#005B5B]/20">
-                                                                {!user.avatarUrl || user.avatarUrl.includes("avatar_") ? (
-                                                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#005B5B] to-[#2DD4BF] text-white font-black text-[28px] uppercase select-none">
-                                                                        {getDisplayName(user)?.trim()?.[0] || "T"}
-                                                                    </div>
-                                                                ) : (
-                                                                    <Image
-                                                                        src={resolveImageUrl(
-                                                                            user.avatarUrl
-                                                                        )}
-                                                                        alt={getDisplayName(user)}
-                                                                        fill
-                                                                        sizes="82px"
-                                                                        className="object-cover"
-                                                                    />
-                                                                )}
-                                                            </div>
+                                                            <UserAvatar
+                                                                name={getDisplayName(user)}
+                                                                src={user.avatarUrl}
+                                                                size={82}
+                                                                className="rounded-2xl border-[3px] border-[#F6EAD5] bg-[#EFE3D0] shadow-[0_10px_22px_rgba(79,55,30,0.16)] ring-2 ring-[#8B5E34]/10 transition-all duration-300 group-hover/card:scale-105 group-hover/card:border-[#005B5B]/25 group-hover/card:ring-[#005B5B]/20"
+                                                            />
 
                                                             <div className="absolute -right-1 -bottom-1 z-10 flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7] text-[14px] leading-none shadow-[0_4px_10px_rgba(79,55,30,0.16)] select-none">
                                                                 {getNationalityFlagEmoji(

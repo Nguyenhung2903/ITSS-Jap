@@ -27,7 +27,7 @@ export default async function EventsSection() {
                         最新の公式イベント
                     </h2>
                 </div>
-                <Link href="/events" className="group flex flex-row items-center gap-1 rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-2 shadow-sm transition-all hover:border-[#005B5B]/30 hover:bg-[#E8F4F2]">
+                <Link href="/login" className="group flex flex-row items-center gap-1 rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-2 shadow-sm transition-all hover:border-[#005B5B]/30 hover:bg-[#E8F4F2]">
                     <span className="text-[14px] leading-5 font-bold text-[#005B5B]">
                         すべてのイベントを見る
                     </span>
@@ -44,7 +44,7 @@ export default async function EventsSection() {
                     {events.map((event) => (
                         <Link
                             key={event.id}
-                            href="/events"
+                            href="/login"
                             className="group mx-auto flex h-82 w-full max-w-72 flex-col overflow-hidden rounded-[24px] border border-[#D9C7A5]/70 bg-[#FFFDF7] shadow-[0_16px_36px_rgba(79,55,30,0.08)] ring-1 ring-white/70 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(0,91,91,0.10)]"
                         >
                             <div className="relative h-48 w-full bg-[#EFE3D0]">

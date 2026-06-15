@@ -104,6 +104,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
     const [location, setLocation] = useState("");
+    const [details, setDetails] = useState("");
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -116,6 +117,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
         setDate("");
         setTime("");
         setLocation("");
+        setDetails("");
         setCoverPreview(null);
         setError(null);
 
@@ -206,6 +208,7 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
         const trimmedTitle = title.trim();
         const trimmedLocation = location.trim();
         const trimmedCategory = category.trim();
+        const trimmedDetails = details.trim();
 
         if (!trimmedCategory) {
             setError("カテゴリーを選択、または入力してください。");
@@ -243,10 +246,8 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
             return;
         }
 
-        const description = buildDescription(trimmedCategory, trimmedTitle, trimmedLocation);
-
-        if (description.length < 10) {
-            setError("場所・URLの内容をもう少し詳しく入力してください。");
+        if (trimmedDetails.length < 10) {
+            setError("イベントの詳細を10文字以上で入力してください。");
             return;
         }
 
@@ -258,6 +259,8 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
                 return;
             }
         }
+
+        const description = buildDescription(trimmedCategory, trimmedTitle, trimmedDetails);
 
         const payload: CreateEventPayload = {
             title: trimmedTitle,
@@ -445,6 +448,21 @@ export default function CreateEventModal({ open, onClose, onCreated }: CreateEve
                                         <span>5〜500文字で入力してください。改行できます。</span>
                                         <span className="shrink-0 font-bold">{title.length}/500</span>
                                     </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <FieldLabel>イベント詳細</FieldLabel>
+                                    <textarea
+                                        id="event-details"
+                                        value={details}
+                                        onChange={(event) => setDetails(event.target.value)}
+                                        rows={5}
+                                        placeholder="例：初めて参加する人も歓迎です。日本語とベトナム語で自己紹介、ゲーム、自由会話を行います。飲み物や軽食を持参してください。"
+                                        className="min-h-[150px] w-full resize-y rounded-2xl border border-[#D9C7A5]/70 bg-[#FFFDF7] px-4 py-3.5 text-[14px] leading-6 font-medium text-[#181D1B] outline-none transition-all placeholder:text-[#6E7979]/45 focus:border-[#005B5B]/40 focus:ring-4 focus:ring-[#005B5B]/10"
+                                    />
+                                    <p className="text-[12px] text-[#A99B87]">
+                                        イベント一覧の説明文として表示されます。場所やURLとは別に入力してください。
+                                    </p>
                                 </div>
                             </div>
                         </section>
