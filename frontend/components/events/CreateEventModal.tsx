@@ -18,14 +18,10 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
 ];
 
 const SYSTEM_EVENT_COVERS = [
-    "/assets/images/events/event-1.png",
-    "/assets/images/events/event-2.png",
-    "/assets/images/events/event-3.png",
-    "/assets/images/events/event-4.png",
-    "/assets/images/seed-covers/cover-001.webp",
-    "/assets/images/seed-covers/cover-002.jpg",
-    "/assets/images/seed-covers/cover-003.jpg",
-    "/assets/images/seed-covers/cover-004.jpg",
+    "/api/backend-assets/group_bia/1000050306-17601494681661528944354.webp",
+    "/api/backend-assets/group_bia/24-01-2023-doc-dao-van-hoa-am-thuc-viet-ngay-tet-4CBDB0B0.jpg",
+    "/api/backend-assets/group_bia/623_shrines_large.jpg",
+    "/api/backend-assets/group_bia/japan-banner.jpg",
 ];
 
 type CreateEventModalProps = {

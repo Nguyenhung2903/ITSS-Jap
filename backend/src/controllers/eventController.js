@@ -1,29 +1,6 @@
 const prisma = require("../prismaClient");
 const { normalizeSearchQuery } = require("../utils/searchUtils");
-
-const SYSTEM_EVENT_COVERS = [
-    "/assets/images/events/event-1.png",
-    "/assets/images/events/event-2.png",
-    "/assets/images/events/event-3.png",
-    "/assets/images/events/event-4.png",
-    "/assets/images/seed-covers/cover-001.webp",
-    "/assets/images/seed-covers/cover-002.jpg",
-    "/assets/images/seed-covers/cover-003.jpg",
-    "/assets/images/seed-covers/cover-004.jpg",
-    "/assets/images/seed-covers/cover-005.jpeg",
-    "/assets/images/seed-covers/cover-006.jpg",
-    "/assets/images/seed-covers/cover-007.jpg",
-    "/assets/images/seed-covers/cover-008.jpg",
-];
-
-function selectSystemEventCover(title, eventTime) {
-    const seed = `${title || ""}:${eventTime || ""}`;
-    let hash = 0;
-    for (let i = 0; i < seed.length; i += 1) {
-        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-    }
-    return SYSTEM_EVENT_COVERS[hash % SYSTEM_EVENT_COVERS.length];
-}
+const { selectSystemCover } = require("../utils/systemAssets");
 
 exports.createEvent = async (req, res) => {
     try {
@@ -84,7 +61,7 @@ exports.createEvent = async (req, res) => {
                 format,
                 address: address?.trim() || null,
                 urlLink: urlLink?.trim() || null,
-                imageUrl: selectSystemEventCover(trimmedTitle, parsedTime.toISOString()),
+                imageUrl: selectSystemCover(`${trimmedTitle}:${parsedTime.toISOString()}`),
                 status: "APPROVED",
                 adminId: req.user.id,
             },

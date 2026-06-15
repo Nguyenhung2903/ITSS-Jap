@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
     localPatterns: [
       {
         pathname: '/assets/**',
+      },
+      {
+        pathname: '/api/backend-assets/**',
       }
     ],
     remotePatterns: [

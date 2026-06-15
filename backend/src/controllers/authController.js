@@ -4,10 +4,7 @@ const { UserStatus, KycStatus } = require("@prisma/client");
 const { splitPurposeValues } = require("../utils/purposeUtils");
 
 const { signToken } = require("../utils/jwt");
-const cloudinary = require("../utils/cloudinary");
-const { hasCloudinaryConfig } = require("../utils/cloudinary");
-
-const DEFAULT_AVATAR_URL = "/assets/images/avatars/avatar.jpg";
+const { selectSystemAvatar } = require("../utils/systemAssets");
 
 exports.register = async (req, res) => {
     try {
@@ -44,55 +41,9 @@ exports.register = async (req, res) => {
             });
         }
 
-        let avatarUrl = DEFAULT_AVATAR_URL;
-        let documentImageUrl = DEFAULT_AVATAR_URL;
-
-        if (req.file) {
-            if (hasCloudinaryConfig()) {
-                try {
-                    const uploadResult = await new Promise((resolve, reject) => {
-                        const stream = cloudinary.uploader.upload_stream(
-                            {
-                                folder: "avatars",
-                            },
-                            (error, result) => {
-                                if (error) {
-                                    return reject(error);
-                                }
-
-                                resolve(result);
-                            }
-                        );
-
-                        stream.end(req.file.buffer);
-                    });
-
-                    if (uploadResult?.secure_url) {
-                        avatarUrl = uploadResult.secure_url;
-                        documentImageUrl = uploadResult.secure_url;
-                    }
-                } catch (uploadError) {
-                    console.error("REGISTER AVATAR UPLOAD ERROR:", uploadError);
-                }
-            } else {
-                try {
-                    const path = require("path");
-                    const fs = require("fs");
-                    const targetDir = path.join(__dirname, "../../../frontend/public/assets/images/avatars");
-                    if (!fs.existsSync(targetDir)) {
-                        fs.mkdirSync(targetDir, { recursive: true });
-                    }
-                    const ext = path.extname(req.file.originalname) || ".jpg";
-                    const filename = `avatar_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
-                    const filePath = path.join(targetDir, filename);
-                    fs.writeFileSync(filePath, req.file.buffer);
-                    avatarUrl = `/assets/images/avatars/${filename}`;
-                    documentImageUrl = `/assets/images/avatars/${filename}`;
-                } catch (localSaveError) {
-                    console.error("REGISTER LOCAL AVATAR SAVE ERROR:", localSaveError);
-                }
-            }
-        }
+        const normalizedEmail = email.trim().toLowerCase();
+        const avatarUrl = selectSystemAvatar(normalizedEmail);
+        const documentImageUrl = avatarUrl;
 
         const parts = username.trim().split(/\s+/).filter(Boolean);
         const firstName = parts[0] ?? "";
@@ -102,7 +53,7 @@ exports.register = async (req, res) => {
         /** @type {any} */
         const user = await prisma.verifiedUser.create({
             data: {
-                email: email.trim().toLowerCase(),
+                email: normalizedEmail,
                 password: hashed,
                 firstName,
                 lastName,

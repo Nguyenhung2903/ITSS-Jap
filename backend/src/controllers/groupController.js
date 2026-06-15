@@ -2,11 +2,26 @@ const prisma = require("../prismaClient");
 const { UserStatus } = require("@prisma/client");
 const { cachedQuery, setPublicCacheHeaders } = require("../utils/queryCache");
 const { normalizeSearchQuery } = require("../utils/searchUtils");
+const { selectSystemCover } = require("../utils/systemAssets");
 
 const DEFAULT_LANGUAGE_LEVELS = ["N1", "N2", "N3", "N4", "N5"];
 
 const GROUP_FILTER_OPTIONS_CACHE_KEY = "groups:filter-options";
 const GROUP_FILTER_OPTIONS_TTL_MS = 5 * 60 * 1000;
+
+function getGroupAssetSeed(group) {
+    return `${group.groupId || ""}:${group.name || ""}`;
+}
+
+function withSystemGroupCover(group) {
+    if (!group) return group;
+    const cover = selectSystemCover(getGroupAssetSeed(group));
+    return {
+        ...group,
+        groupCover: cover,
+        groupAvatar: group.groupAvatar || cover,
+    };
+}
 
 function sortJlptLevels(tags) {
     const orderSet = new Set(DEFAULT_LANGUAGE_LEVELS);
@@ -128,7 +143,7 @@ exports.getGroups = async (req, res) => {
             prisma.group.count({ where }),
         ]);
 
-        res.json({ data: groups, total, hasMore: page * limit < total });
+        res.json({ data: groups.map(withSystemGroupCover), total, hasMore: page * limit < total });
 
     } catch (error) {
         console.error("GET GROUPS ERROR:", error);
@@ -285,7 +300,7 @@ exports.myGroups = async (req, res) => {
             orderBy: { joinedAt: "desc" },
         });
 
-        res.json(memberships.map((m) => m.group));
+        res.json(memberships.map((m) => withSystemGroupCover(m.group)));
     } catch (error) {
         console.error("MY GROUPS ERROR:", error);
 
@@ -362,7 +377,7 @@ async function buildSuggestedGroups(user, joinedIdSet) {
         .sort((a, b) => b.recommendScore - a.recommendScore)
         .slice(0, SUGGESTED_RESULT_LIMIT);
 
-    return suggested;
+    return suggested.map(withSystemGroupCover);
 }
 
 exports.suggestedGroups = async (req, res) => {
@@ -429,7 +444,7 @@ exports.communityHome = async (req, res) => {
 
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const myGroups = memberships.map((m) => m.group);
+        const myGroups = memberships.map((m) => withSystemGroupCover(m.group));
         const joinedIdSet = new Set(myGroups.map((g) => g.groupId));
         const suggested = await buildSuggestedGroups(user, joinedIdSet);
 
@@ -475,8 +490,8 @@ exports.groupCard = async (req, res) => {
             groupId: group.groupId,
             name: group.name,
             description: group.description,
-            groupAvatar: group.groupAvatar,
-            groupCover: group.groupCover,
+            groupAvatar: withSystemGroupCover(group).groupAvatar,
+            groupCover: withSystemGroupCover(group).groupCover,
             totalMembers: group.memberCount,
             totalPosts: group._count.posts,
             hobbyTags: group.hobbyTags,
@@ -524,17 +539,19 @@ exports.groupPage = async (req, res) => {
             return res.status(404).json({ error: "Group not found" });
         }
 
+        const groupWithCover = withSystemGroupCover(group);
+
         res.json({
             group: {
-                groupId: group.groupId,
-                name: group.name,
-                description: group.description,
-                groupAvatar: group.groupAvatar,
-                groupCover: group.groupCover,
-                totalMembers: group.memberCount,
-                totalPosts: group._count.posts,
-                hobbyTags: group.hobbyTags,
-                languageTags: group.languageTags,
+                groupId: groupWithCover.groupId,
+                name: groupWithCover.name,
+                description: groupWithCover.description,
+                groupAvatar: groupWithCover.groupAvatar,
+                groupCover: groupWithCover.groupCover,
+                totalMembers: groupWithCover.memberCount,
+                totalPosts: groupWithCover._count.posts,
+                hobbyTags: groupWithCover.hobbyTags,
+                languageTags: groupWithCover.languageTags,
                 isJoined: !!membership,
             },
             posts: postsPayload,

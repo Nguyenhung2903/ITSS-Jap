@@ -54,6 +54,7 @@ fi
 echo "Auto-approving records that require admin review..."
 node -e "
 const { PrismaClient, UserStatus, KycStatus, EventStatus, ReportCaseStatus } = require('@prisma/client');
+const { selectSystemAvatar, selectSystemCover } = require('./src/utils/systemAssets');
 const prisma = new PrismaClient();
 async function main() {
   const [users, kyc, events, reports] = await prisma.\$transaction([
@@ -80,6 +81,34 @@ async function main() {
     events: events.count,
     reportCases: reports.count,
   }));
+
+  const existingUsers = await prisma.verifiedUser.findMany({
+    select: { id: true, email: true, avatarUrl: true },
+  });
+  const avatarUpdates = existingUsers
+    .filter(user => !user.avatarUrl || !user.avatarUrl.startsWith('/api/backend-assets/avatar/'))
+    .map(user => prisma.verifiedUser.update({
+      where: { id: user.id },
+      data: { avatarUrl: selectSystemAvatar(user.email || user.id) },
+    }));
+  if (avatarUpdates.length > 0) {
+    await prisma.\$transaction(avatarUpdates);
+  }
+  console.log(JSON.stringify({ systemAvatarUpdates: avatarUpdates.length }));
+
+  const existingEvents = await prisma.event.findMany({
+    select: { id: true, title: true, eventTime: true, imageUrl: true },
+  });
+  const eventImageUpdates = existingEvents
+    .filter(event => !event.imageUrl || !event.imageUrl.startsWith('/api/backend-assets/group_bia/'))
+    .map(event => prisma.event.update({
+      where: { id: event.id },
+      data: { imageUrl: selectSystemCover((event.title || event.id) + ':' + (event.eventTime?.toISOString?.() || '')) },
+    }));
+  if (eventImageUpdates.length > 0) {
+    await prisma.\$transaction(eventImageUpdates);
+  }
+  console.log(JSON.stringify({ systemEventImageUpdates: eventImageUpdates.length }));
 }
 main()
   .then(() => process.exit(0))

@@ -348,7 +348,7 @@ export default function RegisterPage() {
 
                             <div className="flex flex-col gap-2">
                                 <label className="text-[11.2px] leading-4 font-medium tracking-[1.28px] text-[#526160]/80 uppercase">
-                                    プロフィール写真
+                                    参考写真
                                 </label>
 
                                 <div className="group relative flex min-h-[132px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#BEC9C8]/80 bg-[#F0F5F2]/80 px-4 py-5 transition-all hover:border-[#005B5B]/40 hover:bg-white">
@@ -357,7 +357,7 @@ export default function RegisterPage() {
                                         onChange={handleFileChange}
                                         accept="image/jpeg,image/png,image/webp"
                                         className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                                        aria-label="プロフィール写真をアップロード"
+                                        aria-label="参考写真をアップロード"
                                     />
 
                                     {fileName ? (
@@ -417,10 +417,10 @@ export default function RegisterPage() {
                                             </div>
                                             <div className="flex flex-col items-center gap-1 text-center">
                                                 <span className="text-[14px] font-semibold text-[#181D1B]">
-                                                    プロフィール写真をアップロード（任意）
+                                                    参考写真をアップロード（任意）
                                                 </span>
                                                 <span className="text-[12px] font-medium text-[#6E7979]">
-                                                    JPEG, PNG, WEBP / 最大5MB
+                                                    JPEG, PNG, WEBP / 最大5MB / 実際のプロフィール画像はシステムが自動選択します
                                                 </span>
                                             </div>
                                         </>
