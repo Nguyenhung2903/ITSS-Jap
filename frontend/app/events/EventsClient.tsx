@@ -32,6 +32,7 @@ const TAB_OPTIONS: { id: TabFilter; label: string }[] = [
     { id: "joined", label: "参加予定" },
     { id: "expired", label: "終了" },
 ];
+const EVENTS_PAGE_SIZE = 10;
 
 type EventsClientProps = {
     initialEvents?: EventCardData[];
@@ -43,7 +44,6 @@ type EventsClientProps = {
 
 export default function EventsClient({
     initialEvents = [],
-    initialHasMore = false,
     initialError = null,
 }: EventsClientProps = {}) {
     const searchParams = useSearchParams();
@@ -54,11 +54,10 @@ export default function EventsClient({
     const [events, setEvents] = useState<EventCardData[]>(initialEvents);
     const [activeTab, setActiveTab] = useState<TabFilter>("all");
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(initialHasMore);
+    const [total, setTotal] = useState(initialEvents.length);
     const [isBootstrapping, setIsBootstrapping] = useState(!initialError);
     const [isLoading, setIsLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [joiningId, setJoiningId] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(initialError);
     const [joinError, setJoinError] = useState<string | null>(null);
@@ -73,13 +72,11 @@ export default function EventsClient({
     hasEventsRef.current = events.length > 0;
 
     const loadEvents = useCallback(
-        async (pageNum: number, tab: TabFilter, search: string, append = false) => {
+        async (pageNum: number, tab: TabFilter, search: string) => {
             const requestId = ++fetchRequestIdRef.current;
             const format: EventFormat = tab === "all" ? "all" : tab;
 
-            if (append) {
-                setIsLoadingMore(true);
-            } else if (hasEventsRef.current) {
+            if (hasEventsRef.current) {
                 setIsRefreshing(true);
                 setErrorMessage(null);
             } else {
@@ -100,26 +97,19 @@ export default function EventsClient({
                     formatApiEvent(event, currentUserId)
                 );
 
-                setEvents((prev) => (append ? [...prev, ...formatted] : formatted));
-                setHasMore(result.data.hasMore);
-
-                if (pageNum === 1) {
-                    setPage(1);
-                }
+                setEvents(formatted);
+                setTotal(result.data.total ?? formatted.length);
+                setPage(pageNum);
             } else if (pageNum === 1) {
                 setEvents([]);
-                setHasMore(false);
+                setTotal(0);
                 setErrorMessage(result.message ?? "イベントの取得に失敗しました。");
             }
 
             setIsLoading(false);
             setIsRefreshing(false);
 
-            if (pageNum === 1) {
-                setIsBootstrapping(false);
-            } else {
-                setIsLoadingMore(false);
-            }
+            setIsBootstrapping(false);
         },
         [currentUserId]
     );
@@ -129,6 +119,7 @@ export default function EventsClient({
 
         if (!isAuthenticated || !currentUserId) {
             setEvents([]);
+            setTotal(0);
             setErrorMessage("ログインしてください。");
             setIsBootstrapping(false);
             return;
@@ -138,7 +129,7 @@ export default function EventsClient({
 
         if (cached) {
             setEvents(cached.data.map((event) => formatApiEvent(event, currentUserId)));
-            setHasMore(cached.hasMore);
+            setTotal(cached.total ?? cached.data.length);
             setIsBootstrapping(false);
             return;
         }
@@ -231,12 +222,16 @@ export default function EventsClient({
         setActiveTab(tab);
     };
 
-    const handleLoadMore = () => {
-        if (!hasMore || isLoadingMore) return;
+    const totalPages = Math.max(1, Math.ceil(total / EVENTS_PAGE_SIZE));
+    const pageStart = total === 0 ? 0 : (page - 1) * EVENTS_PAGE_SIZE + 1;
+    const pageEnd = total === 0 ? 0 : Math.min(pageStart + events.length - 1, total);
+    const canGoPrev = page > 1 && !isLoading && !isRefreshing;
+    const canGoNext = page < totalPages && !isLoading && !isRefreshing;
 
-        const nextPage = page + 1;
-        setPage(nextPage);
-        void loadEvents(nextPage, activeTab, debouncedSearchQuery, true);
+    const handlePageChange = (nextPage: number) => {
+        if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
+        if (isLoading || isRefreshing) return;
+        void loadEvents(nextPage, activeTab, debouncedSearchQuery);
     };
 
     return (
@@ -299,7 +294,7 @@ export default function EventsClient({
                                     ? `${MIN_SEARCH_LENGTH}文字以上で検索`
                                     : isLoading || isRefreshing
                                         ? "検索中..."
-                                        : `${events.length}件表示中`}
+                                        : `${pageStart}-${pageEnd}/${total} イベント`}
                             </div>
                         </section>
 
@@ -394,23 +389,35 @@ export default function EventsClient({
                             )}
                         </section>
 
-                        {!isBootstrapping && !isLoading && events.length > 0 && hasMore && (
-                            <div className="flex justify-center pt-4 pb-12">
-                                <button
-                                    type="button"
-                                    onClick={handleLoadMore}
-                                    disabled={isLoadingMore}
-                                    className="flex h-[56px] cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#923118] px-12 text-[13px] font-extrabold tracking-[2.5px] text-white uppercase shadow-[0_12px_24px_-6px_rgba(146,49,24,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-6px_rgba(146,49,24,0.45)] active:scale-95 disabled:cursor-wait disabled:opacity-80"
-                                >
-                                    {isLoadingMore ? (
-                                        <>
-                                            <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                            <span>読み込み中...</span>
-                                        </>
-                                    ) : (
-                                        <span>もっとイベントを表示</span>
-                                    )}
-                                </button>
+                        {!isBootstrapping && !isLoading && events.length > 0 && total > 0 && (
+                            <div className="flex flex-col items-center justify-center gap-4 pt-4 pb-12 sm:flex-row sm:justify-between">
+                                <div className="rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 px-5 py-3 text-[13px] font-extrabold text-[#3E4948] shadow-[0_10px_24px_rgba(79,55,30,0.08)]">
+                                    {pageStart}-{pageEnd}/{total} イベント
+                                </div>
+
+                                {totalPages > 1 && (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handlePageChange(page - 1)}
+                                            disabled={!canGoPrev}
+                                            className="h-11 rounded-2xl border border-[#D9C7A5]/80 bg-[#FFFDF7] px-5 text-[12px] font-extrabold text-[#005B5B] shadow-[0_8px_18px_rgba(79,55,30,0.06)] transition-all hover:-translate-y-0.5 hover:border-[#005B5B]/30 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                                        >
+                                            前へ
+                                        </button>
+                                        <div className="flex h-11 min-w-[86px] items-center justify-center rounded-2xl bg-[#005B5B] px-4 text-[12px] font-extrabold text-white shadow-[0_10px_24px_rgba(0,91,91,0.16)]">
+                                            {page}/{totalPages}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handlePageChange(page + 1)}
+                                            disabled={!canGoNext}
+                                            className="h-11 rounded-2xl border border-[#D9C7A5]/80 bg-[#FFFDF7] px-5 text-[12px] font-extrabold text-[#005B5B] shadow-[0_8px_18px_rgba(79,55,30,0.06)] transition-all hover:-translate-y-0.5 hover:border-[#005B5B]/30 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                                        >
+                                            次へ
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

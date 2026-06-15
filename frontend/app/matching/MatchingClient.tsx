@@ -21,6 +21,7 @@ const JLPT_OPTIONS = [
 ] as const;
 
 const NATIONALITY_OPTIONS = ["日本", "ベトナム"] as const;
+const MATCHING_PAGE_SIZE = 12;
 
 export type MatchingUser = {
     id: number;
@@ -266,7 +267,6 @@ export default function MatchingClient({
     initialHobbyOptions = [],
     initialCandidates = [],
     initialTotal = 0,
-    initialHasMore = false,
     initialError = null,
 }: MatchingClientProps = {}) {
     const cachedHome = readMatchingHomeCache();
@@ -289,20 +289,16 @@ export default function MatchingClient({
         () => (cachedHome?.search.data ?? initialCandidates) as MatchingUser[]
     );
     const [total, setTotal] = useState(cachedHome?.search.total ?? initialTotal);
-    const [hasMore, setHasMore] = useState(cachedHome?.search.hasMore ?? initialHasMore);
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(initialError);
     const [isBootstrapping, setIsBootstrapping] = useState(
         !cachedHome && initialCandidates.length === 0
     );
 
     const prevFiltersRef = useRef<string | null>(null);
-    const fetchCandidatesRef = useRef<
-        ((targetPage: number, append: boolean) => Promise<void>) | null
-    >(null);
+    const fetchCandidatesRef = useRef<((targetPage: number) => Promise<void>) | null>(null);
     const hasCandidatesRef = useRef(initialCandidates.length > 0);
     const fetchRequestIdRef = useRef(0);
 
@@ -321,12 +317,10 @@ export default function MatchingClient({
     );
 
     const fetchCandidates = useCallback(
-        async (targetPage: number, append: boolean) => {
+        async (targetPage: number) => {
             const requestId = ++fetchRequestIdRef.current;
 
-            if (append) {
-                setIsLoadingMore(true);
-            } else if (hasCandidatesRef.current) {
+            if (hasCandidatesRef.current) {
                 setIsRefreshing(true);
                 setError(null);
             } else {
@@ -341,26 +335,21 @@ export default function MatchingClient({
             if (!result.success) {
                 setError(result.message ?? "マッチング候補の取得に失敗しました。");
 
-                if (!append) {
-                    setCandidates([]);
-                    setTotal(0);
-                    setHasMore(false);
-                }
+                setCandidates([]);
+                setTotal(0);
             } else {
                 const users = (result.data ?? []) as MatchingUser[];
-                setCandidates((prev) => (append ? [...prev, ...users] : users));
+                setCandidates(users);
 
                 if (result.total !== undefined) {
                     setTotal(result.total);
                 }
 
-                setHasMore(result.hasMore ?? false);
                 setPage(targetPage);
             }
 
             setIsLoading(false);
             setIsRefreshing(false);
-            setIsLoadingMore(false);
         },
         [buildParams]
     );
@@ -386,7 +375,6 @@ export default function MatchingClient({
             setHobbyOptions(result.data.filterOptions.hobbies);
             setCandidates((result.data.search.data ?? []) as MatchingUser[]);
             setTotal(result.data.search.total ?? 0);
-            setHasMore(result.data.search.hasMore ?? false);
             setPage(1);
             setError(null);
             setIsBootstrapping(false);
@@ -416,7 +404,7 @@ export default function MatchingClient({
         if (prevFiltersRef.current === filterKey) return;
 
         prevFiltersRef.current = filterKey;
-        void fetchCandidatesRef.current?.(1, false);
+        void fetchCandidatesRef.current?.(1);
     }, [filterKey, isBootstrapping]);
 
     const hasPendingSearch =
@@ -435,9 +423,16 @@ export default function MatchingClient({
         );
     };
 
-    const handleLoadMore = () => {
-        if (!hasMore || isLoadingMore) return;
-        void fetchCandidates(page + 1, true);
+    const totalPages = Math.max(1, Math.ceil(total / MATCHING_PAGE_SIZE));
+    const pageStart = total === 0 ? 0 : (page - 1) * MATCHING_PAGE_SIZE + 1;
+    const pageEnd = total === 0 ? 0 : Math.min(pageStart + candidates.length - 1, total);
+    const canGoPrev = page > 1 && !isLoading && !isRefreshing;
+    const canGoNext = page < totalPages && !isLoading && !isRefreshing;
+
+    const handlePageChange = (nextPage: number) => {
+        if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
+        if (isLoading || isRefreshing) return;
+        void fetchCandidates(nextPage);
     };
 
     const clearFilters = () => {
@@ -719,26 +714,35 @@ export default function MatchingClient({
                                         })}
                                     </div>
 
-                                    {hasMore && (
-                                        <div className="flex w-full justify-center pb-12">
-                                            <button
-                                                type="button"
-                                                onClick={handleLoadMore}
-                                                disabled={isLoadingMore}
-                                                className={`flex h-[56px] cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#923118] px-12 text-[13px] font-extrabold tracking-[2.5px] text-white uppercase shadow-[0_12px_24px_-6px_rgba(146,49,24,0.3)] transition-all duration-300 hover:shadow-[0_16px_32px_-6px_rgba(146,49,24,0.45)] ${isLoadingMore
-                                                        ? "cursor-wait opacity-80"
-                                                        : "hover:-translate-y-0.5 active:scale-95"
-                                                    }`}
-                                            >
-                                                {isLoadingMore ? (
-                                                    <>
-                                                        <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                                        <span>読み込み中...</span>
-                                                    </>
-                                                ) : (
-                                                    <span>もっと見る</span>
-                                                )}
-                                            </button>
+                                    {total > 0 && (
+                                        <div className="flex w-full flex-col items-center justify-center gap-4 pb-12 sm:flex-row sm:justify-between">
+                                            <div className="rounded-full border border-[#D9C7A5]/70 bg-[#FFFDF7]/95 px-5 py-3 text-[13px] font-extrabold text-[#3E4948] shadow-[0_10px_24px_rgba(79,55,30,0.08)]">
+                                                {pageStart}-{pageEnd}/{total} ユーザー
+                                            </div>
+
+                                            {totalPages > 1 && (
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePageChange(page - 1)}
+                                                        disabled={!canGoPrev}
+                                                        className="h-11 rounded-2xl border border-[#D9C7A5]/80 bg-[#FFFDF7] px-5 text-[12px] font-extrabold text-[#005B5B] shadow-[0_8px_18px_rgba(79,55,30,0.06)] transition-all hover:-translate-y-0.5 hover:border-[#005B5B]/30 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                                                    >
+                                                        前へ
+                                                    </button>
+                                                    <div className="flex h-11 min-w-[86px] items-center justify-center rounded-2xl bg-[#005B5B] px-4 text-[12px] font-extrabold text-white shadow-[0_10px_24px_rgba(0,91,91,0.16)]">
+                                                        {page}/{totalPages}
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePageChange(page + 1)}
+                                                        disabled={!canGoNext}
+                                                        className="h-11 rounded-2xl border border-[#D9C7A5]/80 bg-[#FFFDF7] px-5 text-[12px] font-extrabold text-[#005B5B] shadow-[0_8px_18px_rgba(79,55,30,0.06)] transition-all hover:-translate-y-0.5 hover:border-[#005B5B]/30 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                                                    >
+                                                        次へ
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </>
